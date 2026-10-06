@@ -40,7 +40,12 @@ async function setup(page, count = 2, fixture = fieldFixture()) {
 
 async function evidence(page, testInfo, name) {
   const path = testInfo.outputPath(`${name}.png`);
-  await page.screenshot({ path, fullPage: true });
+  const popupOpen = await popup(page).count() > 0;
+  // Full-page capture can temporarily alter the viewport and correctly dismiss
+  // an overlay through its resize/scroll listeners. Capture open details in the
+  // real viewport so taking evidence does not interrupt the interaction tested.
+  await page.screenshot({ path, fullPage: !popupOpen });
+  if (popupOpen) await expect(popup(page)).toBeVisible();
   await testInfo.attach(`${name} (synthetic test data)`, { path, contentType: "image/png" });
 }
 
