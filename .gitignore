@@ -20,3 +20,6 @@ web/current.json.pending
 
 web/contributions.json
 web/contributions.json.pending
+
+playwright-report/
+test-results/

@@ -6,32 +6,32 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.8.0 is prepared locally for review and has not been published. The live
-site remains on 0.7.0; historical production and shared-data refresh below describe
-the prepared version.
+Version 0.9.0 introduces the field-and-status board.
 
 Search the current roster source by name, team or position and select up to six
-players. A compact toolbar holds search, the week selector and an information
-button. Below it, one board starts with two equal vertical spaces and divides
-into narrower tiles as players are added. Small screens scroll the board
-horizontally. Each tile resolves the week's opponent and displays the opponent's **entire available defensive roster**, merging injury entries by
-stable identity and retaining report-only players. Offense and special teams
-are excluded from opponent tiles. Each row pairs the name with its position immediately
-to the right. Section headings show source-backed depth levels, reserves,
-inactive players, practice squad and unknown context. Only relevant injury or
-availability information gets highlighted pills; no badge implies no guarantee
-of health. Click or tap a player, or press Enter or Space, for full details.
-Remove a player with its × button.
-Injured and reserve roster members remain searchable. Selections stay in the
-browser; there are no accounts or league connections.
+players. A compact toolbar holds search, the week selector and information.
+Each tile shows a schematic field with individual defensive Xs and position
+stacks above an integrated roster panel. The field uses only source-backed
+identities and position labels:
+coarse DL/LB/DB roles never become invented cornerback/safety assignments or a
+confirmed eleven-player lineup. Source first-depth individuals appear only
+when that evidence exists and has
+at most eleven members; otherwise position stacks represent the available
+roster without assigning a person. Stacks highlight matching rows in All.
+Every available defender remains accessible, including backups, inactive/reserve players and report-only identities.
 
-Rows also show historical defensive production where a stable 2025 record
-exists: sacks/QB hits, passes defended/interceptions, or mixed sacks/passes
-defended for coarse linebacker roles, with the period and
-historical teams visible. Bold counts highlight specific recorded-event leaders
-among the listed defenders, not current defensive quality. Click for role
-relevance, source coverage and conditional absence context. Missing history is
-unknown; no validated injury benefit or replacement-quality estimate is supplied.
+All is the complete roster. Out contains explicit Out game designations;
+Uncertain contains Questionable and Doubtful with their distinct badges.
+Unknown stays in All, and missing status never means healthy. Source-backed
+depth and roster context are secondary text. Hover, keyboard focus or tap an X
+for full injury, availability, depth and source details. Escape, Close, outside
+press and leaving the preview dismiss it. Remove a selected player with ×.
+Mobile tiles stack; larger screens preserve aligned comparison fields.
+
+Selections stay in the browser; there are no accounts or league connections.
+Separate 2025 defensive-event history remains available in details where a
+stable record exists. Missing history is unknown; no injury-benefit score,
+replacement-quality claim or invented assignment is supplied.
 See [Contribution evidence](docs/CONTRIBUTION_REVIEW.md).
 
 Refresh checks the latest shared files without forcing an upstream update.
@@ -58,7 +58,7 @@ original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
 modification and sideline collection times.
 
-The prepared collector checks four required sources plus one optional historical
+The collector checks four required sources plus one optional historical
 source in the existing hourly GitHub Actions run at minute 23.
 Upstream injury and roster files normally update daily, not live. Schedules
 update more often. Runs can be delayed, fail or become dormant; a failed
@@ -107,7 +107,17 @@ python3 -m venv .venv
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Both suites run on source changes. The separate data-refresh run verifies the
+Both unit suites and Chromium desktop/mobile browser checks run on source
+changes. To run the browser suite locally after installing Node dependencies:
+
+```sh
+npx playwright install --with-deps chromium
+npm run test:browser
+```
+
+Browser tests intercept only synthetic source-shaped fixtures in the test
+process and never write them to production artifacts. Screenshot/report evidence
+is retained in CI for one day. The separate data-refresh run verifies the
 Node suite and static build. Deployment and recovery are documented in
 [the dashboard guide](docs/DASHBOARD.md).
 

@@ -55,43 +55,43 @@ rights, sample, coverage, interpretations and limitations.
 
 ## Implemented behavior
 
-Version 0.8.0 is prepared locally and unpublished; the live site remains on 0.7.0.
-The prepared version is a static search-and-report dashboard using the approved
-nflverse-data release files. It supports six selected players, automatic
-opponents, explicit byes, source-relative completeness, missing-report states,
-unknown kickoff, started games and source/collection age warnings. Selections
-are local browser IDs, not a league roster.
+Version 0.9.0 implements the founder's October 6 field-and-status direction.
+The static dashboard retains six selected players, automatic opponents,
+explicit byes, source-relative completeness, missing reports, unknown kickoff,
+started-game uncertainty and freshness warnings. Selections are browser IDs,
+not a league roster.
 
-The founder's latest visual direction uses one compact top toolbar for search,
-week selection and an information button. There is no sidebar, hero copy,
-visible page heading or instructional block. Keep accessible names and
-screen-reader guidance. The rest of the viewport belongs to one board of equal
-vertical player tiles: at least two spaces, narrowing as selections grow to six.
-Tile contents adapt to width; narrow screens scroll horizontally instead of
-making the data unreadable. Each tile shows player name, current team, position,
-team mark, opponent and the opponent's available defensive roster with matching injury data.
+A compact toolbar contains search, week selection and information. Each equal
+comparison tile has compact identity, a prominent schematic defensive field
+and an always-visible integrated depth/status panel. Small screens stack tiles.
+Individual Xs show source first-depth defensive identities in relative positional bands,
+all above a single line of scrimmage; the selected offense marker is below it.
+Positions are schematic context, not assignments or a formation. Do not infer
+CB/S from coarse DB, exact alignments from depth ranks, or eleven starters from
+an available roster. First-depth is never substituted with an arbitrary representative or an inferred
+replacement. If it is absent or exceeds eleven members, use actual-position
+stacks rather than fabricating a lineup. Position stacks expose all matching
+rows in All, including Out players, backups and inactive players.
 
-The board includes every current opponent defensive roster member, including reserve and
-practice-squad members, plus unmatched defensive injury entries. Uniform-height
-rows pair each name with plain position text immediately on its right. Only
-reported injury and relevant availability get highlighted pills. Depth and
-reserve labels belong to section headings, never repeated row badges.
-Current active defenders group by their lowest supported defensive depth rank;
-reserves, inactive/suspended players, practice squad, unknown depth and unknown
-roster context remain separate. Missing depth cannot create a first-string
-assignment. First string is not a confirmed game starter. A badge-free row
-means no matching injury entry, not healthy or available. Tiles retain a 300px
-minimum and scroll horizontally. Only click, tap or Enter/Space opens a popup with
-full statuses, source notes, availability limits and plausible defensive-role
-relevance where supported. Details do not expand the page. No direct individual
-coverage assignment, replacement quality, numerical boost or demonstrated
-fantasy effect is inferred.
+All preserves every current opponent defensive roster member and unmatched
+defensive report entry. Out filters only explicit Out game designations;
+Uncertain includes Questionable and Doubtful with distinct status badges.
+Unknown appears only in All. Inactive roster context is not an Out designation.
+Depth and roster context are secondary row/detail text. A missing report,
+blank designation or badge-free row never establishes health or availability.
+No separate duplicate long roster panels or impact scores are introduced.
 
-Injury-file age and unknown report time are visible beside the matchup. Full
-source attribution, separate report/file/collection/browser-check timestamps,
-refresh limits, privacy and licensing live behind information buttons. Missing data, byes, started
-games, fictional mode and failures retain concise visible states. Reducing copy
-does not remove these distinctions or silently hide missing coverage.
+Hover/focus previews and tap/click details expose injury, availability, actual
+position, source-backed depth and source evidence. Leave, Close, Escape, outside
+press, focus changes and state changes dismiss details reliably. Historical
+production and its limits remain in details rather than crowding the field.
+
+Injury-file time, sideline collection, browser checking and original report time
+remain distinct. A recent file or collection is not a recent report; original
+report publication dates are absent in the current source. Source attribution,
+refresh limits, privacy and licensing remain available through information
+buttons. Missing data, byes, elapsed kickoffs, fictional mode and failures keep
+compact visible states.
 
 All 32 team logos are hosted locally: twelve public-domain SVGs and twenty
 small copyrighted thumbnails for editorial team identification. Image failure

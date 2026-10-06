@@ -1,44 +1,38 @@
 # Dashboard
 
-Prepared local version 0.8.0, unpublished · [Open live sideline (0.7.0)](https://snowball-projects.github.io/sideline/)
+Version 0.9.0 · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
 Use the compact top toolbar to search by player name, team abbreviation or
-position. It also holds the week selector and an `i` information button. There
-is no sidebar or explanatory hero. Choose up to six players; the board starts
-with two equal vertical spaces and adds narrower equal columns as selections
-grow. Tile contents adapt to their width. On small screens, scroll the board
-horizontally; long injury lists scroll within their tiles.
+position and choose up to six players. Each comparison tile contains a compact
+identity header, matchup, schematic field and integrated roster/status panel.
+On mobile, tiles stack vertically. Larger screens compare equal-width tiles.
 
-Each tile shows the player, current team and position, then the scheduled
-opponent, **every available defensive roster member**, and defensive injury entries
-for that team/game. Offensive and special-teams positions are excluded. Remove a selection with its × button.
-Injured, inactive and reserve roster members are included independently of game
-participation. All 32 team logos are served locally with source and use records. Player photos are omitted. See
-[MEDIA.md](MEDIA.md) for asset provenance and limitations.
+The field shows source first-depth opposing defenders as individual Xs only
+when valid depth exists and at most eleven members qualify. Missing or larger
+first-depth groups use actual-position stacks instead. Stacks highlight every
+matching row in All, retaining non-first-depth Out players and reserves.
+Relative positional bands use actual source positions; coarse DL/LB/DB is never
+expanded into invented assignments. All defenders are on one side of one line
+of scrimmage and the selected offense marker is on the other. This is a roster
+schematic, not a confirmed lineup, coverage diagram or eleven-player formation.
 
-Section headings and subtle dividers group source-backed depth levels, unknown
-depth, reserves, inactive/suspended players, practice squad and unknown roster
-context. The lowest current defensive depth rank determines an active player's
-section when multiple assignments exist. First string is chart context, not a
-confirmed game starter. Reserve and unknown roster status take precedence over
-depth for grouping.
+All keeps every defender, including backups, inactive/reserve, practice squad,
+unknown-depth and report-only identities. Out includes explicit Out game
+statuses only. Uncertain includes Questionable and Doubtful, keeping Q and D
+badges distinct. Unknown appears only in All. Missing status and inactive
+roster membership do not imply health or Out. Actual depth and roster context
+are secondary row text; first string is chart context, not a game starter.
 
-Uniform 68px rows put position immediately to the right of the name, as plain
-identity text. Only reported body-part injuries and meaningful game/practice
-statuses get highlighted pills. No per-row depth, reserve, active or healthy
-badges appear. A row without pills does not establish health. Missing report
-coverage remains visible; source vintage and freshness stay in information.
-Long injury descriptions are abbreviated in pills and retained fully in details.
-Tiles retain a 300px minimum width and scroll horizontally. Click, tap or press
-Enter/Space on a row to open a popup with full
-designations, availability explanation, source notes and supported role context.
-Hover and focus alone never open details. Escape, outside click and moving
-focus away dismiss the popup, which overlays the board without expanding a row. Information buttons
-hold source links, separate report/file/collection timestamps, refresh limits,
-privacy, licenses, image credits and snowball/Operations links. Compact visible
-states remain for missing coverage, byes, changed game status and data failures.
+Hover or focus a field X for a preview; click/tap pins it, and another activation
+closes it. Full details remain available by activating a roster row. Popups
+provide injury, availability, depth and source information. Escape, Close,
+outside press, leaving an unpinned preview, changing focus and replacing state
+clear the popup. Historical production lives in details. Source freshness
+keeps injury-file update, sideline collection, browser checking and unknown
+original report date separate. All 32 reviewed logos remain local; player
+photos are omitted. See [MEDIA.md](MEDIA.md).
 
 The week defaults from the current schedule window, with an optional week
 selector. A confirmed bye differs from a missing schedule. Kickoffs display
@@ -94,7 +88,7 @@ calling a provider.
 
 ## Historical defender signals
 
-The second row line is fixed **2025 regular-season recorded production** for
+Details include fixed **2025 regular-season recorded production** for
 its named historical team(s), including players now on different teams. For
 selected QB/WR/TE players, defensive-line passing disruption uses sacks and QB
 hits; defensive-back coverage uses passes defended and interceptions. Linebacker
@@ -104,7 +98,7 @@ broad role context and full historical counts in details, without an invented
 rushing-efficiency/benefit metric. All units are credited events; no snap,
 pass-rush or target denominator is available. Half sacks are preserved.
 
-Bold event lines contain at least one highest available displayed-event total
+Historical leading-measure details identify a highest available displayed-event total
 among the current opposing roster's historical records; positive ties count,
 missing records do not become zero, and there is no composite ranking. The
 popup names the leading measure, all four counts, historical team subtotals,
@@ -225,9 +219,11 @@ media manifest and only its reviewed local SVG/PNG paths; the build checks their
 provenance fields and SHA-256 digests. They never package private research
 inputs, league configuration or arbitrary local files.
 
-[The existing workflow](../.github/workflows/tests.yml) checks Node and Python
-on source changes, then collects/validates data and publishes main using GitHub
-Pages. Hourly scheduled runs at minute 23 skip historical Python tests but run
+[The existing workflow](../.github/workflows/tests.yml) checks Node, Python and
+Chromium desktop/mobile behavior on source changes, then collects/validates data
+and publishes main using GitHub Pages. Source publication requires the browser
+job to succeed. Scheduled data refresh skips browser installation/tests, retaining
+the already-reviewed UI. Browser screenshot/report artifacts expire after one day. Hourly scheduled runs at minute 23 skip historical Python tests but run
 the Node suite, collector and build. All deployments share one concurrency
 group and use standard public `ubuntu-latest` runners. Pages artifact retention
 is one day. There are no data commits or scheduled private-input uploads.
@@ -253,13 +249,18 @@ Offline Node tests cover source-shaped CSV parsing, injured/current identity
 membership, transfers, exact-game joins, all-position source preservation, defense-only display, explicit
 byes, schedule changes and timezone transitions, stale/unknown vintage,
 publication provenance, bounded downloads and failure behavior. The 44-test
-Python research suite remains credential-free.
+Python research suite remains credential-free. `npm run test:browser` exercises
+two/six selections, desktop/mobile layout, source-shaped status/depth edge
+cases, hover/focus/touch details, repeated dismissal and week/selection changes.
+Its fixture is injected into test requests only and cannot enter the public
+build allowlist. Install Chromium first with
+`npx playwright install --with-deps chromium`.
 
 Before claiming delivery, also check desktop, narrow mobile and keyboard
 search/add/remove flows; persistent selections; missing reports; labelled
 fictional fallback after a failed return; source links; live workflow completion;
-and the deployed version/data counts. Check two through six columns, narrow
-board scrolling, every injury row's keyboard/touch details, popup dismissal and
+and the deployed version/data counts. Check two through six tiles, mobile
+stacking, every marker and row's keyboard/touch details, popup dismissal and
 focus handling, and logo/fallback rendering. Do not equate a local build with a
 live deployment.
 

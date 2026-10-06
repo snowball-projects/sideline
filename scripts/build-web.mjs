@@ -18,6 +18,7 @@ const files = [
   "styles.css",
   "app.mjs",
   "model.mjs",
+  "field.mjs",
   "feed.mjs",
   "popover.mjs",
   "refresh.mjs",
