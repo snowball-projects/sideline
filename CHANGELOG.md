@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.1 - proposed
+
+- Name individual field markers and preserve full accessible identities.
+- Use published defensive depth positions, retain multiple assignments, and
+  keep ambiguous coarse roles conservative.
+- Summarize missing exact-match injury coverage once per matchup; retain
+  individual uncertainty and never carry older Out reports into a new week.
+- Extend desktop/mobile, source mapping and week-rollover regression coverage.
+
 ## 0.9.0 - 2026-10-06
 
 - Replace long roster-first tiles with a schematic field of individual real

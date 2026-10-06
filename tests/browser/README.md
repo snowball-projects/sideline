@@ -16,12 +16,22 @@ and clearly synthetic test inputs in `field-fixture.mjs`; no fixture is written
 to `web/current.json` or included in the build. Normal app requests remain local,
 and optional historical production is explicitly unavailable in these cases.
 
-Coverage includes two/six selections, desktop horizontal scrolling and mobile stacking, sparse
-source-backed first-depth markers, anonymous stacks when depth is missing or
-oversized, full-roster stack highlighting, All/Out/Uncertain status filters,
-unknown/missing reports, pointer preview, keyboard/touch activation, repeated
-and interrupted dismissal, deferred-clock Escape/depth-expiry regressions,
-week/selection changes and explicit fictional mode.
+Coverage includes two/six selections, desktop horizontal scrolling and mobile
+stacking, compact named first-depth markers, long surnames and matching initials,
+and minimum control sizes with no label/target collisions. Both eleven- and
+twelve-person source first-depth sets remain visible, including at 320px; a
+multiply-listed identity keeps its chart roles on one marker. Source chart
+positions (including LCB/RCB/NB, FS/SS and LDE/RDE) take precedence over coarse
+roster positions, while missing depth keeps anonymous coarse-position stacks.
+The dense fixture retains forty defenders, twelve named first-depth identities,
+generic DB/LB/DL stacks and a secondary-only FS/SS stack. Six-tile checks mix
+that missing-report matchup with a smaller partial-report defense, asserting
+desktop line-of-scrimmage alignment despite different role wrapping and notices.
+Full-roster stack highlighting, All/Out/Uncertain filters, one shared missing
+Week 5 report notice, and ordinary partial-report Unknown states are covered.
+The existing pointer preview, keyboard/touch activation, repeated and interrupted
+dismissal, deferred-clock Escape/depth-expiry regressions, week/selection changes
+and explicit fictional mode remain part of the suite.
 
 The `field browser checks` CI job runs on source pushes and pull requests using
 standard public Ubuntu runners. It does not run on the hourly data-only refresh.
@@ -30,7 +40,8 @@ repository branch-protection settings or grant merge approval.
 
 The `field-browser-evidence` artifact contains the HTML report, traces on
 failure, failure screenshots, and positive screenshots of two/six selections,
-scrolled tiles, open details, and missing/oversized-depth states on desktop and
-mobile. Evidence is retained for one day. Review those images before merging;
+scrolled named tiles, dense mixed-matchup charts, colliding-name and multi-role
+details, missing reports, partial-report Unknown details, and missing-depth
+states on desktop and mobile. Evidence is retained for one day. Review those images before merging;
 passing geometry and behavior assertions do not replace visual review. Every
 screenshot uses synthetic test data and is not evidence about real NFL players.

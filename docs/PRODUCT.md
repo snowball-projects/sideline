@@ -55,7 +55,7 @@ rights, sample, coverage, interpretations and limitations.
 
 ## Implemented behavior
 
-Version 0.9.0 implements the founder's October 6 field-and-status direction.
+Version 0.9.1 extends the founder's October 6 field-and-status direction.
 The static dashboard retains six selected players, automatic opponents,
 explicit byes, source-relative completeness, missing reports, unknown kickoff,
 started-game uncertainty and freshness warnings. Selections are browser IDs,
@@ -64,14 +64,21 @@ not a league roster.
 A compact toolbar contains search, week selection and information. Each equal
 comparison tile has compact identity, a prominent schematic defensive field
 and an always-visible integrated depth/status panel. Small screens stack tiles.
-Individual Xs show source first-depth defensive identities in relative positional bands,
-all above a single line of scrimmage; the selected offense marker is below it.
-Positions are schematic context, not assignments or a formation. Do not infer
-CB/S from coarse DB, exact alignments from depth ranks, or eleven starters from
-an available roster. First-depth is never substituted with an arbitrary representative or an inferred
-replacement. If it is absent or exceeds eleven members, use actual-position
-stacks rather than fabricating a lineup. Position stacks expose all matching
-rows in All, including Out players, backups and inactive players.
+Named individual markers show source first-depth defensive identities in relative
+positional bands, all above a single line of scrimmage. Published chart roles,
+including LCB/RCB/NB, FS/SS and defensive-line and linebacker abbreviations, guide
+the schematic when fresh evidence is available. Generic roster roles are fallback
+context, not a basis to infer edge/off-ball or coverage duties. Multiple published
+assignments and their provenance remain intact. It is a typical depth-chart
+schematic, never a confirmed lineup or actual snap/shadow assignment.
+Missing or ambiguous first-depth evidence uses role/count stacks. Charts with
+more than eleven published first-depth identities retain all of them; no
+arbitrary eleven is chosen. Multiple compatible first-depth roles share one
+individual marker instead of duplicating a person. Stacks expose all
+matching identities in All, including Out players, backups and inactive players.
+A missing exact-match injury report is summarized once per opponent tile; only
+its repeated Unknown badges are suppressed. Individual details retain the reason
+availability is unknown, and partial-report omissions never establish health.
 
 All preserves every current opponent defensive roster member and unmatched
 defensive report entry. Out filters only explicit Out game designations;

@@ -6,7 +6,7 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.9.0 introduces the field-and-status board.
+Version 0.9.1 adds named field markers, published depth roles and shared missing-report notices.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
