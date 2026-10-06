@@ -909,7 +909,7 @@ body {
   position: relative;
   width: 76px;
   min-height: 48px;
-  padding: 5px;
+  padding: 5px 2px;
   border: 1.5px solid #718b66;
   border-radius: 11px;
   background: #fbfcf4;
@@ -925,6 +925,7 @@ body {
 }
 .defender-name {
   display: block;
+  width: 100%;
   max-width: 100%;
   overflow-wrap: anywhere;
   font-size: 10px;

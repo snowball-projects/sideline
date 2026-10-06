@@ -31,7 +31,9 @@ Full-roster stack highlighting, All/Out/Uncertain filters, one shared missing
 Week 5 report notice, and ordinary partial-report Unknown states are covered.
 The existing pointer preview, keyboard/touch activation, repeated and interrupted
 dismissal, deferred-clock Escape/depth-expiry regressions, week/selection changes
-and explicit fictional mode remain part of the suite.
+and explicit fictional mode remain part of the suite. Offscreen row activation
+also checks that delayed pre-opening scroll events preserve details, while real
+list scrolling after opening still dismisses them.
 
 The `field browser checks` CI job runs on source pushes and pull requests using
 standard public Ubuntu runners. It does not run on the hourly data-only refresh.

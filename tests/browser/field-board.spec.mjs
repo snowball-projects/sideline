@@ -456,12 +456,29 @@ test("an available partial report retains Unknown badges and unconfirmed missing
   await expect(marker(page, "Field Fixture Out").locator(".marker-status")).toHaveText("OUT");
   await expect(marker(page, "Field Fixture Questionable").locator(".marker-status")).toHaveText("Q");
   await expect(marker(page, "Field Fixture Doubtful").locator(".marker-status")).toHaveText("D");
+  const depthRows = firstTile(page).locator(".depth-rows");
+  await depthRows.evaluate((node) => { node.scrollTop = 0; });
+  await expect.poll(() => depthRows.evaluate((node) => node.scrollTop)).toBe(0);
+  // This offscreen row requires list scrolling before its activation. A scroll
+  // event queued by that movement may arrive after the click opens details.
   if (isMobile) await row(page, "Field Fixture No Report").tap();
   else await row(page, "Field Fixture No Report").click();
   await assertPopupFits(page);
+  await expect.poll(() => depthRows.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  // Reproduce late event delivery at the opening offset deterministically,
+  // without moving either the trigger or its scroll container again.
+  await depthRows.evaluate((node) => node.dispatchEvent(new Event("scroll")));
+  await expect(popup(page)).toBeVisible();
+  await expect(row(page, "Field Fixture No Report")).toHaveAttribute("aria-expanded", "true");
   await expect(popup(page)).toContainText("No matching injury entry in the available report. This does not establish health or game availability.");
   await evidence(page, testInfo, `partial-report-unknown-details-${isMobile ? "mobile" : "desktop"}`);
-  await page.keyboard.press("Escape");
+  // Actual movement after opening still dismisses pinned details. Ignoring an
+  // already-accounted-for event must not disable ordinary scroll dismissal.
+  const openedScrollTop = await depthRows.evaluate((node) => node.scrollTop);
+  await depthRows.evaluate((node) => { node.scrollTop = Math.max(0, node.scrollTop - 40); });
+  await expect.poll(() => depthRows.evaluate((node) => node.scrollTop)).toBeLessThan(openedScrollTop);
+  await expect(popup(page)).toHaveCount(0);
+  await expect(row(page, "Field Fixture No Report")).toHaveAttribute("aria-expanded", "false");
   for (const filter of ["Out", "Uncertain"]) {
     await tab(page, filter).click();
     await expect(row(page, "Field Fixture Unknown")).toHaveCount(0);
