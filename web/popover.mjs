@@ -1,6 +1,8 @@
 let active = null;
 let nextId = 0;
 const attachments = new WeakMap();
+const restoredTriggers = new WeakSet();
+const POINTER_GRACE_MS = 180;
 const FOCUSABLE =
   'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -80,7 +82,12 @@ export function refreshPopover(event) {
     active.panel.contains(event.target)
   )
     return;
-  if (!active.trigger.isConnected) {
+  if (
+    event?.type === "scroll" ||
+    event?.type === "resize" ||
+    !active.trigger.isConnected ||
+    !active.panel.isConnected
+  ) {
     dismissPopover();
     return;
   }
@@ -117,11 +124,58 @@ function focusableWithin(parent) {
   );
 }
 
-function nextControl(trigger) {
+function nextControl(trigger, panel) {
   const controls = focusableWithin(document).filter(
-    (element) => !active.panel.contains(element),
+    (element) => !panel.contains(element),
   );
   return controls[controls.indexOf(trigger) + 1];
+}
+
+function containsFocus(record) {
+  return (
+    record.trigger.contains(document.activeElement) ||
+    record.panel?.contains(document.activeElement)
+  );
+}
+
+function clearLeaveTimer(record) {
+  clearTimeout(record.leaveTimer);
+  record.leaveTimer = null;
+}
+
+function scheduleLeave(record) {
+  clearLeaveTimer(record);
+  if (active !== record || record.pinned) return;
+  record.leaveTimer = setTimeout(() => {
+    record.leaveTimer = null;
+    if (
+      active === record &&
+      !record.overTrigger &&
+      !record.overPanel &&
+      !record.pinned &&
+      !containsFocus(record)
+    )
+      dismissPopover();
+  }, POINTER_GRACE_MS);
+}
+
+// Restoring focus after a popup closes or a board rerender is not a new
+// request to preview details. User-driven focus still opens previews normally.
+export function focusPopoverTrigger(trigger) {
+  if (!trigger?.isConnected) return;
+  const alreadyRestoring = restoredTriggers.has(trigger);
+  restoredTriggers.add(trigger);
+  try {
+    trigger.focus({ preventScroll: true });
+  } finally {
+    if (!alreadyRestoring) restoredTriggers.delete(trigger);
+  }
+}
+
+function closeAndRestore(record, restore = false) {
+  const shouldRestore = restore || record.panel.contains(document.activeElement);
+  dismissPopover();
+  if (shouldRestore) focusPopoverTrigger(record.trigger);
 }
 
 function onOutsidePointer(event) {
@@ -137,12 +191,11 @@ function onOutsidePointer(event) {
 
 function onKeydown(event) {
   if (!active) return;
+  const record = active;
   const { trigger, panel } = active;
   if (event.key === "Escape") {
     event.preventDefault();
-    const restoreFocus = panel.contains(document.activeElement);
-    dismissPopover();
-    if (restoreFocus && trigger.isConnected) trigger.focus();
+    closeAndRestore(record);
     return;
   }
   if (event.key !== "Tab") return;
@@ -162,17 +215,25 @@ function onKeydown(event) {
       !event.shiftKey &&
       (document.activeElement === controls.at(-1) || !controls.length)
     ) {
-      const next = nextControl(trigger);
+      const next = nextControl(trigger, panel);
       if (next) {
         event.preventDefault();
         dismissPopover();
         next.focus();
+      } else {
+        // Let native Tab continue from the trigger to browser chrome rather
+        // than trapping focus in the body-appended popup.
+        dismissPopover();
+        focusPopoverTrigger(record.trigger);
       }
     }
   }
 }
 
 function onFocusChange(event) {
+  if (!active) return;
+  clearTimeout(active.focusTimer);
+  active.focusTimer = null;
   if (event.target.closest?.("[data-preserve-popover]")) return;
   if (
     active &&
@@ -183,7 +244,36 @@ function onFocusChange(event) {
   }
 }
 
-function openPopover(record) {
+function onFocusOut(event) {
+  if (!active) return;
+  const record = active;
+  if (
+    record.trigger.contains(event.relatedTarget) ||
+    record.panel.contains(event.relatedTarget) ||
+    event.relatedTarget?.closest?.("[data-preserve-popover]")
+  )
+    return;
+  clearTimeout(record.focusTimer);
+  // A null relatedTarget also occurs when focus leaves the document. Wait
+  // until the browser has updated activeElement before deciding to dismiss.
+  record.focusTimer = setTimeout(() => {
+    record.focusTimer = null;
+    if (active === record && !containsFocus(record)) dismissPopover();
+  }, 0);
+}
+
+function onVisibilityChange() {
+  if (document.hidden) dismissPopover();
+}
+
+function listen(record, target, type, handler, options) {
+  target.addEventListener(type, handler, options);
+  record.removeListeners.push(() =>
+    target.removeEventListener(type, handler, options),
+  );
+}
+
+function openPopover(record, pinned = false) {
   if (active === record || !record.trigger.isConnected) return;
   dismissPopover();
   const panel = document.createElement("div");
@@ -196,24 +286,55 @@ function openPopover(record) {
   panel.style.overflow = "auto";
   panel.style.left = "0px";
   panel.style.top = "0px";
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "popover-close";
+  close.textContent = "Close";
+  close.setAttribute("aria-label", "Close details");
+  record.removeListeners = [];
+  listen(record, close, "click", () => closeAndRestore(record, true));
   panel.append(
+    close,
     typeof record.content === "function" ? record.content() : record.content,
   );
   record.panel = panel;
+  record.pinned = pinned;
+  record.overPanel = false;
   active = record;
   document.body.append(panel);
   record.trigger.setAttribute("aria-expanded", "true");
   record.observer = new MutationObserver(() => {
-    if (!record.trigger.isConnected) dismissPopover();
+    if (
+      active === record &&
+      (!record.trigger.isConnected || !panel.isConnected)
+    )
+      dismissPopover();
   });
   record.observer.observe(document.body, { childList: true, subtree: true });
-  window.addEventListener("resize", refreshPopover);
-  window.addEventListener("scroll", refreshPopover, true);
-  window.visualViewport?.addEventListener("resize", refreshPopover);
-  window.visualViewport?.addEventListener("scroll", refreshPopover);
-  document.addEventListener("pointerdown", onOutsidePointer, true);
-  document.addEventListener("keydown", onKeydown, true);
-  document.addEventListener("focusin", onFocusChange);
+  if (record.preview) {
+    listen(record, panel, "pointerenter", (event) => {
+      if (event.pointerType === "touch") return;
+      record.overPanel = true;
+      clearLeaveTimer(record);
+    });
+    listen(record, panel, "pointerleave", (event) => {
+      if (event.pointerType === "touch") return;
+      record.overPanel = false;
+      scheduleLeave(record);
+    });
+  }
+  listen(record, window, "resize", refreshPopover);
+  listen(record, window, "scroll", refreshPopover, true);
+  listen(record, window, "blur", dismissPopover);
+  if (window.visualViewport) {
+    listen(record, window.visualViewport, "resize", refreshPopover);
+    listen(record, window.visualViewport, "scroll", refreshPopover);
+  }
+  listen(record, document, "pointerdown", onOutsidePointer, true);
+  listen(record, document, "keydown", onKeydown, true);
+  listen(record, document, "focusin", onFocusChange);
+  listen(record, document, "focusout", onFocusOut);
+  listen(record, document, "visibilitychange", onVisibilityChange);
   refreshPopover();
 }
 
@@ -221,40 +342,70 @@ export function dismissPopover() {
   if (!active) return;
   const record = active;
   active = null;
+  clearLeaveTimer(record);
+  clearTimeout(record.focusTimer);
+  record.focusTimer = null;
+  record.removeListeners.splice(0).forEach((remove) => remove());
   record.observer.disconnect();
   record.trigger.setAttribute("aria-expanded", "false");
   record.panel.remove();
   record.panel = null;
-  window.removeEventListener("resize", refreshPopover);
-  window.removeEventListener("scroll", refreshPopover, true);
-  window.visualViewport?.removeEventListener("resize", refreshPopover);
-  window.visualViewport?.removeEventListener("scroll", refreshPopover);
-  document.removeEventListener("pointerdown", onOutsidePointer, true);
-  document.removeEventListener("keydown", onKeydown, true);
-  document.removeEventListener("focusin", onFocusChange);
+  record.pinned = false;
+  record.overPanel = false;
 }
 
-export function attachPopover(trigger, content, { id, label } = {}) {
+export function attachPopover(trigger, content, { id, label, preview = false } = {}) {
   attachments.get(trigger)?.();
   const record = {
     trigger,
     content,
     id: id || `popover-${++nextId}`,
     label: label || trigger.getAttribute("aria-label") || "Details",
+    preview,
+    overTrigger: false,
   };
   trigger.setAttribute("aria-haspopup", "dialog");
   trigger.setAttribute("aria-controls", record.id);
   trigger.setAttribute("aria-expanded", "false");
-  // Native buttons emit click for pointer/touch, Enter and Space. Hover and
-  // focus intentionally have no activation handler.
+  // Native buttons emit click for pointer/touch, Enter and Space. A click
+  // pins an existing preview; only the next click toggles that popup closed.
+  // Default source-information controls remain deliberately click-only.
   const activate = () => {
-    if (active === record) dismissPopover();
-    else openPopover(record);
+    if (active === record && record.pinned) dismissPopover();
+    else if (active === record) {
+      record.pinned = true;
+      clearLeaveTimer(record);
+    } else openPopover(record, true);
+  };
+  const enter = (event) => {
+    if (event.pointerType === "touch") return;
+    record.overTrigger = true;
+    clearLeaveTimer(record);
+    // A deliberate click stays pinned until another deliberate interaction.
+    if (!active?.pinned) openPopover(record);
+  };
+  const leave = (event) => {
+    if (event.pointerType === "touch") return;
+    record.overTrigger = false;
+    scheduleLeave(record);
+  };
+  const focus = () => {
+    if (!restoredTriggers.has(trigger)) openPopover(record);
   };
   trigger.addEventListener("click", activate);
+  if (preview) {
+    trigger.addEventListener("pointerenter", enter);
+    trigger.addEventListener("pointerleave", leave);
+    trigger.addEventListener("focus", focus);
+  }
   const cleanup = () => {
+    if (record.cleaned) return;
+    record.cleaned = true;
     if (active === record) dismissPopover();
     trigger.removeEventListener("click", activate);
+    trigger.removeEventListener("pointerenter", enter);
+    trigger.removeEventListener("pointerleave", leave);
+    trigger.removeEventListener("focus", focus);
     trigger.removeAttribute("aria-haspopup");
     trigger.removeAttribute("aria-controls");
     trigger.removeAttribute("aria-expanded");

@@ -3,12 +3,19 @@ import {
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
   productionLeaders,
-} from "./contribution.mjs?v=0.8.0";
+} from "./contribution.mjs?v=0.9.0";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.8.0";
-import { parseFeed } from "./feed.mjs?v=0.8.0";
+} from "./refresh.mjs?v=0.9.0";
+import {
+  fieldLayout,
+  filterDefenders,
+  fieldStatus,
+  depthSummary,
+  STATUS_FILTERS,
+} from "./field.mjs?v=0.9.0";
+import { parseFeed } from "./feed.mjs?v=0.9.0";
 import {
   searchPlayers,
   opponentRoster,
@@ -26,15 +33,18 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.8.0";
+} from "./model.mjs?v=0.9.0";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
-} from "./popover.mjs?v=0.8.0";
+  focusPopoverTrigger,
+} from "./popover.mjs?v=0.9.0";
 
 const $ = (id) => document.getElementById(id);
+const depthFilters = new Map();
+const depthHighlights = new Map();
 const STORAGE_KEY = "sideline.selected.v2";
 // Selections saved before the project was renamed from optasy.
 const LEGACY_STORAGE_KEY = "optasy.selected.v2";
@@ -298,7 +308,7 @@ function renderStatus() {
     "stale",
     Boolean(
       lastError ||
-      (feed && Date.now() - Date.parse(feed.generated_at) > 86400000),
+        (feed && Date.now() - Date.parse(feed.generated_at) > 86400000),
     ),
   );
   if (status.hidden) return;
@@ -404,7 +414,7 @@ function sourceDetails() {
   panel.append(
     node(
       "p",
-      "Click or tap a player, or press Enter or Space, for details. Game and practice designations are separate. Role relevance is a possibility, not an individual assignment or a measured fantasy effect.",
+      "Hover or focus a field marker to preview a defender; click or tap to keep details open. Roster rows open with click, tap, Enter or Space. Game and practice designations are separate. The field uses source-backed first-depth context when available. Position stacks retain the whole roster, including reported Out defenders. Missing depth never creates an individual assignment or a starting lineup.",
       "small",
     ),
   );
@@ -418,7 +428,7 @@ function sourceDetails() {
   panel.append(
     node(
       "p",
-      "The 2025 line shows recorded regular-season defensive events for the displayed historical team(s), not current defensive quality or snap share. QB hits and sacks describe passing disruption; PD means passes defended and INT interceptions. Coverage events do not measure coverage efficiency. Bold event lines include a highest available total among the listed defenders for one displayed measure; ties are included and missing records excluded. This is not an overall ranking. Counts have no exposure denominator. Missing history stays unknown; there is no validated injury-advantage score.",
+      "Defender details include recorded 2025 regular-season events for their historical team(s), not current defensive quality or snap share. QB hits and sacks describe passing disruption; PD means passes defended and INT interceptions. Coverage events do not measure coverage efficiency. Any highest-available-total comparison is for a named measure, including ties and excluding missing records. Counts have no exposure denominator. Missing history stays unknown; there is no validated injury-advantage score.",
       "small",
     ),
   );
@@ -467,7 +477,7 @@ function sourceDetails() {
     legend,
     node(
       "p",
-      "Position belongs beside the name. Section headings show current depth or roster context; the lowest source rank determines the depth section when a player has several assignments. First string is not a confirmed game starter. Highlighted pills show reported injury or limited availability; Multi means multiple descriptions and ? means unknown. No pill means no matching injury entry, not confirmed health. Roster and depth context describe the current team, not historical game rosters.",
+      "Position belongs beside the name. Secondary row text shows source depth and roster context. First depth is not a confirmed game starter. All retains every defender, including backups, reserves and report-only entries. Out includes only reported Out game designations; Uncertain includes Questionable and Doubtful. Unknown remains in All. Inactive roster context does not imply Out. Highlighted pills show reported injury or limited availability; Multi means multiple descriptions and ? means unknown. No pill does not confirm health. Roster and depth context describe the current team, not historical game rosters.",
       "small",
     ),
   );
@@ -501,9 +511,13 @@ function reportDetails(result) {
         ),
       ],
       ["Coverage", report.coverage],
-      ["Report vintage", vintage(report)],
-      ["File updated", time(report.source_updated_at)],
-      ["Collected", time(report.retrieved_at)],
+      ["Original report date", vintage(report)],
+      ["Source injury file updated", time(report.source_updated_at)],
+      ["sideline collected", time(report.retrieved_at)],
+      [
+        "Browser checked",
+        lastCheck ? time(new Date(lastCheck).toISOString()) : "not yet",
+      ],
     ]),
   );
   if (!report.reported_at && !report.reported_date)
@@ -586,9 +600,13 @@ function entryDetails(entry, result) {
   block.append(
     link(source.label, source.url),
     facts([
-      ["Report vintage", vintage(result.report)],
-      ["File updated", time(result.report.source_updated_at)],
-      ["Collected", time(result.report.retrieved_at)],
+      ["Original report date", vintage(result.report)],
+      ["Source injury file updated", time(result.report.source_updated_at)],
+      ["sideline collected", time(result.report.retrieved_at)],
+      [
+        "Browser checked",
+        lastCheck ? time(new Date(lastCheck).toISOString()) : "not yet",
+      ],
     ]),
   );
   panel.append(block);
@@ -760,77 +778,12 @@ function memberDetails(member, result, leaders = {}) {
   panel.append(block);
   return panel;
 }
-function renderMember(member, result, leaders) {
-  const { injury, status, key } = memberPills(member);
-  const item = node("li", undefined, "injury"),
-    row = button("", null, "injury-row state-" + key);
-  row.dataset.focusKey = "injury:" + member.id;
-  row.setAttribute(
-    "aria-label",
-    member.name +
-      ", " +
-      member.position +
-      (member.injury
-        ? ". Injury: " +
-          member.injury.injury +
-          ". Game: " +
-          member.injury.game_status +
-          ". Practice: " +
-          member.injury.practice_status
-        : ". No matching injury entry; availability is not confirmed") +
-      ". Activate for details.",
-  );
-  const identity = node("span", undefined, "member-identity");
-  identity.append(
-    node("span", member.name, "injury-name"),
-    node("span", member.position, "member-position"),
-  );
-  row.append(identity);
-  if (injury || status) {
-    const pills = node("span", undefined, "member-pills");
-    pills.setAttribute("aria-hidden", "true");
-    if (injury) pills.append(node("span", injury, "member-pill pill-injury"));
-    if (status) pills.append(node("span", status, "member-pill pill-status"));
-    row.append(pills);
-  }
-  const history = defenderContribution(
-    contributions,
-    member.id,
-    metricPerspective(result.player.position, member.position),
-  );
-  const role = defenderRole(result.player.position, member.position);
-  const summary = history?.metrics.length
-    ? "2025 " +
-      history.record.teams.map((team) => team.team).join("/") +
-      " · " +
-      history.metrics
-        .map((metric) => metric.value + " " + metric.short)
-        .join(" · ")
-    : history
-      ? "2025 record · " + role
-      : contributions
-        ? "2025 · no record"
-        : "Historical data unavailable";
-  const production = node("span", summary, "member-production");
-  if (
-    history?.metrics.some((metric) => leaders[metric.key]?.includes(member.id))
-  )
-    production.classList.add("production-leader");
-  row.append(production);
-  row.setAttribute(
-    "aria-label",
-    row.getAttribute("aria-label") +
-      " " +
-      summary +
-      ". Role: " +
-      role +
-      ". Historical events, not current quality.",
-  );
+function attachMemberDetails(control, member, result, preview = false) {
   attachPopover(
-    row,
+    control,
     () => {
-      // Resolve at activation, including reopening the same focused row after
-      // clock expiry; a deferred board render must not revive stale depth facts.
+      // Re-resolve on every activation so a deferred clock/feed update cannot
+      // revive stale source depth or a previous opponent's defender.
       const current = resolveDefender(
         feed,
         result.player.id,
@@ -848,12 +801,283 @@ function renderMember(member, result, leaders) {
             "Defender details are no longer available for this opponent.",
           );
     },
-    {
-      label: member.name + " roster and injury details",
-    },
+    { label: member.name + " roster and injury details", preview },
   );
+}
+function renderMember(member, result) {
+  const pills = memberPills(member);
+  const unknown = !result.report || member.injury?.game_status === "Unknown";
+  const key = unknown ? "unknown" : pills.key;
+  const item = node("li", undefined, "injury depth-row"),
+    row = button("", null, "injury-row state-" + key);
+  row.dataset.focusKey = "injury:" + member.id;
+  row.dataset.defenderId = member.id;
+  row.setAttribute(
+    "aria-label",
+    member.name +
+      ", " +
+      member.position +
+      ". " +
+      depthSummary(member) +
+      ". " +
+      (member.injury
+        ? "Injury: " +
+          member.injury.injury +
+          ". Game: " +
+          member.injury.game_status +
+          ". Practice: " +
+          member.injury.practice_status
+        : result.report
+          ? "No matching injury entry; health and availability unconfirmed"
+          : "Report unavailable; availability unknown") +
+      ". Activate for details.",
+  );
+  const identity = node("span", undefined, "member-identity");
+  identity.append(
+    node("span", member.name, "injury-name"),
+    node("span", member.position, "member-position"),
+  );
+  row.append(identity);
+  if (pills.injury || pills.status || unknown) {
+    const badges = node("span", undefined, "member-pills");
+    badges.setAttribute("aria-hidden", "true");
+    if (pills.injury)
+      badges.append(node("span", pills.injury, "member-pill pill-injury"));
+    if (unknown || pills.status)
+      badges.append(
+        node(
+          "span",
+          unknown ? "Unknown" : pills.status,
+          "member-pill pill-status",
+        ),
+      );
+    row.append(badges);
+  }
+  row.append(
+    node(
+      "span",
+      depthSummary(member) +
+        (!member.injury && result.report
+          ? " · no status reported; health unconfirmed"
+          : ""),
+      "member-depth",
+    ),
+  );
+  attachMemberDetails(row, member, result);
   item.append(row);
   return item;
+}
+function renderField(members, result, showDepth) {
+  const field = node("section", undefined, "defense-field");
+  field.setAttribute(
+    "aria-label",
+    result.opponent + " defensive position schematic, source depth only",
+  );
+  const caption = node(
+    "p",
+    "Schematic · positions, not assignments",
+    "field-caption",
+  );
+  const pitch = node("div", undefined, "defender-grid");
+  for (const family of fieldLayout(members)) {
+    const band = node(
+      "div",
+      undefined,
+      "defender-band band-" + family.position.toLowerCase(),
+    );
+    for (const group of family.groups) {
+      const cluster = node("div", undefined, "position-cluster");
+      const markers = node("div", undefined, "position-markers");
+      for (const columns of [4, 5, 6, 8])
+        markers.style.setProperty(
+          "--markers-" + columns,
+          Math.min(columns, Math.max(1, group.representatives.length)),
+        );
+      for (const member of group.representatives) {
+        const status = fieldStatus(member, Boolean(result.report));
+        const marker = button("", null, "defender-marker state-" + status.key);
+        marker.dataset.focusKey = "defender:" + member.id;
+        marker.dataset.defenderId = member.id;
+        marker.setAttribute(
+          "aria-label",
+          member.name +
+            ", " +
+            member.position +
+            ". " +
+            status.label +
+            ". " +
+            depthSummary(member),
+        );
+        marker.append(
+          node("span", "×", "defender-x"),
+          node("span", member.position, "defender-position"),
+        );
+        if (status.text)
+          marker.append(node("span", status.text, "marker-status"));
+        for (const child of marker.children)
+          child.setAttribute("aria-hidden", "true");
+        attachMemberDetails(marker, member, result, true);
+        markers.append(marker);
+      }
+      if (!group.representatives.length) {
+        const stack = button(
+          "",
+          () => showDepth(group.position),
+          "defender-stack",
+        );
+        stack.dataset.focusKey = "stack:" + group.position;
+        stack.setAttribute(
+          "aria-label",
+          group.position +
+            " position group, " +
+            group.members.length +
+            " defenders. No individual first-depth assignment shown. Highlight all in roster.",
+        );
+        stack.append(
+          node("span", "×", "defender-x"),
+          node("span", group.position, "defender-position"),
+        );
+        for (const child of stack.children)
+          child.setAttribute("aria-hidden", "true");
+        markers.append(stack);
+      }
+      const count = button(
+        group.position +
+          " depth · " +
+          group.members.length +
+          (group.outCount ? " · " + group.outCount + " OUT" : ""),
+        () => showDepth(group.position),
+        "position-stack" + (group.outCount ? " has-out" : ""),
+      );
+      count.dataset.focusKey = "depth:" + group.position;
+      count.setAttribute(
+        "aria-label",
+        group.position +
+          " depth, " +
+          group.members.length +
+          " defenders" +
+          (group.outCount ? ", " + group.outCount + " reported Out" : "") +
+          ". Highlight all in roster.",
+      );
+      cluster.append(markers, count);
+      band.append(cluster);
+    }
+    pitch.append(band);
+  }
+  const line = node("div", "Line of scrimmage", "line-of-scrimmage");
+  line.setAttribute("aria-hidden", "true");
+  const offense = node("div", result.player.position, "offense-marker");
+  offense.setAttribute(
+    "aria-label",
+    result.player.name +
+      ", selected " +
+      result.player.position +
+      ". Schematic reference only.",
+  );
+  field.append(caption, pitch, line, offense);
+  return field;
+}
+function renderDepth(members, result) {
+  const panel = node("section", undefined, "depth-panel");
+  panel.setAttribute(
+    "aria-label",
+    result.opponent + " defenders and availability",
+  );
+  const header = node("div", undefined, "depth-heading");
+  header.append(
+    node("h3", "Defenders"),
+    node("span", members.length + " in source", "defender-count"),
+  );
+  const tabs = node("div", undefined, "status-tabs");
+  tabs.setAttribute("role", "group");
+  tabs.setAttribute("aria-label", "Defender availability filters");
+  const entries = node("div", undefined, "injury-list depth-rows");
+  entries.id = "depth-" + result.player.id;
+  const filterKey = result.player.id + ":" + result.opponent + ":" + weekKey;
+  const highlightNotice = node("div", undefined, "depth-highlight");
+  const applyFilter = (key) => {
+    depthFilters.set(filterKey, key);
+    for (const tab of tabs.children)
+      tab.setAttribute("aria-pressed", String(tab.dataset.filter === key));
+    const ordered = groupDefenders(members).flatMap((group) => group.members);
+    const shown = filterDefenders(ordered, key);
+    entries.replaceChildren();
+    const list = node("ul", undefined, "roster-rows");
+    const highlighted = depthHighlights.get(filterKey);
+    for (const member of shown) {
+      const row = renderMember(member, result);
+      row.classList.toggle(
+        "position-highlight",
+        member.position === highlighted,
+      );
+      list.append(row);
+    }
+    highlightNotice.replaceChildren();
+    highlightNotice.hidden = !highlighted;
+    if (highlighted) {
+      const clear = button(
+        "Clear highlight",
+        () => {
+          depthHighlights.delete(filterKey);
+          applyFilter("all");
+          tabs.firstElementChild.focus({ preventScroll: true });
+        },
+        "depth-reset",
+      );
+      clear.dataset.focusKey = "clear-highlight";
+      highlightNotice.append(
+        node("span", "Highlighted: " + highlighted + " depth"),
+        clear,
+      );
+    }
+    entries.append(list);
+    if (!shown.length)
+      entries.append(
+        node(
+          "p",
+          result.report
+            ? "No reported " +
+                (key === "out" ? "Out" : "Questionable or Doubtful") +
+                " defenders. Other statuses remain in All."
+            : "Report unavailable. Availability is unknown; every defender remains in All.",
+          "depth-empty",
+        ),
+      );
+  };
+  for (const [key, label] of STATUS_FILTERS) {
+    const tab = button(label, () => {
+      dismissPopover();
+      applyFilter(key);
+      entries.scrollTop = 0;
+      announce(label + " defenders shown for " + result.player.name + ".");
+    });
+    tab.dataset.filter = key;
+    tab.dataset.focusKey = "filter:" + key;
+    tab.setAttribute("aria-controls", entries.id);
+    tabs.append(tab);
+  }
+  applyFilter(depthFilters.get(filterKey) || "all");
+  panel.append(header, tabs);
+  if (!result.report)
+    panel.append(
+      node("p", "Report unavailable · availability unknown", "roster-notice"),
+    );
+  panel.append(highlightNotice, entries);
+  const showDepth = (position) => {
+    dismissPopover();
+    depthHighlights.set(filterKey, position);
+    applyFilter("all");
+    const row = entries.querySelector(".position-highlight");
+    if (row) entries.scrollTop = row.offsetTop - entries.offsetTop;
+    panel.querySelector(".depth-reset")?.focus({ preventScroll: true });
+    announce(
+      position +
+        " depth highlighted for " +
+        result.player.name +
+        ". All defenders remain in the list.",
+    );
+  };
+  return { panel, showDepth };
 }
 function emptySlot() {
   const slot = node("div", undefined, "empty-slot"),
@@ -878,6 +1102,30 @@ function renderCards() {
   dismissPopover();
   cards.replaceChildren();
   cards.style.setProperty("--tile-count", Math.max(2, selected.length));
+  // Align the sparse source-depth schematics across comparison tiles. Larger
+  // or missing first-depth sets remain complete in anonymous position stacks.
+  const fieldCounts = { DB: 0, LB: 0, DL: 0 };
+  for (const id of selected) {
+    const player = feed.players.find((candidate) => candidate.id === id);
+    if (!player) continue;
+    const result = comparePlayer(feed, player, weekKey);
+    for (const family of fieldLayout(opponentRoster(feed, result, weekKey))) {
+      const count = family.groups.reduce(
+        (total, group) => total + Math.max(1, group.representatives.length),
+        0,
+      );
+      fieldCounts[family.position] = Math.max(
+        fieldCounts[family.position] || 0,
+        count,
+      );
+    }
+  }
+  for (const [position, count] of Object.entries(fieldCounts))
+    for (const columns of [4, 5, 6, 8])
+      cards.style.setProperty(
+        "--" + position.toLowerCase() + "-rows-" + columns,
+        Math.max(1, Math.ceil(count / columns)),
+      );
   $("selection-count").textContent =
     selected.length + " of " + MAX_SELECTIONS + " players selected";
   for (const id of selected) {
@@ -903,7 +1151,9 @@ function renderCards() {
       if (result.opponent) {
         matchup.append(node("span", "vs", "versus"), teamMark(result.opponent));
         const opponent = node("div", undefined, "opponent-info");
-        opponent.append(node("p", result.opponent, "opponent-name"));
+        opponent.append(
+          node("p", result.opponent + " defense", "opponent-name"),
+        );
         if (result.game) {
           let kickoff = result.game.kickoff
             ? kickoffTime.format(new Date(result.game.kickoff))
@@ -950,34 +1200,22 @@ function renderCards() {
       card.append(matchup);
       const members = opponentRoster(feed, result, weekKey);
       if (members.length) {
-        if (!result.report)
-          card.append(node("p", "Injury report unavailable", "roster-notice"));
-        const entries = node("div", undefined, "injury-list");
-        entries.setAttribute("role", "group");
-        entries.setAttribute(
-          "aria-label",
-          result.opponent + " defensive roster",
+        const fieldWrap = node("div", undefined, "field-wrap");
+        const depth = renderDepth(members, result);
+        fieldWrap.append(
+          renderField(members, result, depth.showDepth),
+          depth.panel,
         );
-        const leaders = productionLeaders(contributions, members);
-        for (const group of groupDefenders(members)) {
-          const section = node(
-            "section",
-            undefined,
-            "roster-group" + (group.key === "depth-1" ? " first-string" : ""),
-          );
-          section.setAttribute("aria-label", group.label);
-          const heading = node("h3", undefined, "roster-group-title");
-          heading.append(
-            node("span", group.label),
-            node("span", String(group.members.length), "group-count"),
-          );
-          const list = node("ul", undefined, "roster-rows");
-          for (const member of group.members)
-            list.append(renderMember(member, result, leaders));
-          section.append(heading, list);
-          entries.append(section);
-        }
-        card.append(entries);
+        card.append(fieldWrap);
+        const footer = node(
+          "p",
+          result.report
+            ? "Source injury file updated: " +
+                time(result.report.source_updated_at)
+            : "Injury file unavailable for this matchup",
+          "card-source",
+        );
+        card.append(footer);
       } else
         card.append(
           node(
@@ -1005,7 +1243,7 @@ function renderCards() {
       const target = [...card.querySelectorAll("[data-focus-key]")].find(
         (el) => el.dataset.focusKey === focusKey,
       );
-      (target || remove).focus({ preventScroll: true });
+      focusPopoverTrigger(target || remove);
     }
   }
   for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
@@ -1019,7 +1257,7 @@ function interactionActive({ allowFocusedRow = false } = {}) {
       document.activeElement.closest(
         allowFocusedRow
           ? "#week, .search-area"
-          : ".injury-row, #week, .search-area",
+          : ".injury-row, .defender-marker, .defender-stack, .position-stack, .depth-reset, .status-tabs, #week, .search-area",
       ),
     ),
   });

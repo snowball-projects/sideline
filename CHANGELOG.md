@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.0 - 2026-10-06
+
+- Replace long roster-first tiles with a schematic field of individual real
+  defender Xs and an integrated All / Out / Uncertain depth panel.
+- Preserve coarse source roles, all backups/reserves and unknown statuses;
+  infer neither eleven starters nor individual assignments or quality scores.
+- Add hover/focus previews, pinned tap details and reliable dismissal.
+- Keep compact identities, mobile stacking and separate freshness evidence;
+  move historical production into details.
+- Add Chromium desktop/mobile browser regression coverage to source CI.
+
 ## Unreleased
 
 - Rename the project from optasy to sideline. Player selections saved

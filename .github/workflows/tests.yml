@@ -63,9 +63,37 @@ jobs:
           path: dist
           retention-days: 1
 
+  browser:
+    name: field browser checks
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Install Chromium and its system dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Verify desktop, mobile, keyboard and interrupted field flows
+        run: npm run test:browser
+      - name: Retain synthetic-fixture screenshots and browser report for review
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: field-browser-evidence
+          path: |
+            playwright-report
+            test-results
+          retention-days: 1
+          if-no-files-found: error
+
   deploy:
-    needs: web
-    if: ${{ !cancelled() && needs.web.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    needs: [web, browser]
+    if: ${{ !cancelled() && needs.web.result == 'success' && (needs.browser.result == 'success' || needs.browser.result == 'skipped') && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
