@@ -52,6 +52,7 @@ function environment(t) {
       this.tabIndex = ["BUTTON", "INPUT", "SELECT", "TEXTAREA"].includes(this.tagName)
         ? 0 : -1;
       this.rect = { left: 80, right: 180, top: 80, bottom: 120, width: 100, height: 40 };
+      this.scrollLeft = 0;
       this.scrollTop = 0;
     }
     get isConnected() {
@@ -115,6 +116,8 @@ function environment(t) {
   doc.createElement = (tag) => new Element(tag);
   doc.querySelectorAll = () => doc.documentElement.querySelectorAll();
   const win = new TrackedTarget();
+  win.scrollX = 0;
+  win.scrollY = 0;
   win.visualViewport = new TrackedTarget();
   Object.assign(win.visualViewport, { width: 1024, height: 768, offsetLeft: 0, offsetTop: 0 });
   class Observer {
@@ -434,9 +437,9 @@ test("window blur, hidden document, external scroll and resize all dismiss", (t)
   const events = [
     () => emit(env.win, "blur"),
     () => { env.doc.hidden = true; emit(env.doc, "visibilitychange"); },
-    () => emit(env.win, "scroll", { target: env.doc.body }),
+    () => { env.doc.body.scrollTop += 10; emit(env.win, "scroll", { target: env.doc.body }); },
     () => emit(env.win, "resize"),
-    () => emit(env.win.visualViewport, "scroll"),
+    () => { env.win.visualViewport.offsetTop += 10; emit(env.win.visualViewport, "scroll"); },
     () => emit(env.win.visualViewport, "resize"),
   ];
   for (const action of events) {
@@ -448,6 +451,70 @@ test("window blur, hidden document, external scroll and resize all dismiss", (t)
     env.tick(500);
     env.assertClean();
   }
+});
+
+test("queued ancestor scroll from before activation keeps details, later scrolling dismisses", (t) => {
+  const env = environment(t);
+  const list = env.doc.createElement("div");
+  env.doc.body.append(list);
+  const trigger = env.button();
+  list.append(trigger);
+  env.attach({ preview: false }, trigger);
+  for (const axis of ["scrollTop", "scrollLeft"]) {
+    list[axis] = 245;
+    emit(trigger, "click");
+    const panel = env.panel();
+    emit(env.win, "scroll", { target: list });
+    assert.equal(env.panel(), panel);
+    assert.equal(trigger.getAttribute("aria-expanded"), "true");
+    env.tick(500);
+    assert.equal(env.panel(), panel);
+    list[axis] += 1;
+    emit(env.win, "scroll", { target: list });
+    env.assertClean();
+  }
+});
+
+test("queued document and window scroll use the actual opening page offsets", (t) => {
+  const env = environment(t);
+  const { trigger } = env.attach({ preview: false });
+  for (const target of [env.doc, env.win]) {
+    env.win.scrollX = 30;
+    env.win.scrollY = 245;
+    emit(trigger, "click");
+    const panel = env.panel();
+    emit(env.win, "scroll", { target });
+    assert.equal(env.panel(), panel);
+    env.win.scrollY += 1;
+    emit(env.win, "scroll", { target });
+    env.assertClean();
+  }
+});
+
+test("queued visual viewport scroll is ignored only while all opening offsets match", (t) => {
+  const env = environment(t);
+  const { trigger } = env.attach({ preview: false });
+  const view = env.win.visualViewport;
+  for (const axis of ["offsetLeft", "offsetTop", "pageLeft", "pageTop"]) {
+    view[axis] = 25;
+    emit(trigger, "click");
+    const panel = env.panel();
+    emit(view, "scroll");
+    assert.equal(env.panel(), panel);
+    view[axis] += 1;
+    emit(view, "scroll");
+    env.assertClean();
+  }
+});
+
+test("scrolling an unrelated container still dismisses without an opening baseline", (t) => {
+  const env = environment(t);
+  const { trigger } = env.attach({ preview: false });
+  const unrelated = env.doc.createElement("div");
+  env.doc.body.append(unrelated);
+  emit(trigger, "click");
+  emit(env.win, "scroll", { target: unrelated });
+  env.assertClean();
 });
 
 test("internal panel scrolling retains its popup and scroll position", (t) => {

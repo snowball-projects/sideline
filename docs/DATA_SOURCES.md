@@ -131,6 +131,25 @@ position; returner or other special-teams assignments do not establish a
 defensive starting role. The
 legend and full explanations are in information and player popups.
 
+### Field presentation mapping (October 6 follow-up)
+
+The existing reviewed depth source supplies the field labels; no new provider is
+introduced. Exact defensive abbreviations are preserved. LCB/RCB/CB are corner
+context, NB/NCB nickel context, FS/SS/S safety context; LDE/RDE/DE are end context,
+LDT/RDT/DT/DI interior context, NT nose context, EDGE explicit edge context.
+LB/MLB/ILB/OLB and published weak/strong/left/right linebacker variants remain
+linebacker context: those labels alone do not establish rush versus coverage duty.
+Generic DL and DB stay generic. Multiple assignments remain separate; ambiguous
+or unrecognized labels use the original roster family rather than an invented
+role. Ranks, source IDs and observation timestamps remain available in details.
+
+An October 6, 2026 15:24 UTC collection observed 1,052 injury entries in weeks
+1–4 and no Week 5 report for any team. Fresh file timestamps did not change that
+coverage. PHI's current chart contained eleven first-depth defenders; NYJ and WAS
+contained twelve. Named markers preserve all those identities rather than discarding the twelfth
+or inferring a game lineup. This is an observation,
+not a promise about future data. Generated source payloads remain uncommitted.
+
 ## Refresh and zero-cost operation
 
 Upstream's [injury workflow](https://github.com/nflverse/nflverse-rosters/blob/main/.github/workflows/update_injuries.yaml)

@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.0";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.1";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -286,7 +286,8 @@ export function comparePlayer(feed, player, weekKey, now = Date.now()) {
       ...result,
       state: "missing-report",
       message:
-        "No opponent injury report is available for this matchup. Coverage is unknown.",
+        missingReportLabel(week, game, now) + ". Coverage and individual availability are unknown.",
+      reportNotice: missingReportLabel(week, game, now),
     };
   const freshness = vintage(report, now);
   const entries = report.entries.map((entry) => ({
@@ -307,6 +308,15 @@ export function comparePlayer(feed, player, weekKey, now = Date.now()) {
     message:
       "All available opponent entries are shown. Role context is a possibility, not an individual assignment or demonstrated fantasy effect.",
   };
+}
+
+// Exact matchup coverage is established by comparePlayer above, never a file's
+// recency or another team's/week's rows. No release-day promise is inferred.
+export function missingReportLabel(week, game, now = Date.now()) {
+  const upcoming = game?.status === "scheduled" && game.kickoff &&
+    Date.parse(game.kickoff) > now;
+  return (week?.label || "Matchup") + " injury report " +
+    (upcoming ? "not available yet" : "unavailable");
 }
 
 export const STATUS_LEGEND = [

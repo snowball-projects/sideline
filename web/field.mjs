@@ -1,10 +1,114 @@
-// Schematic position families, not game assignments, a formation or a lineup.
-// Keep source position labels intact and every supplied defensive identity.
-const FAMILIES = {
-  DB: new Set(["DB", "CB", "S", "FS", "SS"]),
-  LB: new Set(["LB", "MLB", "ILB", "OLB"]),
-  DL: new Set(["DL", "DE", "EDGE", "DT", "NT", "DI"]),
+// Published depth-chart positions are schematic context, not snap alignments,
+// coverage/shadow assignments or a confirmed lineup. Keep source labels intact.
+// Side means the published chart side, never an inferred viewer coordinate.
+const POSITIONS = {
+  DB: ["DB", "defensive-back"],
+  CB: ["DB", "corner"],
+  LCB: ["DB", "corner", "left"],
+  RCB: ["DB", "corner", "right"],
+  NB: ["DB", "nickel"],
+  NCB: ["DB", "nickel"],
+  S: ["DB", "safety"],
+  FS: ["DB", "safety"],
+  SS: ["DB", "safety"],
+  LB: ["LB", "linebacker"],
+  MLB: ["LB", "linebacker", "middle"],
+  ILB: ["LB", "linebacker"],
+  LILB: ["LB", "linebacker", "left"],
+  RILB: ["LB", "linebacker", "right"],
+  OLB: ["LB", "linebacker"],
+  LOLB: ["LB", "linebacker", "left"],
+  ROLB: ["LB", "linebacker", "right"],
+  WLB: ["LB", "linebacker", "weak"],
+  SLB: ["LB", "linebacker", "strong"],
+  DL: ["DL", "defensive-line"],
+  DE: ["DL", "end"],
+  LDE: ["DL", "end", "left"],
+  RDE: ["DL", "end", "right"],
+  EDGE: ["DL", "edge"],
+  DT: ["DL", "interior"],
+  DI: ["DL", "interior"],
+  LDT: ["DL", "interior", "left"],
+  RDT: ["DL", "interior", "right"],
+  NT: ["DL", "nose"],
 };
+const FAMILIES = ["DB", "LB", "DL"];
+
+function positionContext(position) {
+  const [family, role, side = null] = Object.hasOwn(POSITIONS, position)
+    ? POSITIONS[position]
+    : ["Unknown", "unknown"];
+  return { family, role, side };
+}
+
+// opponentRoster already checks freshness, team and player identity before
+// supplying depth. Never reconstruct expired chart context from the roster.
+function chartPosition(member) {
+  const assignments = (member.depth || []).filter(
+    (entry) =>
+      Object.hasOwn(POSITIONS, entry.position) &&
+      Number.isInteger(entry.rank) &&
+      entry.rank > 0,
+  );
+  const firstDepth = assignments.filter((entry) => entry.rank === 1);
+  const positions = [
+    ...new Set(
+      (firstDepth.length ? firstDepth : assignments).map((entry) => entry.position),
+    ),
+  ].sort();
+  const contexts = positions.map(positionContext);
+  const families = new Set(contexts.map((context) => context.family));
+  // One player gets one marker. Preserve all equally supported first-depth
+  // positions in its label; secondary chart ranks remain in source evidence.
+  // A cross-family chart does not establish a single schematic placement.
+  if (!positions.length || families.size > 1)
+    return {
+      position: member.position,
+      positions: [member.position],
+      ...positionContext(member.position),
+      source: assignments.length ? "depth" : "roster",
+      ambiguous: families.size > 1,
+      firstDepth: false,
+    };
+  const family = contexts[0].family;
+  const roles = new Set(contexts.map((context) => context.role));
+  const sides = new Set(contexts.map((context) => context.side));
+  return {
+    position: positions.join("/"),
+    positions,
+    family,
+    role: roles.size === 1 ? contexts[0].role : positionContext(family).role,
+    side: sides.size === 1 ? contexts[0].side : null,
+    source: "depth",
+    ambiguous: false,
+    firstDepth: firstDepth.length > 0,
+  };
+}
+
+export function memberHasChartPosition(member, position) {
+  return chartPosition(member).position === position;
+}
+
+export function compactMarkerName(nameOrMember) {
+  const name =
+    typeof nameOrMember === "string" ? nameOrMember : nameOrMember?.name;
+  const parts = (name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length < 2) return parts[0] || "";
+  let surname = parts.length - 1;
+  // Retain source suffixes and common compound-surname particles. This is a
+  // display abbreviation only; full names and stable IDs remain unchanged.
+  while (surname > 1 && /^(?:jr\.?|sr\.?|ii|iii|iv|v|vi)$/i.test(parts[surname]))
+    surname--;
+  while (
+    surname > 1 &&
+    /^(?:st\.?|de|del|der|den|da|di|du|la|le|van|von)$/i.test(parts[surname - 1])
+  )
+    surname--;
+  return Array.from(parts[0])[0] + ". " + parts.slice(surname).join(" ");
+}
 
 export const STATUS_FILTERS = [
   ["all", "All"],
@@ -13,18 +117,21 @@ export const STATUS_FILTERS = [
 ];
 
 export function fieldGroups(members) {
-  const groups = Object.entries(FAMILIES).map(([position, positions]) => ({
+  const entries = members.map((member) => ({
+    member,
+    family: chartPosition(member).family,
+  }));
+  const groups = FAMILIES.map((position) => ({
     position,
-    members: members.filter((member) => positions.has(member.position)),
+    members: entries
+      .filter((entry) => entry.family === position)
+      .map((entry) => entry.member),
   }));
   // Production already excludes unclassified/non-defensive positions. Preserve
   // an unexpected supplied row here without pretending to know its family.
-  const unknown = members.filter(
-    (member) =>
-      !Object.values(FAMILIES).some((positions) =>
-        positions.has(member.position),
-      ),
-  );
+  const unknown = entries
+    .filter((entry) => entry.family === "Unknown")
+    .map((entry) => entry.member);
   if (unknown.length) groups.push({ position: "Unknown", members: unknown });
   return groups;
 }
@@ -39,9 +146,23 @@ export function filterDefenders(members, filter = "all") {
   return [...members];
 }
 
-export function fieldStatus(member, reportAvailable = true) {
+export function fieldStatus(
+  member,
+  reportAvailable = true,
+  reportCoverage = "complete",
+) {
   if (!reportAvailable)
-    return { text: "?", key: "unknown", label: "Availability unknown" };
+    return {
+      text: "",
+      key: "neutral",
+      label: "Availability unknown; injury report unavailable",
+    };
+  if (reportCoverage !== "complete" && !member.injury)
+    return {
+      text: "?",
+      key: "unknown",
+      label: "No matching injury entry; availability unknown",
+    };
   const gameStatus = member.injury?.game_status;
   return (
     {
@@ -81,38 +202,50 @@ export function depthSummary(member) {
 }
 
 // Only current, valid first-depth context can name individuals on the field.
-// Unknown depth and unexpectedly large first-depth sets use position stacks;
-// neither a count limit nor an Out designation selects a replacement player.
+// Every identity appears once; multiple same-family first-depth positions use
+// a combined chart label instead of an invented primary role. Members retain
+// their original roster position and all depth evidence. The UI uses
+// group.position for the chart label, group.positions for its component labels,
+// and assignments [{ member, entry }] for every unchanged source depth entry.
+// Missing or cross-family-ambiguous depth uses complete anonymous stacks.
+// Chart size and Out designations never truncate or select replacement players.
 export function fieldLayout(members) {
-  const firstDepth = members.filter(
-    (member) =>
-      Object.values(FAMILIES).some((positions) =>
-        positions.has(member.position),
-      ) &&
+  const groups = new Map();
+  for (const member of members) {
+    const { firstDepth, source, ...placement } = chartPosition(member);
+    if (!groups.has(placement.position))
+      groups.set(placement.position, {
+        ...placement,
+        members: [],
+        representatives: [],
+        assignments: [],
+        sources: new Set(),
+      });
+    const group = groups.get(placement.position);
+    group.sources.add(source);
+    group.ambiguous ||= placement.ambiguous;
+    if (!group.members.includes(member)) group.members.push(member);
+    for (const entry of member.depth || [])
+      group.assignments.push({ member, entry });
+    if (
+      firstDepth &&
       member.roster_status === "active" &&
-      member.depth?.some((entry) => entry.rank === 1),
-  );
-  const individuals = firstDepth.length <= 11;
-  return fieldGroups(members).map((family) => {
-    const positions = [
-      ...new Set(family.members.map((member) => member.position)),
-    ];
-    return {
-      position: family.position,
-      groups: positions.map((position) => {
-        const sourceMembers = family.members.filter(
-          (member) => member.position === position,
-        );
-        const representatives = individuals
-          ? firstDepth.filter((member) => member.position === position)
-          : [];
-        return {
-          position,
-          members: sourceMembers,
-          representatives,
-          outCount: filterDefenders(sourceMembers, "out").length,
-        };
-      }),
-    };
-  });
+      !group.representatives.includes(member)
+    )
+      group.representatives.push(member);
+  }
+  const positions = [...groups.values()];
+  const families = [...FAMILIES];
+  if (positions.some((group) => group.family === "Unknown"))
+    families.push("Unknown");
+  return families.map((position) => ({
+    position,
+    groups: positions
+      .filter((group) => group.family === position)
+      .map(({ sources, ...group }) => ({
+        ...group,
+        source: sources.size === 1 ? [...sources][0] : "mixed",
+        outCount: filterDefenders(group.members, "out").length,
+      })),
+  }));
 }

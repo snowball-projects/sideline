@@ -73,6 +73,27 @@ function visibleTriggerRect(trigger, view) {
   return right > left && bottom > top ? rect : null;
 }
 
+function scrollPosition(target) {
+  if (target === window || target === document)
+    return [window.scrollX || 0, window.scrollY || 0];
+  if (target === window.visualViewport)
+    return [
+      target.offsetLeft || 0,
+      target.offsetTop || 0,
+      target.pageLeft || 0,
+      target.pageTop || 0,
+    ];
+  return [target.scrollLeft || 0, target.scrollTop || 0];
+}
+
+function openingScrollPositions(trigger) {
+  const targets = [window, document];
+  if (window.visualViewport) targets.push(window.visualViewport);
+  for (let parent = trigger.parentElement; parent; parent = parent.parentElement)
+    targets.push(parent);
+  return new Map(targets.map((target) => [target, scrollPosition(target)]));
+}
+
 export function refreshPopover(event) {
   if (!active) return;
   // Scrolling a long panel must not temporarily enlarge it and clamp scrollTop.
@@ -82,6 +103,16 @@ export function refreshPopover(event) {
     active.panel.contains(event.target)
   )
     return;
+  if (event?.type === "scroll" &&
+      active.trigger.isConnected && active.panel.isConnected) {
+    // A click or keyboard focus can scroll its row before opening details, but
+    // the browser may deliver that scroll event afterward. Ignore only a known
+    // container whose position still matches opening; later movement and
+    // unrelated external scrolling continue to dismiss immediately.
+    const before = active.scrollPositions.get(event.target);
+    const current = before && scrollPosition(event.target);
+    if (before && before.every((value, index) => value === current[index])) return;
+  }
   if (
     event?.type === "scroll" ||
     event?.type === "resize" ||
@@ -303,6 +334,7 @@ function openPopover(record, pinned = false) {
   active = record;
   document.body.append(panel);
   record.trigger.setAttribute("aria-expanded", "true");
+  record.scrollPositions = openingScrollPositions(record.trigger);
   record.observer = new MutationObserver(() => {
     if (
       active === record &&
@@ -350,6 +382,7 @@ export function dismissPopover() {
   record.trigger.setAttribute("aria-expanded", "false");
   record.panel.remove();
   record.panel = null;
+  record.scrollPositions = null;
   record.pinned = false;
   record.overPanel = false;
 }

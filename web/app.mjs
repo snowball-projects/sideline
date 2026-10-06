@@ -3,19 +3,21 @@ import {
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
   productionLeaders,
-} from "./contribution.mjs?v=0.9.0";
+} from "./contribution.mjs?v=0.9.1";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.0";
+} from "./refresh.mjs?v=0.9.1";
 import {
   fieldLayout,
+  compactMarkerName,
+  memberHasChartPosition,
   filterDefenders,
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.0";
-import { parseFeed } from "./feed.mjs?v=0.9.0";
+} from "./field.mjs?v=0.9.1";
+import { parseFeed } from "./feed.mjs?v=0.9.1";
 import {
   searchPlayers,
   opponentRoster,
@@ -33,14 +35,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.0";
+} from "./model.mjs?v=0.9.1";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.0";
+} from "./popover.mjs?v=0.9.1";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -806,7 +808,8 @@ function attachMemberDetails(control, member, result, preview = false) {
 }
 function renderMember(member, result) {
   const pills = memberPills(member);
-  const unknown = !result.report || member.injury?.game_status === "Unknown";
+  const unknown = member.injury?.game_status === "Unknown" ||
+    (Boolean(result.report) && !member.injury && result.report.coverage !== "complete");
   const key = unknown ? "unknown" : pills.key;
   const item = node("li", undefined, "injury depth-row"),
     row = button("", null, "injury-row state-" + key);
@@ -875,7 +878,7 @@ function renderField(members, result, showDepth) {
   );
   const caption = node(
     "p",
-    "Schematic · positions, not assignments",
+    "Depth chart · not a confirmed lineup",
     "field-caption",
   );
   const pitch = node("div", undefined, "defender-grid");
@@ -888,13 +891,13 @@ function renderField(members, result, showDepth) {
     for (const group of family.groups) {
       const cluster = node("div", undefined, "position-cluster");
       const markers = node("div", undefined, "position-markers");
-      for (const columns of [4, 5, 6, 8])
+      for (const columns of [3, 4, 5, 7])
         markers.style.setProperty(
           "--markers-" + columns,
           Math.min(columns, Math.max(1, group.representatives.length)),
         );
       for (const member of group.representatives) {
-        const status = fieldStatus(member, Boolean(result.report));
+        const status = fieldStatus(member, Boolean(result.report), result.report?.coverage);
         const marker = button("", null, "defender-marker state-" + status.key);
         marker.dataset.focusKey = "defender:" + member.id;
         marker.dataset.defenderId = member.id;
@@ -902,15 +905,15 @@ function renderField(members, result, showDepth) {
           "aria-label",
           member.name +
             ", " +
-            member.position +
-            ". " +
+            group.position +
+            " published chart position. " +
             status.label +
             ". " +
             depthSummary(member),
         );
         marker.append(
-          node("span", "×", "defender-x"),
-          node("span", member.position, "defender-position"),
+          node("span", compactMarkerName(member.name), "defender-name"),
+          node("span", group.position, "defender-position"),
         );
         if (status.text)
           marker.append(node("span", status.text, "marker-status"));
@@ -934,7 +937,7 @@ function renderField(members, result, showDepth) {
             " defenders. No individual first-depth assignment shown. Highlight all in roster.",
         );
         stack.append(
-          node("span", "×", "defender-x"),
+          node("span", String(group.members.length), "defender-x"),
           node("span", group.position, "defender-position"),
         );
         for (const child of stack.children)
@@ -1008,7 +1011,7 @@ function renderDepth(members, result) {
       const row = renderMember(member, result);
       row.classList.toggle(
         "position-highlight",
-        member.position === highlighted,
+        memberHasChartPosition(member, highlighted),
       );
       list.append(row);
     }
@@ -1058,10 +1061,6 @@ function renderDepth(members, result) {
   }
   applyFilter(depthFilters.get(filterKey) || "all");
   panel.append(header, tabs);
-  if (!result.report)
-    panel.append(
-      node("p", "Report unavailable · availability unknown", "roster-notice"),
-    );
   panel.append(highlightNotice, entries);
   const showDepth = (position) => {
     dismissPopover();
@@ -1102,8 +1101,8 @@ function renderCards() {
   dismissPopover();
   cards.replaceChildren();
   cards.style.setProperty("--tile-count", Math.max(2, selected.length));
-  // Align the sparse source-depth schematics across comparison tiles. Larger
-  // or missing first-depth sets remain complete in anonymous position stacks.
+  // Align source-depth schematics across comparison tiles. Missing first-depth
+  // evidence remains complete in labelled position stacks.
   const fieldCounts = { DB: 0, LB: 0, DL: 0 };
   for (const id of selected) {
     const player = feed.players.find((candidate) => candidate.id === id);
@@ -1121,7 +1120,7 @@ function renderCards() {
     }
   }
   for (const [position, count] of Object.entries(fieldCounts))
-    for (const columns of [4, 5, 6, 8])
+    for (const columns of [3, 4, 5, 7])
       cards.style.setProperty(
         "--" + position.toLowerCase() + "-rows-" + columns,
         Math.max(1, Math.ceil(count / columns)),
@@ -1198,6 +1197,10 @@ function renderCards() {
       });
       matchup.append(info);
       card.append(matchup);
+      const reportNoticeSlot = node("div", undefined, "report-notice-slot");
+      if (result.state === "missing-report")
+        reportNoticeSlot.append(node("p", result.reportNotice, "report-notice"));
+      card.append(reportNoticeSlot);
       const members = opponentRoster(feed, result, weekKey);
       if (members.length) {
         const fieldWrap = node("div", undefined, "field-wrap");
@@ -1207,15 +1210,12 @@ function renderCards() {
           depth.panel,
         );
         card.append(fieldWrap);
-        const footer = node(
+        const footer = result.report && node(
           "p",
-          result.report
-            ? "Source injury file updated: " +
-                time(result.report.source_updated_at)
-            : "Injury file unavailable for this matchup",
+          "Source injury file updated: " + time(result.report.source_updated_at),
           "card-source",
         );
-        card.append(footer);
+        if (footer) card.append(footer);
       } else
         card.append(
           node(
@@ -1228,7 +1228,9 @@ function renderCards() {
                   ? "Canceled"
                   : result.state === "no-week"
                     ? "Week unavailable"
-                    : "Report unavailable",
+                    : result.state === "missing-report"
+                      ? "Defensive roster unavailable"
+                      : "Report unavailable",
             "report-empty",
           ),
         );
@@ -1247,8 +1249,32 @@ function renderCards() {
     }
   }
   for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
+  alignComparisonFields();
   renderRefreshState();
 }
+// Different opponents can have different source roles, long names, missing
+// reports and wrapping. Align actual rendered bands rather than assuming a
+// marker count always predicts their height. Mobile tiles keep natural height.
+function alignComparisonFields() {
+  const selectors = [".player-header", ".matchup", ".report-notice-slot",
+    ".field-caption", ".band-db", ".band-lb", ".band-dl", ".band-unknown"];
+  const groups = selectors.map((selector) =>
+    [...document.querySelectorAll(".player-card " + selector)]);
+  for (const nodes of groups)
+    for (const element of nodes) element.style.minHeight = "";
+  if (window.matchMedia("(max-width: 720px)").matches) return;
+  const heights = groups.map((nodes) => Math.max(0,
+    ...nodes.map((element) => element.getBoundingClientRect().height)));
+  groups.forEach((nodes, index) => {
+    for (const element of nodes) element.style.minHeight = heights[index] + "px";
+  });
+}
+let alignmentFrame;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(alignmentFrame);
+  alignmentFrame = requestAnimationFrame(alignComparisonFields);
+});
+
 function interactionActive({ allowFocusedRow = false } = {}) {
   return !canApplyRefresh({
     popoverOpen: isPopoverOpen(),
@@ -1483,6 +1509,8 @@ function updateClock() {
           : "");
     const freshness = card.querySelector(".report-freshness");
     if (freshness) freshness.textContent = reportFreshnessLabel(result.report);
+    const notice = card.querySelector(".report-notice");
+    if (notice && result.reportNotice) notice.textContent = result.reportNotice;
   }
 }
 document.addEventListener("visibilitychange", () => {

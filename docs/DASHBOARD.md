@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.0 · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.1 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -9,14 +9,24 @@ position and choose up to six players. Each comparison tile contains a compact
 identity header, matchup, schematic field and integrated roster/status panel.
 On mobile, tiles stack vertically. Larger screens compare equal-width tiles.
 
-The field shows source first-depth opposing defenders as individual Xs only
-when valid depth exists and at most eleven members qualify. Missing or larger
-first-depth groups use actual-position stacks instead. Stacks highlight every
-matching row in All, retaining non-first-depth Out players and reserves.
-Relative positional bands use actual source positions; coarse DL/LB/DB is never
-expanded into invented assignments. All defenders are on one side of one line
-of scrimmage and the selected offense marker is on the other. This is a roster
-schematic, not a confirmed lineup, coverage diagram or eleven-player formation.
+The field labels individual source first-depth defenders with first initial and
+surname, with full names available to assistive technology and in details.
+Only valid current depth qualifies. All published first-depth identities are
+shown, including charts with more than eleven. Missing or ambiguous depth uses
+role/count stacks; no arbitrary eleven is selected.
+All roster identities remain in the integrated list, including backups and Out
+players. Multiple chart assignments retain their original labels, ranks and observation
+provenance. An individual is shown once with combined compatible chart roles;
+conflicting families use conservative fallback, not a guessed primary position.
+
+Published depth abbreviations supply the field groups: LCB/RCB and NB/NCB,
+FS/SS, LDE/RDE, LDT/RDT/NT, and the documented linebacker labels remain distinct.
+A roster LB with a published LDE assignment belongs in the defensive-line band.
+Generic LB stays ambiguous; it never implies edge or off-ball duties. Unknown
+chart abbreviations fall back to the original coarse roster position. Left/right
+labels describe the chart, not snap alignment, shadow coverage or assignments
+against the selected offense. All defenders remain above one line of scrimmage.
+The field is a typical published depth-chart schematic, not a confirmed lineup.
 
 All keeps every defender, including backups, inactive/reserve, practice squad,
 unknown-depth and report-only identities. Out includes explicit Out game
@@ -25,7 +35,7 @@ badges distinct. Unknown appears only in All. Missing status and inactive
 roster membership do not imply health or Out. Actual depth and roster context
 are secondary row text; first string is chart context, not a game starter.
 
-Hover or focus a field X for a preview; click/tap pins it, and another activation
+Hover or focus a named field marker for a preview; click/tap pins it, and another activation
 closes it. Full details remain available by activating a roster row. Popups
 provide injury, availability, depth and source information. Escape, Close,
 outside press, leaving an unpinned preview, changing focus and replacing state
@@ -62,8 +72,14 @@ positional relevance. Offensive, special-teams and unclassified positions are
 excluded from the tiles by the founder's latest instruction. The collector
 still preserves all source report rows. A row count is only a count. Source coverage remains
 `partial` because independent completeness against original team reports has
-not been established. No record for a team/game produces “coverage unknown,”
-never a fabricated empty report.
+not been established. No exact season/phase/week/game/opponent report produces one matchup notice,
+such as “Week 5 injury report not available yet” for a scheduled future kickoff.
+At or after kickoff, canceled/live/final games, and unknown kickoff it says
+“unavailable”; it does not promise a publication date. The field and roster do
+not repeat Unknown badges solely because this shared report is missing. Details
+still explain unknown availability, and distinct roster/injury/status evidence
+remains visible. A partial available report leaves unmatched identities unknown,
+not healthy. Earlier-week Out designations never carry forward.
 
 Report publication time, source file modification and sideline collection time
 are separate fields. The current nflverse injury CSV supplies **no report date
