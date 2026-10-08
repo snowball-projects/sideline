@@ -89,7 +89,7 @@ export async function fetchSource(
 ) {
   const seasonPattern = "(?:202[6-9]|20[3-9][0-9]|2100)";
   const sourcePattern = new RegExp(
-    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_${seasonPattern}\\.csv|depth_charts/depth_charts_${seasonPattern}\\.csv\\.gz|schedules/games\\.csv)$`,
+    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_${seasonPattern}\\.csv|depth_charts/depth_charts_${seasonPattern}\\.csv\\.gz|schedules/games\\.csv|players/players\\.csv\\.gz|weekly_rosters/roster_weekly_202[56]\\.csv\\.gz)$`,
   );
   if (!sourcePattern.test(source.url))
     throw new Error("Source URL is outside the fixed dataset allowlist.");
@@ -159,9 +159,9 @@ export async function fetchSource(
     throw new Error("Source asset timestamp is in the future.");
   return {
     csv: new TextDecoder("utf-8", { fatal: true }).decode(
-      source.key === "depth"
+      source.url.endsWith(".csv.gz")
         ? gunzipSync(Buffer.concat(chunks), {
-            maxOutputLength: 160 * 1024 * 1024,
+            maxOutputLength: (source.key === "depth" ? 160 : 20) * 1024 * 1024,
           })
         : Buffer.concat(chunks),
     ),
@@ -240,8 +240,20 @@ export async function collectFeed({
       ),
       reported_at: null,
       publication_permitted: PUBLICATION_POLICY.verified,
+      injury_coverage: injuryCoverageAudit(feed, Date.parse(generatedAt)),
     },
   };
+}
+
+export function injuryCoverageAudit(feed, now = Date.now()) {
+  const week = feed.weeks.find((week) => Date.parse(week.starts_at) <= now && now < Date.parse(week.ends_at));
+  if (!week) return { week_key: null, state: "outside-schedule" };
+  const games = feed.games.filter((game) => game.week_key === week.key && game.status !== "canceled");
+  const scheduled = new Set(games.flatMap((game) => [game.home, game.away]));
+  const reported = new Set(feed.reports.filter((report) => report.week_key === week.key &&
+    games.some((game) => game.id === report.game_id && [game.home, game.away].includes(report.team))).map((report) => report.team));
+  return { week_key: week.key, scheduled_teams: [...scheduled].sort(), reported_teams: [...reported].sort(),
+    missing_teams: [...scheduled].filter((team) => !reported.has(team)).sort(), confirmed_byes: [...week.byes].sort() };
 }
 
 async function main() {

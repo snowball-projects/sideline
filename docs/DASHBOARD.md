@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.3 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.4 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -75,7 +75,11 @@ reported teams and retain original injury/body-part text. Counts describe
 reported weeks, not injuries; omitted weeks do not establish health. These are
 latest stored weekly rows, not preserved daily revisions or an as-of snapshot.
 Practice is labelled undated because no practice day is supplied. Eligibility
-year is not presented as rookie season or debut. No uninterrupted team tenure
+year is not presented as rookie season or debut. Explicit player-reference
+rookie season appears separately when supplied. Expandable observed rosters
+show 2025/2026 season, REG/POST, team and source week sets, preserving gaps and
+team changes. They are latest stored observations, not a selected-week as-of
+reconstruction, games played or a continuous tenure calculation. No uninterrupted team tenure
 or coordinator history is inferred. Unavailable optional sections are omitted.
 
 Matching defensive rows are displayed, including defenders without modeled
@@ -179,9 +183,25 @@ Live builds omit missing or invalid historical data while still requiring the
 validated core feed. Core collection/validation failure retains the prior Pages
 deployment. No upstream request is delegated to visitors.
 
+`scripts/player-history-data.mjs --optional` collects the three fixed reviewed
+player-reference and 2025/2026 weekly roster gzip assets. Each compressed request
+is capped at 4 MiB and expansion at 20 MiB; reference parsing allows 40,000 rows
+and each weekly roster 100,000. The 1 MB browser artifact selects current
+defenders by GSIS ID, explicit nullable `rookie_season`, and observed
+`{ season, game_type, team, weeks }` records, plus fixed-source provenance.
+CUT/RET/UFA/FA observations are excluded; reserves remain observations. It uses
+the same validated retention and optional build behavior. Browsers reject older
+optional history and retain only already validated facts; fresh core injury data
+can still update. Fictional mode never requests these history assets.
+
+Collector diagnostics audit the current covered schedule week: scheduled teams,
+exact game/week/team report presence, missing scheduled teams and confirmed byes.
+Outside the covered schedule window is explicit unknown context. Report presence
+does not certify completeness or health. No extra board paragraph is added.
+
 There is no persistent raw-source cache or database. The published Pages
 artifact is the shared cache: one hourly source collection serves every visitor.
-Browsers recheck the two same-origin JSON artifacts every five minutes while
+Browsers recheck the three same-origin JSON artifacts every five minutes while
 visible, and on return after that interval. Failures back off to 10/20/40/60
 minutes; manual Refresh bypasses the cadence, never an active request. It shows
 loading, changed, unchanged or error status with browser check time. Data waits

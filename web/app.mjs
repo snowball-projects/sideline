@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.3";
+} from "./contribution.mjs?v=0.9.4";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.3";
+} from "./refresh.mjs?v=0.9.4";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,9 +15,10 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.3";
-import { parseFeed } from "./feed.mjs?v=0.9.3";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.3";
+} from "./field.mjs?v=0.9.4";
+import { parseFeed } from "./feed.mjs?v=0.9.4";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.4";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.4";
 import {
   searchPlayers,
   opponentRoster,
@@ -34,14 +35,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.3";
+} from "./model.mjs?v=0.9.4";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.3";
+} from "./popover.mjs?v=0.9.4";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -58,6 +59,7 @@ let contributions = null,
   contributionError = "",
   pendingClock = false,
   renderedClockKey = "";
+let playerHistory = null, playerHistoryError = "";
 let pendingFeed = null,
   refreshPhase = "loading";
 let lastCheck = 0,
@@ -448,6 +450,8 @@ function sourceDetails() {
     panel.append(
       link("Historical event data · CC BY 4.0", contributions.source.terms_url),
     );
+  if (playerHistoryError) panel.append(facts([["Player history", playerHistoryError]]));
+  if (playerHistory) panel.append(link("Player history data · CC BY 4.0", PLAYER_HISTORY_TERMS));
   const links = node("div", undefined, "info-links");
   for (const [label, url] of [
     ["snowball", "https://snowball-projects.github.io/"],
@@ -606,8 +610,14 @@ function memberDetails(member, result) {
   }
 
   const bio = bioFacts(member.bio);
+  const rosterHistory = playerHistoryFor(playerHistory, member.id);
+  if (rosterHistory?.rookie_season !== null && rosterHistory?.rookie_season !== undefined) {
+    const duplicate = bio.findIndex(([label, value]) => label === "NFL eligible since" && value === String(rosterHistory.rookie_season));
+    if (duplicate >= 0) bio.splice(duplicate, 1);
+    bio.splice(bio[0]?.[0] === "Age / born" ? 1 : 0, 0, ["Rookie season", String(rosterHistory.rookie_season)]);
+  }
   const records = playerInjuryRecords(feed, member.id, weekKey);
-  if (bio.length || records.length) {
+  if (bio.length || records.length || rosterHistory?.rosters.length) {
     const details = node("details", undefined, "source-block player-details");
     details.append(node("summary", "Player details"));
     let rendered = false;
@@ -616,6 +626,14 @@ function memberDetails(member, result) {
       rendered = true;
       if (bio.length) {
         details.append(node("h3", "Bio"), facts(bio));
+      }
+      if (rosterHistory?.rosters.length) {
+        const rosters = node("details", undefined, "roster-history");
+        rosters.append(node("summary", "Observed rosters · 2025–2026"));
+        for (const record of rosterHistory.rosters)
+          rosters.append(node("div", record.season + " " + record.game_type + " · " +
+            record.team + " · " + observedWeeksLabel(record.weeks), "roster-observation"));
+        details.append(rosters);
       }
       if (records.length) {
         const injuryHistory = node("details", undefined, "injury-history");
@@ -669,6 +687,14 @@ function memberDetails(member, result) {
   sources.append(link(rosterSource.label, rosterSource.url), facts([
     ["Roster collected", time(feed.roster.retrieved_at)],
   ]));
+  if (rosterHistory) {
+    const sourceIds = new Set(rosterHistory.rosters.map((record) => `nflverse-weekly-roster-${record.season}`));
+    if (rosterHistory.rookie_season !== null) sourceIds.add("nflverse-player-reference");
+    for (const source of playerHistory.sources.filter((source) => sourceIds.has(source.id)))
+      sources.append(link(source.label, source.url), facts([
+        ["History file", time(source.source_updated_at)], ["Collected", time(source.retrieved_at)],
+      ]));
+  }
   if (member.depth.length) {
     const depthSource = sourceFor(feed.depth.source_id);
     sources.append(link(depthSource.label, depthSource.url), facts([
@@ -1195,6 +1221,8 @@ function applyFeed(bundle) {
   feed = next;
   contributions = bundle.contributions;
   contributionError = bundle.contributionError;
+  playerHistory = bundle.playerHistory;
+  playerHistoryError = bundle.playerHistoryError;
   $("search").disabled = false;
   $("search").placeholder =
     activeMode === "example" ? "Search example players" : "Search players";
@@ -1217,7 +1245,7 @@ function renderRefreshState() {
           : "Check failed · data unavailable"
         : pendingFeed || pendingClock
           ? "Updates ready · finish interaction"
-          : contributionError
+          : contributionError || playerHistoryError
             ? "Current data checked · history check failed"
             : refreshPhase === "unchanged"
               ? "Checked · no newer shared data"
@@ -1234,6 +1262,19 @@ function renderRefreshState() {
   $("refresh").setAttribute("aria-disabled", String(loading));
   $("refresh").setAttribute("aria-busy", String(loading));
 }
+async function loadOptionalArtifact(url, previous, maxBytes, validate) {
+  try {
+    const response = await fetch(url, { cache: "no-cache", signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw new Error("Optional data unavailable.");
+    const text = await response.text();
+    if (text.length > maxBytes) throw new Error("Optional data too large.");
+    const candidate = validate(JSON.parse(text));
+    if (candidate.generated_at && previous?.generated_at &&
+        Date.parse(candidate.generated_at) < Date.parse(previous.generated_at))
+      throw new Error("Older optional data returned.");
+    return { data: candidate, failed: false };
+  } catch { return { data: previous, failed: true }; }
+}
 const refresher = createRefreshController({
   async request(mode) {
     const response = await fetch(
@@ -1245,29 +1286,20 @@ const refresher = createRefreshController({
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    let historical = contributions,
-      historicalError = "";
-    if (mode === "live") {
-      try {
-        const response = await fetch("./contributions.json", {
-          cache: "no-cache",
-          signal: AbortSignal.timeout(15000),
-        });
-        if (!response.ok) throw new Error("Historical production unavailable.");
-        const text = await response.text();
-        if (text.length > MAX_CONTRIBUTION_BYTES)
-          throw new Error("Historical production file is too large.");
-        historical = validateContributions(JSON.parse(text));
-      } catch {
-        historicalError = "Historical production could not be refreshed.";
-      }
-    } else historical = null;
+    const [historical, rosterHistory] = mode === "live"
+      ? await Promise.all([
+          loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
+          loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
+        ])
+      : [{ data: null, failed: false }, { data: null, failed: false }];
     return {
       mode: next.mode,
       generated_at: next.generated_at,
       current: next,
-      contributions: historical,
-      contributionError: historicalError,
+      contributions: historical.data,
+      contributionError: historical.failed ? "Historical production could not be refreshed." : "",
+      playerHistory: rosterHistory.data,
+      playerHistoryError: rosterHistory.failed ? "History check failed" + (rosterHistory.data ? " · previous file kept" : "") : "",
     };
   },
   onData: applyFeed,

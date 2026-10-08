@@ -6,7 +6,7 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.9.3 adds optional defender bio and weekly injury records while keeping the field and primary popup compact.
+Version 0.9.4 adds explicit rookie seasons and optional observed roster teams/weeks for 2025–2026 while keeping the field and primary popup compact.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
@@ -58,8 +58,8 @@ original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
 modification and sideline collection times.
 
-The collector checks four required sources plus one optional historical
-source in the existing hourly GitHub Actions run at minute 23.
+The collector checks four required sources plus four optional historical
+sources in the existing hourly GitHub Actions run at minute 23.
 Upstream injury and roster files normally update daily, not live. Schedules
 update more often. Runs can be delayed, fail or become dormant; a failed
 core collection leaves the previous site visible with ageing timestamps. Failed

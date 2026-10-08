@@ -379,3 +379,72 @@ must remain distinct rather than reusing removed legacy `def_tackles` fields.
 No coordinator fields exist in the current reviewed feeds. Coordinator names,
 tenure, prior teams and predecessors require a separately sourced league-wide
 model; team consultancy is not coordinator tenure.
+
+## October 8, 2026 bounded rookie/roster-history review
+
+This decision expands the reviewed nflverse release integration to exactly
+three assets below. The publisher CC BY 4.0 license was rechecked; its blob
+remains `0fb847eb09afc05734c2f1aa34bc3ebd995a072a`. Attribution, source links,
+modification descriptions and the source warranty disclaimer remain preserved.
+This does not expand the data grant to media, reference photos, third-party
+ratings, reference draft/PFR fields, or direct team-site collection.
+
+| Fixed release asset | Source file update UTC | Selected observation |
+| --- | --- | --- |
+| [players.csv.gz](https://github.com/nflverse/nflverse-data/releases/download/players/players.csv.gz) | 2026-10-08 15:34:24Z | Explicit `rookie_season`, exact GSIS identity |
+| [roster_weekly_2025.csv.gz](https://github.com/nflverse/nflverse-data/releases/download/weekly_rosters/roster_weekly_2025.csv.gz) | 2026-03-14 07:33:06Z | 2025 REG/POST team and observed week sets |
+| [roster_weekly_2026.csv.gz](https://github.com/nflverse/nflverse-data/releases/download/weekly_rosters/roster_weekly_2026.csv.gz) | 2026-10-08 14:34:38Z | 2026 REG/POST team and observed week sets |
+
+The ignored local optional artifact generated **2026-10-08T18:25:53.800Z**
+matched all **1,243** current defensive identities; **1,227** have an explicit
+rookie season. The remaining 16 are not inferred from draft, eligibility, age
+or names. Weekly observations join 998 of those defenders in 2025 and all
+1,243 in 2026. Their source records show multiple teams for 83 and 23 players
+respectively; these counts describe observations, not transfer event dates.
+Jarvis Brownlee has rookie season 2024 and 2025 TEN/NYJ observations; Frankie
+Luvu has rookie season 2018 and WAS observations; Francisco Mauigoa has rookie
+season 2025 and NYJ observations. Source weeks with gaps remain separate.
+
+Only REG/POST records for current defenders survive. Departed CUT/RET/UFA/FA
+observations are excluded; inactive, reserve and practice-squad observations
+remain roster context. A week observation is not a game played, a first joining
+date, or proof of uninterrupted current-team/current-defense tenure. Annual
+rosters select the latest week and cannot replace this weekly history. These
+are latest stored source observations, not preserved selected-week as-of data.
+
+Three fixed central downloads use 4 MiB compressed and 20 MiB expanded bounds,
+strict required columns, duplicate reference-ID rejection and fixed-season
+validation. `web/player-history.json` is ignored, optional, atomic and separately
+validated. Its browser schema caps 1 MB and retains explicit nullable rookie
+season and season/phase/team/week sets with source-file and collection times.
+Optional failure retains only validated prior local/browser facts or omits the
+section; it does not block a fresh core injury publication. Visitors request
+only same-origin artifacts. No new service, account, credential or schedule is
+introduced. Build output remains an explicit allowlist.
+
+The local core feed generated **2026-10-08T18:25:50.058Z** with injury file
+**14:32:41Z**, retrieved separately from the unknown original report time.
+The collector's new current-week audit has 30 scheduled teams, 21 reported,
+nine missing (ARI, BUF, DEN, LAC, LAR, LV, PHI, SEA, SF), and confirmed CAR/KC
+byes. Missing coverage still cannot mean health. The audit is diagnostic only;
+there is no new board paragraph or source completeness claim.
+
+The original dated-practice/daily-revision limits above still apply. The held
+official-team source is not recollected or ingested, and the inaccessible
+upstream nflapi repository is not pursued through alternate access paths.
+Direct systematic team-site retrieval/publication requires a separate permission
+decision. No outreach, paid accounts or new coordinator feed is introduced.
+League-wide dated practice history and coordinator/predecessor coverage remain
+separate research requirements; current roster observations cannot establish
+defensive-coordinator tenure.
+
+The follow-up documentation check confirms that [nflreadr injury reports](https://nflreadr.nflverse.com/reference/load_injuries.html)
+describe weekly, season-level archives available since 2009, not daily snapshots.
+The [weekly roster loader](https://nflreadr.nflverse.com/reference/load_rosters_weekly.html)
+distinguishes weekly observations from annual latest-week selection and documents
+availability back to 2002. Neither establishes dated practice progression.
+[Wikidata licensing](https://www.wikidata.org/wiki/Wikidata:Licensing) offers CC0
+structured data as a permissible coaching-research candidate; prose elsewhere
+has separate share-alike terms. Current coordinator role/date/predecessor coverage
+across all 32 teams is unmeasured, so permission alone is not a usable coaching
+model and no coaching facts are published by this change.

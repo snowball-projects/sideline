@@ -20,6 +20,8 @@ web/current.json.pending
 
 web/contributions.json
 web/contributions.json.pending
+web/player-history.json
+web/player-history.json.pending
 
 playwright-report/
 test-results/

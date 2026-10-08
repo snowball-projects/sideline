@@ -952,6 +952,12 @@ body {
 .injury-history {
   margin-top: 8px;
 }
+.roster-history {
+  margin-top: 8px;
+}
+.roster-observation {
+  margin: 4px 0;
+}
 .report-notice {
   margin: 0 12px;
   padding: 7px 9px;
