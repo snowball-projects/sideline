@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { normalizeContributions } from "../../scripts/contribution-data.mjs";
+import { archiveFixture } from "../fixtures/injury-history.mjs";
 import { historyFixture } from "../fixtures/player-history.mjs";
 import { readFile, readdir } from "node:fs/promises";
 import { ALTERNATE_DEFENDERS, DEFENDERS, DENSE_DEFENDERS, NAMED_DEFENDERS, NOW, SELECTED, fieldFixture, selectedIds } from "./field-fixture.mjs";
@@ -15,7 +16,7 @@ const tab = (page, name) => firstTile(page).locator(".status-tabs")
 const markerById = (tile, id) => tile.locator(`.defender-marker[data-defender-id="gsis:${id}"]`);
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-async function setup(page, count = 2, fixture = fieldFixture(), history = null, playerHistory = null) {
+async function setup(page, count = 2, fixture = fieldFixture(), history = null, playerHistory = null, archive = null) {
   const errors = [];
   const externalRequests = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -34,6 +35,9 @@ async function setup(page, count = 2, fixture = fieldFixture(), history = null, 
     if (url.pathname === "/contributions.json")
       return history ? route.fulfill({ json: history })
         : route.fulfill({ status: 404, body: "Optional history unavailable in fixture" });
+    if (url.pathname === "/injury-history.json")
+      return archive ? route.fulfill({ json: archive })
+        : route.fulfill({ status: 404, body: "Optional injury archive unavailable in fixture" });
     if (url.pathname === "/player-history.json")
       return playerHistory ? route.fulfill({ json: playerHistory })
         : route.fulfill({ status: 404, body: "Optional player history unavailable in fixture" });
@@ -948,4 +952,102 @@ test("unmatched player history never joins a same-name defender or creates an em
   await popup(page).getByText("Player details", { exact: true }).click();
   await expect(popup(page).locator(".roster-history")).toHaveCount(0);
   await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ })).toHaveCount(0);
+});
+
+
+test("injury history defaults to current season and switches to original 2025 reports without changing live status", async ({ page, isMobile }, testInfo) => {
+  const { errors, externalRequests } = await setup(page, 2, fieldFixture(), null, null, archiveFixture());
+  await marker(page).click();
+  await expect(popup(page).locator(".injury-history")).toHaveCount(0);
+  await popup(page).getByText("Player details", { exact: true }).click();
+  const block = popup(page).locator(".injury-history");
+  await expect(block).not.toHaveAttribute("open", "");
+  await expect(block.locator("summary")).toHaveText("2026 injury records · 1 reported week");
+  await block.locator("summary").click();
+  const season = block.getByRole("combobox", { name: "Injury record season" });
+  await expect(season).toHaveValue("2026");
+  await expect(block.locator(".injury-record")).toHaveCount(1);
+  await season.selectOption("2025");
+  await expect(block.locator("summary")).toHaveText("2025 injury records · 3 reported weeks");
+  await expect(block.locator(".injury-record")).toHaveCount(3);
+  await expect(block.locator(".injury-record").first()).toContainText("WC · Week 19 · NYJ");
+  await expect(block.locator(".injury-record").last()).toContainText("Week 1 · TEN");
+  await expect(block).toContainText("Ankle; Wrist");
+  await expect(block).toContainText("Limited Participation in Practice");
+  await expect(block).toContainText("Did Not Participate In Practice");
+  await expect(block).toContainText("Practice · undated");
+  await expect(block).not.toContainText("Week 2");
+  await expect(block).not.toContainText("healthy");
+  await expect(popup(page).locator("p")).toHaveCount(0);
+  await assertPopupFits(page);
+  expect(await popup(page).evaluate(el => el.scrollWidth > el.clientWidth)).toBe(false);
+  await evidence(page, testInfo, `2025-injury-history-${isMobile ? "mobile" : "desktop"}`);
+  await season.focus();
+  await page.keyboard.press("Home"); await page.keyboard.press("Enter");
+  await expect(season).toHaveValue("2026");
+  await expect(block.locator(".injury-record")).toHaveCount(1);
+  await popup(page).getByText("Sources and timestamps", { exact: true }).click();
+  await expect(popup(page).getByRole("link", { name: "nflverse 2025 injury records", exact: true })).toHaveAttribute("href", /injuries_2025.csv$/);
+  await expect(popup(page)).toContainText("Archive file");
+  await page.keyboard.press("Escape");
+  await expect(popup(page)).toHaveCount(0);
+  await expect(marker(page)).toBeFocused();
+  await expect(marker(page).locator(".marker-status")).toHaveText("OUT");
+  await marker(page).click(); await popup(page).getByText("Player details", { exact: true }).click();
+  await expect(popup(page).locator(".injury-history > summary")).toHaveText("2026 injury records · 1 reported week");
+  await popup(page).getByRole("button", { name: "Close details" }).click();
+  expect(errors).toEqual([]); expect(externalRequests).toEqual([]);
+});
+
+test("archive-only history stays optional and never supplies current badges or a healthy missing report", async ({ page }) => {
+  const fixture = fieldFixture(); fixture.reports = [];
+  await setup(page, 2, fixture, null, null, archiveFixture());
+  await expect(marker(page).locator(".marker-status")).toHaveCount(0);
+  await expect(firstTile(page).locator(".report-notice")).toHaveCount(1);
+  await marker(page).click();
+  await expect(popup(page)).toContainText("Availability unknown");
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await expect(popup(page).locator(".injury-history > summary")).toHaveText("2025 injury records · 3 reported weeks");
+  await expect(popup(page).getByRole("combobox", { name: "Injury record season" })).toHaveCount(0);
+  await popup(page).locator(".injury-history > summary").click();
+  await expect(popup(page).locator(".injury-history")).toContainText("Out");
+  await assertPopupFits(page); await page.keyboard.press("Escape");
+  await tab(page, "Uncertain").click();
+  await expect(firstTile(page).locator(".injury-row")).toHaveCount(0);
+});
+
+test("failed or older archive retains validated history while fresh current injuries update", async ({ page }) => {
+  const fixture = fieldFixture(), archive = archiveFixture();
+  await setup(page, 2, fixture, null, null, archive);
+  const next = structuredClone(fixture); next.generated_at = "2026-09-13T12:00:01.000Z";
+  next.reports.find(r => r.team === "CAR").entries.find(e => e.id === "gsis:fixture-limited").practice_status = "Did not practice";
+  await page.route("**/current.json", route => route.fulfill({ json: next }));
+  await page.route("**/injury-history.json", route => route.fulfill({ status: 503, body: "Archive unavailable" }));
+  await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
+  await expect(marker(page, "Field Fixture Limited").locator(".marker-status")).toHaveText("DNP");
+  const checkRetained = async () => {
+    await marker(page).click(); await popup(page).getByText("Player details", { exact: true }).click();
+    await popup(page).locator(".injury-history > summary").click();
+    await popup(page).getByRole("combobox", { name: "Injury record season" }).selectOption("2025");
+    await expect(popup(page).locator(".injury-record")).toHaveCount(3);
+    await page.keyboard.press("Escape");
+  };
+  await checkRetained();
+  const older = structuredClone(archive); older.generated_at = "2026-09-12T12:00:00.000Z"; older.source.retrieved_at = older.generated_at;
+  older.players[0].records = older.players[0].records.slice(0, 1);
+  await page.route("**/injury-history.json", route => route.fulfill({ json: older }));
+  await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
+  await checkRetained();
+  await page.route("**/injury-history.json", route => route.fulfill({ json: { season: 2025 } }));
+  await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
+  await checkRetained();
+});
+
+test("archive joins never borrow same-name records or create empty history for an unmatched identity", async ({ page }) => {
+  const archive = archiveFixture(); archive.players.find(p => p.id === "gsis:fixture-out").id = "gsis:other-identity";
+  const fixture = fieldFixture(); fixture.reports = [];
+  await setup(page, 2, fixture, null, null, archive);
+  await marker(page).click();
+  await expect(popup(page).getByText("Player details", { exact: true })).toHaveCount(0);
+  await expect(popup(page).getByRole("link", { name: "nflverse 2025 injury records", exact: true })).toHaveCount(0);
 });

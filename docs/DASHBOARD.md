@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.4 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.5 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -81,6 +81,11 @@ show 2025/2026 season, REG/POST, team and source week sets, preserving gaps and
 team changes. They are latest stored observations, not a selected-week as-of
 reconstruction, games played or a continuous tenure calculation. No uninterrupted team tenure
 or coordinator history is inferred. Unavailable optional sections are omitted.
+When 2025 archive records match, the existing collapsed injury section includes
+a small Season choice. It defaults to current-season records when available;
+otherwise the matching archive is the only season shown. Source weeks, phase,
+reported teams and body-part/status text remain historical. No archive evidence
+changes current badges, filters or missing-team coverage.
 
 Matching defensive rows are displayed, including defenders without modeled
 positional relevance. Offensive, special-teams and unclassified positions are
@@ -194,6 +199,17 @@ the same validated retention and optional build behavior. Browsers reject older
 optional history and retain only already validated facts; fresh core injury data
 can still update. Fictional mode never requests these history assets.
 
+`scripts/injury-history-data.mjs --optional` collects only the reviewed
+`injuries_2025.csv`, with 4 MiB request/parser bounds and a 20,000-row limit.
+The ignored, atomic `web/injury-history.json` is capped at 2 MB and retains
+exact-ID current defenders, original REG/WC/DIV/CON/SB phase, source week/team,
+four injury-text fields and separate nullable original practice/game status.
+Missing rows do not imply health or distinct injury counts. No daily practice
+date is inferred. This separate optional artifact uses the same revalidation,
+retention, build allowlist and older-browser-artifact rejection as roster history.
+Collection failure can omit/retain the archive without blocking fresh current
+injuries; historical statuses never become current badges or report coverage.
+
 Collector diagnostics audit the current covered schedule week: scheduled teams,
 exact game/week/team report presence, missing scheduled teams and confirmed byes.
 Outside the covered schedule window is explicit unknown context. Report presence
@@ -201,7 +217,7 @@ does not certify completeness or health. No extra board paragraph is added.
 
 There is no persistent raw-source cache or database. The published Pages
 artifact is the shared cache: one hourly source collection serves every visitor.
-Browsers recheck the three same-origin JSON artifacts every five minutes while
+Browsers recheck the four same-origin JSON artifacts every five minutes while
 visible, and on return after that interval. Failures back off to 10/20/40/60
 minutes; manual Refresh bypasses the cadence, never an active request. It shows
 loading, changed, unchanged or error status with browser check time. Data waits

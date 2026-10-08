@@ -1,4 +1,5 @@
 import { validateContributions } from "../web/contribution.mjs";
+import { validateInjuryHistory } from "../web/injury-history.mjs";
 import { validatePlayerHistory } from "../web/player-history.mjs";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
@@ -22,6 +23,7 @@ const files = [
   "field.mjs",
   "player-details.mjs",
   "player-history.mjs",
+  "injury-history.mjs",
   "feed.mjs",
   "popover.mjs",
   "refresh.mjs",
@@ -98,6 +100,12 @@ try {
   files.push("player-history.json");
 } catch (error) {
   console.warn(`Optional player history omitted: ${error.message}`);
+}
+try {
+  validateInjuryHistory(JSON.parse(await readFile(new URL("web/injury-history.json", root), "utf8")));
+  files.push("injury-history.json");
+} catch (error) {
+  console.warn(`Optional injury archive omitted: ${error.message}`);
 }
 for (const name of ["styles.css", "app.mjs", "icon.svg"]) {
   if (!html.includes(name)) throw new Error("Missing asset reference: " + name);

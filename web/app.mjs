@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.4";
+} from "./contribution.mjs?v=0.9.5";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.4";
+} from "./refresh.mjs?v=0.9.5";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,10 +15,11 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.4";
-import { parseFeed } from "./feed.mjs?v=0.9.4";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.4";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.4";
+} from "./field.mjs?v=0.9.5";
+import { parseFeed } from "./feed.mjs?v=0.9.5";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.5";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.5";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.5";
 import {
   searchPlayers,
   opponentRoster,
@@ -35,14 +36,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.4";
+} from "./model.mjs?v=0.9.5";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.4";
+} from "./popover.mjs?v=0.9.5";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -60,6 +61,7 @@ let contributions = null,
   pendingClock = false,
   renderedClockKey = "";
 let playerHistory = null, playerHistoryError = "";
+let injuryHistory = null, injuryHistoryError = "";
 let pendingFeed = null,
   refreshPhase = "loading";
 let lastCheck = 0,
@@ -450,6 +452,8 @@ function sourceDetails() {
     panel.append(
       link("Historical event data · CC BY 4.0", contributions.source.terms_url),
     );
+  if (injuryHistoryError) panel.append(facts([["Injury archive", injuryHistoryError]]));
+  if (injuryHistory) panel.append(link("Injury archive · CC BY 4.0", injuryHistory.source.terms_url));
   if (playerHistoryError) panel.append(facts([["Player history", playerHistoryError]]));
   if (playerHistory) panel.append(link("Player history data · CC BY 4.0", PLAYER_HISTORY_TERMS));
   const links = node("div", undefined, "info-links");
@@ -617,7 +621,8 @@ function memberDetails(member, result) {
     bio.splice(bio[0]?.[0] === "Age / born" ? 1 : 0, 0, ["Rookie season", String(rosterHistory.rookie_season)]);
   }
   const records = playerInjuryRecords(feed, member.id, weekKey);
-  if (bio.length || records.length || rosterHistory?.rosters.length) {
+  const archiveRecords = archivedInjuryRecords(injuryHistory, member.id);
+  if (bio.length || records.length || archiveRecords.length || rosterHistory?.rosters.length) {
     const details = node("details", undefined, "source-block player-details");
     details.append(node("summary", "Player details"));
     let rendered = false;
@@ -635,22 +640,43 @@ function memberDetails(member, result) {
             record.team + " · " + observedWeeksLabel(record.weeks), "roster-observation"));
         details.append(rosters);
       }
-      if (records.length) {
-        const injuryHistory = node("details", undefined, "injury-history");
-        const weeks = new Set(records.map(({ week }) => week.key)).size;
-        injuryHistory.append(node("summary", records[0].week.season + " injury records · " + weeks + " reported " + (weeks === 1 ? "week" : "weeks")));
-        for (const { week, report, entry } of records) {
-          const record = node("div", undefined, "injury-record");
-          record.append(node("h3", week.label + " · " + report.team), facts([
-            ["Injury", entry.injury],
-            ["Practice · undated", entry.practice_status === "Not listed" ? "Not reported" : entry.practice_status],
-            ["Game", entry.game_status === "Not listed" ? "No designation" : entry.game_status],
-          ]));
-          const note = entry.note?.replace("Source supplies no report date; the designation may predate the dataset update.", "").trim();
-          if (note) record.append(node("div", note, "small"));
-          injuryHistory.append(record);
+      if (records.length || archiveRecords.length) {
+        const historyBlock = node("details", undefined, "injury-history");
+        const summary = node("summary");
+        const contents = node("div", undefined, "injury-records");
+        const seasons = new Map();
+        if (records.length) seasons.set(String(records[0].week.season), records);
+        if (archiveRecords.length) seasons.set("2025", archiveRecords);
+        let selectedSeason = seasons.keys().next().value;
+        historyBlock.append(summary);
+        const renderRecords = () => {
+          const chosen = seasons.get(selectedSeason);
+          const weeks = new Set(chosen.map(({ week }) => week.key)).size;
+          summary.textContent = selectedSeason + " injury records · " + weeks + " reported " + (weeks === 1 ? "week" : "weeks");
+          contents.replaceChildren();
+          for (const { week, report, entry } of chosen) {
+            const record = node("div", undefined, "injury-record");
+            record.append(node("h3", week.label + " · " + report.team), facts([
+              ["Injury", entry.injury],
+              ["Practice · undated", entry.practice_status === "Not listed" ? "Not reported" : entry.practice_status],
+              ["Game", entry.game_status === "Not listed" ? "No designation" : entry.game_status],
+            ]));
+            const note = entry.note?.replace("Source supplies no report date; the designation may predate the dataset update.", "").trim();
+            if (note) record.append(node("div", note, "small"));
+            contents.append(record);
+          }
+          refreshPopover();
+        };
+        if (seasons.size > 1) {
+          const label = node("label", "Season ", "injury-season");
+          const select = node("select"); select.setAttribute("aria-label", "Injury record season");
+          for (const season of seasons.keys()) { const option = node("option", season); option.value = season; select.append(option); }
+          select.value = selectedSeason;
+          select.addEventListener("change", () => { selectedSeason = select.value; renderRecords(); });
+          label.append(select); historyBlock.append(label);
         }
-        details.append(injuryHistory);
+        historyBlock.append(contents);
+        renderRecords(); details.append(historyBlock);
       }
       refreshPopover();
     });
@@ -676,6 +702,9 @@ function memberDetails(member, result) {
       ["History collected", time(report.retrieved_at)],
     ]));
   }
+  if (archiveRecords.length) sources.append(link(injuryHistory.source.label, injuryHistory.source.url), facts([
+    ["Archive file", time(injuryHistory.source.source_updated_at)], ["Archive collected", time(injuryHistory.source.retrieved_at)],
+  ]));
   if (history) {
     sources.append(link("nflverse 2025 stats", contributions.source.url), facts([
       ["Stat rows", String(history.record.recorded_games)],
@@ -1223,6 +1252,8 @@ function applyFeed(bundle) {
   contributionError = bundle.contributionError;
   playerHistory = bundle.playerHistory;
   playerHistoryError = bundle.playerHistoryError;
+  injuryHistory = bundle.injuryHistory;
+  injuryHistoryError = bundle.injuryHistoryError;
   $("search").disabled = false;
   $("search").placeholder =
     activeMode === "example" ? "Search example players" : "Search players";
@@ -1245,7 +1276,7 @@ function renderRefreshState() {
           : "Check failed · data unavailable"
         : pendingFeed || pendingClock
           ? "Updates ready · finish interaction"
-          : contributionError || playerHistoryError
+          : contributionError || playerHistoryError || injuryHistoryError
             ? "Current data checked · history check failed"
             : refreshPhase === "unchanged"
               ? "Checked · no newer shared data"
@@ -1286,18 +1317,21 @@ const refresher = createRefreshController({
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    const [historical, rosterHistory] = mode === "live"
+    const [historical, rosterHistory, archive] = mode === "live"
       ? await Promise.all([
           loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
           loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
+          loadOptionalArtifact("./injury-history.json", injuryHistory, MAX_INJURY_HISTORY_BYTES, validateInjuryHistory),
         ])
-      : [{ data: null, failed: false }, { data: null, failed: false }];
+      : [{ data: null, failed: false }, { data: null, failed: false }, { data: null, failed: false }];
     return {
       mode: next.mode,
       generated_at: next.generated_at,
       current: next,
       contributions: historical.data,
       contributionError: historical.failed ? "Historical production could not be refreshed." : "",
+      injuryHistory: archive.data,
+      injuryHistoryError: archive.failed ? "Archive check failed" + (archive.data ? " · previous file kept" : "") : "",
       playerHistory: rosterHistory.data,
       playerHistoryError: rosterHistory.failed ? "History check failed" + (rosterHistory.data ? " · previous file kept" : "") : "",
     };

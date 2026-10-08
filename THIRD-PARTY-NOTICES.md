@@ -65,3 +65,13 @@ aggregates source week observations without asserting tenure or games played.
 Player-reference photos, third-party ratings and draft-reference fields are
 excluded. Source and collection timestamps remain attached to the optional
 artifact. See docs/DATA_SOURCES.md for fixed asset URLs and review limits.
+
+The optional 2025 injury-history archive also derives from nflverse-data
+under the publisher CC BY 4.0 license:
+https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2025.csv
+sideline selects current defensive identities by GSIS ID and preserves reported
+weeks, phases, historical teams, original injury/body-part text and separate
+practice/game status. Null status and absent weeks remain unknown. Source-file
+and collection timestamps are preserved without claiming daily practice dates,
+distinct injury counts, current availability or a complete career history.
+The source warranty disclaimer and lack of endorsement above apply.

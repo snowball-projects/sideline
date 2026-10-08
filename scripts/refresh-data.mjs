@@ -89,7 +89,7 @@ export async function fetchSource(
 ) {
   const seasonPattern = "(?:202[6-9]|20[3-9][0-9]|2100)";
   const sourcePattern = new RegExp(
-    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_${seasonPattern}\\.csv|depth_charts/depth_charts_${seasonPattern}\\.csv\\.gz|schedules/games\\.csv|players/players\\.csv\\.gz|weekly_rosters/roster_weekly_202[56]\\.csv\\.gz)$`,
+    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_(?:2025|${seasonPattern})\\.csv|depth_charts/depth_charts_${seasonPattern}\\.csv\\.gz|schedules/games\\.csv|players/players\\.csv\\.gz|weekly_rosters/roster_weekly_202[56]\\.csv\\.gz)$`,
   );
   if (!sourcePattern.test(source.url))
     throw new Error("Source URL is outside the fixed dataset allowlist.");

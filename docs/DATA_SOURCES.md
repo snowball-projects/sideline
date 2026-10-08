@@ -448,3 +448,53 @@ structured data as a permissible coaching-research candidate; prose elsewhere
 has separate share-alike terms. Current coordinator role/date/predecessor coverage
 across all 32 teams is unmeasured, so permission alone is not a usable coaching
 model and no coaching facts are published by this change.
+
+## October 8, 2026 bounded 2025 injury-history decision
+
+The [2025 injury archive](https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2025.csv)
+is approved under the publisher's rechecked CC BY 4.0 grant; license blob
+remains `0fb847eb09afc05734c2f1aa34bc3ebd995a072a`. This expands the fixed
+asset allowlist to that year only, with existing attribution, modification
+notices and warranty limits. It adds no media, direct team-site collection,
+account, credential, paid service or refresh cadence change.
+
+The source has 6,068 records across all 32 teams. The local collector generated
+**2026-10-08T19:02:40.839Z**, file update **2026-09-07T12:23:41Z**, retrieved
+**2026-10-08T19:02:40.838Z**. Exact GSIS matching against current defensive
+identities retained **635 defenders and 2,685 rows**, preserving original
+reported teams, REG/WC/DIV/CON/SB phases, source weeks, primary/secondary
+report/practice injury strings and separate nullable raw statuses. Brownlee
+has five reported rows across TEN/NYJ, Luvu three WAS rows and Francisco Mauigoa
+six NYJ rows. No names repair a missing identity; source positions do not
+replace the current defensive identity filter. Missing source weeks cannot
+become healthy weeks, full practice or games played.
+
+The [injury dictionary](https://raw.githubusercontent.com/nflverse/nflreadr/main/data-raw/dictionary_injuries.csv)
+defines `date_modified` as when injury information was updated. Inspected 2020
+and 2024 archives contain this field, but neither establishes a daily practice
+sequence; 2024 has two same-player/team/week game-status revision pairs.
+The 2025 and 2026 files contain no date field. The implemented 2025 archive
+does not fabricate calendar dates or use file/collection times as report times.
+This is a two-season weekly record window with the existing current-season
+records, not complete career or daily revision history.
+
+`web/injury-history.json` is a separately validated optional artifact: 4 MiB
+request/parser bounds, 20,000 source/normalized rows, 2 MB public JSON, fixed
+source URL/season/provenance, strict original text, valid phase/week pairs and
+duplicate observation rejection. The original Rams source code LA is retained
+in historical entries. Atomic local writes retain only a validated
+previous archive on failure, or remove unsafe leftovers. Browser failure or
+an older artifact retains validated prior facts; current injury data can still
+update. Only matching identities get a season choice in collapsed injury
+records. Current-season records stay the default when present, and archive
+statuses never enter current badges, filters or coverage. Visitors only request
+same-origin artifacts. Raw provider CSVs and generated JSON remain uncommitted.
+
+The coordinator proposal remains separate: the openly licensed Wikipedia
+index covers all 32 teams, but needs current-role verification, explicit
+head-coach exceptions, per-record checked dates and separate CC BY-SA notices
+if adapted. A bounded CC0 Wikidata audit resolved all 32 listed identities,
+but only one had employer statements and one had coach-of-team statements,
+with incomplete current-role coverage. Neither supports a reliable automatic
+coordinator/predecessor model. No 32-team manual registry or restricted
+official-site crawler is introduced by this increment.
