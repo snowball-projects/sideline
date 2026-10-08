@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.9.2 - proposed
+## 0.9.3 - proposed
+
+- Remove the partial-report tile notice; retain unknown individual status and discreet coverage provenance.
+- Describe missing team coverage as missing from this feed, without implying no official report exists.
+- Add a collapsed, lazy player-details section for supported roster bio and current-season weekly injury records; preserve source body-part text and reported teams.
+- Label practice undated and omit empty optional sections and unavailable production placeholders.
+- Preserve LP/DNP badges, game-designation precedence, existing 2025 production/team history and keyboard/touch dismissal.
+
+## 0.9.2 - 2026-10-08
 
 - Show top-right LP/DNP practice badges and include those defenders in Uncertain;
   preserve game OUT/D/Q precedence and exclude game Out from Uncertain.

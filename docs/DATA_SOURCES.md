@@ -323,3 +323,59 @@ A local `npm run refresh` generated a validated feed at
 unchanged Week 5 coverage. `npm run build:live` included both validated current
 and 2025 historical data. These ignored local files were used for verification
 only and were not committed or deployed.
+
+## October 8, 2026 optional player-details observation
+
+The local v0.9.3 collector generated a validated artifact at
+**2026-10-08T17:37:44.790Z** using the same four approved source assets. Injury
+file update remains **14:32:41Z**, roster **14:34:41Z**, depth **14:33:15Z**,
+and schedule **17:16:34Z**. Week 5 still has 21 teams and 222 all-position rows;
+PHI remains absent. This local collection does not publish or change schedules.
+
+The current roster has 2,617 normalized identities, including 1,243 defenders.
+Supported defender bio coverage: birth date 1,227; league experience and NFL
+eligibility year 1,243 each; college 1,216; draft club/pick 841 each. Optional
+facts reuse the reviewed roster CSV; no new source requests or visitor calls
+are added. The [roster dictionary](https://raw.githubusercontent.com/nflverse/nflreadr/main/data-raw/dictionary_rosters.csv)
+describes birth date as Sleeper API-derived, `years_exp` as years played in the
+league, and `entry_year` as first NFL eligibility. Roster `rookie_year` is
+separately defined as the year rookie eligibility was lost, so it is not
+relabeled rookie season. Missing draft fields do not establish undrafted
+status. Draft clubs preserve source codes AZ/OAK/SD/STL rather than replacing
+historical locations with current franchises. No source field establishes
+uninterrupted current-team or current-defense tenure.
+
+Player details can display current-season injury entries already collected,
+through the selected week, joining exact IDs across reported teams. Preserve
+primary and secondary report/practice injury text, deduplicating identical
+text without classifying body parts or counting separate injuries. Count
+**reported weeks**, not injuries, games missed or healthy weeks. These are the
+latest stored weekly entries, not a preserved pregame reconstruction. Earlier
+reports remain historical details and never supply a current badge or status.
+
+The inspected 2025 and 2026 injury CSVs have no practice date/day or report
+timestamp. The 2024 asset has `date_modified`, but it does not establish the
+practice calendar date or preserve every daily revision. Seasonal release
+assets and quarterly archive backups are not a daily practice-history contract.
+Current practice is therefore labelled undated. Multi-season injury collection,
+player-reference rookie seasons and historical roster seasons need a bounded
+source/identity review before implementation. Roster observations must not be
+represented as uninterrupted tenure.
+
+The [Eagles official report](https://www.philadelphiaeagles.com/team/injury-report/)
+showed Week 5 PHI/JAX Wednesday practice entries while PHI was absent from
+nflverse; Thursday/Friday cells were blank. Its weekday labels alone do not
+establish a calendar date without confirming the fixture. This verifies a feed
+coverage gap, not an absent official report. The missing-coverage label now
+says “missing from this feed.” No direct team-site ingestion, 32-team crawler,
+news redistribution or isolated coordinator table is added. Those sources
+need their own coverage and publication-rights review.
+
+Existing 2025 REG production and historical team subtotals remain unchanged.
+The current [player-stat documentation](https://nflreadr.nflverse.com/reference/load_player_stats.html)
+and [variable definitions](https://nflfastr.com/articles/stats_variables.html)
+support investigating additional season/team windows; new tackle categories
+must remain distinct rather than reusing removed legacy `def_tackles` fields.
+No coordinator fields exist in the current reviewed feeds. Coordinator names,
+tenure, prior teams and predecessors require a separately sourced league-wide
+model; team consultancy is not coordinator tenure.

@@ -944,6 +944,14 @@ body {
   font-size: 12px;
   line-height: 1.6;
 }
+.injury-record + .injury-record {
+  border-top: 1px solid #d2dcc9;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.injury-history {
+  margin-top: 8px;
+}
 .report-notice {
   margin: 0 12px;
   padding: 7px 9px;

@@ -179,6 +179,23 @@ export function normalizeRoster(rows, season) {
         position: clean(row.position).toUpperCase() || "UNK",
         roster_status: rosterStatus(row),
       };
+      const bio = {};
+      for (const field of ["birth_date", "college"])
+        if (clean(row[field]) && clean(row[field]) !== "NA") bio[field] = clean(row[field]);
+      for (const field of ["years_exp", "entry_year", "draft_number"])
+        if (clean(row[field]) && clean(row[field]) !== "NA") {
+          if (!/^\d+$/.test(clean(row[field]))) fail(`Invalid roster ${field} for ${id}.`);
+          bio[field] = Number(row[field]);
+        }
+      if (clean(row.draft_club) && clean(row.draft_club) !== "NA") {
+        const draftClub = clean(row.draft_club).toUpperCase();
+        if (!TEAMS.has(draftClub) && !["AZ", "OAK", "SD", "STL"].includes(draftClub))
+          fail(`Unknown roster draft club: ${draftClub}`);
+        // Preserve the club's source identity at draft time, including cities
+        // before relocation; it is not the player's current team.
+        bio.draft_club = draftClub;
+      }
+      if (Object.keys(bio).length) player.bio = bio;
       if (!player.name) fail(`Player ${id} has no name.`);
       alternatives.set(JSON.stringify(player), player);
     }
@@ -456,6 +473,7 @@ export function normalizeInjuries(rows, season, games, metadata) {
       practice = practiceStatus(rawPractice);
     const injuries = [
       row.report_primary_injury,
+      row.report_secondary_injury,
       row.practice_primary_injury,
       row.practice_secondary_injury,
     ]

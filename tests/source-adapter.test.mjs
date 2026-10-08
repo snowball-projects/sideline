@@ -43,6 +43,30 @@ const response = (text, headers = {}, status = 200) =>
     headers: { "content-type": "text/csv", ...headers },
   });
 
+test("roster bio preserves available fields without inventing rookie season, tenure or undrafted status", () => {
+  const row = { ...roster[0], birth_date: "2001-07-13", years_exp: "0", entry_year: "2026", college: "College Fixture", draft_club: "TEN", draft_number: "146", rookie_year: "2026" };
+  assert.deepEqual(normalizeRoster([row], 2026)[0].bio, {
+    birth_date: "2001-07-13", years_exp: 0, entry_year: 2026, college: "College Fixture", draft_club: "TEN", draft_number: 146,
+  });
+  assert.equal(normalizeRoster([roster[0]], 2026)[0].bio, undefined);
+  assert.deepEqual(normalizeRoster([{ ...row, draft_club: "NA", draft_number: "", years_exp: "NA" }], 2026)[0].bio, {
+    birth_date: "2001-07-13", entry_year: 2026, college: "College Fixture",
+  });
+  assert.throws(() => normalizeRoster([{ ...row, years_exp: "unknown" }], 2026), /Invalid roster years_exp/);
+  for (const draft_club of ["AZ", "OAK", "SD", "STL"])
+    assert.equal(normalizeRoster([{ ...row, draft_club }], 2026)[0].bio.draft_club, draft_club);
+});
+
+test("injury body-part text retains both report fields and deduplicates practice text", () => {
+  const games = normalizeSchedule(schedule, 2026).games;
+  const rows = injuries.map((row) => ({ ...row, report_secondary_injury: "Wrist" }));
+  const reports = normalizeInjuries(rows, 2026, games, metadata);
+  assert.ok(reports.flatMap((report) => report.entries).every((entry) => entry.injury.includes("Wrist")));
+  const original = normalizeInjuries(injuries, 2026, games, metadata)[0].entries[0];
+  const revised = reports[0].entries.find((entry) => entry.id === original.id);
+  assert.ok(revised.injury.includes(original.injury));
+});
+
 test("bounded CSV parser handles quoted commas, escaped quotes and multiline cells", () => {
   assert.deepEqual(
     parseCsv('\uFEFFname,note\r\n"A, B","line 1\nline ""2"""\r\n'),
