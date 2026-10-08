@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { normalizeContributions } from "../../scripts/contribution-data.mjs";
+import { historyFixture } from "../fixtures/player-history.mjs";
 import { readFile, readdir } from "node:fs/promises";
 import { ALTERNATE_DEFENDERS, DEFENDERS, DENSE_DEFENDERS, NAMED_DEFENDERS, NOW, SELECTED, fieldFixture, selectedIds } from "./field-fixture.mjs";
 
@@ -14,7 +15,7 @@ const tab = (page, name) => firstTile(page).locator(".status-tabs")
 const markerById = (tile, id) => tile.locator(`.defender-marker[data-defender-id="gsis:${id}"]`);
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-async function setup(page, count = 2, fixture = fieldFixture(), history = null) {
+async function setup(page, count = 2, fixture = fieldFixture(), history = null, playerHistory = null) {
   const errors = [];
   const externalRequests = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -33,6 +34,9 @@ async function setup(page, count = 2, fixture = fieldFixture(), history = null) 
     if (url.pathname === "/contributions.json")
       return history ? route.fulfill({ json: history })
         : route.fulfill({ status: 404, body: "Optional history unavailable in fixture" });
+    if (url.pathname === "/player-history.json")
+      return playerHistory ? route.fulfill({ json: playerHistory })
+        : route.fulfill({ status: 404, body: "Optional player history unavailable in fixture" });
     return route.continue();
   });
   await page.goto("/");
@@ -860,4 +864,88 @@ test("earlier weekly records retain injury provenance when current team coverage
   await expect(popup(page)).toContainText("History injury file");
   await expect(popup(page).locator("dt").filter({ hasText: /^Coverage$/ })).toHaveCount(0);
   await assertPopupFits(page);
+});
+
+function browserPlayerHistory() {
+  const data = historyFixture();
+  data.players = data.players.map((player) => ({ ...player, id: ({
+    "gsis:fixture-a": "gsis:fixture-out", "gsis:fixture-b": "gsis:fixture-limited", "gsis:fixture-c": "gsis:fixture-dnp",
+  })[player.id] }));
+  return data;
+}
+
+test("explicit rookie season and observed roster teams remain compact, lazy and accessible without tenure claims", async ({ page, isMobile }, testInfo) => {
+  const fixture = fieldFixture();
+  fixture.players.find((player) => player.id === "gsis:fixture-out").bio = { birth_date: "2000-01-01", entry_year: 2023, draft_number: 20 };
+  const { errors, externalRequests } = await setup(page, 2, fixture, null, browserPlayerHistory());
+  if (isMobile) await marker(page).tap(); else await marker(page).click();
+  await expect(popup(page).locator(".roster-history")).toHaveCount(0);
+  const details = popup(page).getByText("Player details", { exact: true });
+  if (isMobile) await details.tap(); else { await details.focus(); await page.keyboard.press("Enter"); }
+  await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ })).toHaveCount(1);
+  await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ }).locator("+ dd")).toHaveText("2024");
+  await expect(popup(page)).toContainText("NFL eligible since");
+  const rosters = popup(page).getByText("Observed rosters · 2025–2026", { exact: true });
+  if (isMobile) await rosters.tap(); else { await rosters.focus(); await page.keyboard.press("Enter"); }
+  await expect(popup(page).locator(".roster-observation")).toHaveText([
+    "2026 REG · NYJ · W1, W3", "2025 REG · TEN · W1–2, W4", "2025 REG · NYJ · W5",
+  ]);
+  await expect(popup(page)).not.toContainText("W1–4");
+  await expect(popup(page)).not.toContainText("Team tenure");
+  await expect(popup(page)).not.toContainText("Joined");
+  await expect(popup(page).locator("p")).toHaveCount(0);
+  await assertPopupFits(page);
+  await evidence(page, testInfo, `rookie-observed-rosters-${isMobile ? "mobile" : "desktop"}`);
+  await popup(page).getByText("Sources and timestamps", { exact: true }).click();
+  await expect(popup(page).getByRole("link", { name: "nflverse player reference", exact: true })).toHaveAttribute("href", /players.csv.gz$/);
+  for (const season of [2025, 2026])
+    await expect(popup(page).getByRole("link", { name: `nflverse ${season} weekly rosters`, exact: true })).toHaveAttribute("href", new RegExp(`roster_weekly_${season}\\.csv\\.gz$`));
+  await assertPopupFits(page);
+  await page.keyboard.press("Escape");
+  await expect(popup(page)).toHaveCount(0);
+  await expect(marker(page)).toBeFocused();
+  await marker(page, "Field Fixture Limited").click();
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ })).toHaveCount(0);
+  await popup(page).getByText("Observed rosters · 2025–2026", { exact: true }).click();
+  await expect(popup(page).locator(".roster-observation")).toHaveText(["2026 REG · NYJ · W1", "2025 REG · BUF · W2"]);
+  await popup(page).getByRole("button", { name: "Close details" }).click();
+  await expect(popup(page)).toHaveCount(0);
+  expect(errors).toEqual([]); expect(externalRequests).toEqual([]);
+});
+
+test("failed or older optional history retains validated facts while fresh injury data still updates", async ({ page }) => {
+  const fixture = fieldFixture(), data = browserPlayerHistory();
+  await setup(page, 2, fixture, null, data);
+  const next = structuredClone(fixture);
+  next.generated_at = "2026-09-13T12:00:01.000Z";
+  next.reports.find((report) => report.team === "CAR").entries.find((entry) => entry.id === "gsis:fixture-limited").practice_status = "Did not practice";
+  await page.route("**/current.json", (route) => route.fulfill({ json: next }));
+  await page.route("**/player-history.json", (route) => route.fulfill({ json: { schema_version: 1 } }));
+  await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
+  await expect(marker(page, "Field Fixture Limited").locator(".marker-status")).toHaveText("DNP");
+  const retainedRookie = async () => {
+    await marker(page).click();
+    await popup(page).getByText("Player details", { exact: true }).click();
+    await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ }).locator("+ dd")).toHaveText("2024");
+    await page.keyboard.press("Escape");
+  };
+  await retainedRookie();
+  const older = structuredClone(data);
+  older.generated_at = "2026-09-12T12:00:00.000Z";
+  for (const source of older.sources) { source.retrieved_at = older.generated_at; source.source_updated_at = "2026-09-12T11:00:00.000Z"; }
+  older.players.find((player) => player.id === "gsis:fixture-out").rookie_season = 2022;
+  await page.route("**/player-history.json", (route) => route.fulfill({ json: older }));
+  await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
+  await expect(page.locator("#refresh-state")).toContainText("history check failed");
+  await retainedRookie();
+});
+
+test("unmatched player history never joins a same-name defender or creates an empty roster section", async ({ page }) => {
+  const data = browserPlayerHistory(); data.players[0].id = "gsis:other-identity";
+  await setup(page, 2, fieldFixture(), null, data);
+  await marker(page).click();
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await expect(popup(page).locator(".roster-history")).toHaveCount(0);
+  await expect(popup(page).locator("dt").filter({ hasText: /^Rookie season$/ })).toHaveCount(0);
 });

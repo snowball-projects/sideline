@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.9.3 - proposed
+## 0.9.4 - proposed
+
+- Add explicit player-reference rookie seasons and expandable 2025/2026 observed roster teams/weeks, joined only by GSIS identity.
+- Preserve gaps, transfers and REG/POST labels without claiming continuous tenure or games played.
+- Collect three reviewed nflverse assets into a bounded optional artifact; malformed, unavailable or older browser history retains validated facts without blocking fresh injury data.
+- Add a bye-aware missing-team coverage audit to collector diagnostics, with no new board prose.
+
+## 0.9.3 - 2026-10-08
 
 - Remove the partial-report tile notice; retain unknown individual status and discreet coverage provenance.
 - Describe missing team coverage as missing from this feed, without implying no official report exists.

@@ -96,9 +96,10 @@ production and its source metadata remain in details rather than crowding the fi
 An optional, initially collapsed player section supplies available roster bio
 facts and current-season weekly injury records through the selected week. It
 preserves source injury text and reported teams, counts reported weeks, labels
-practice undated, and omits unsupported facts and empty sections. Rookie season,
-continuous team tenure, daily progression and coordinator history require
-additional source work.
+practice undated, and omits unsupported facts and empty sections. Explicit
+player-reference rookie seasons and expandable 2025/2026 roster observations
+preserve teams and reported week sets. Continuous tenure, daily progression
+and coordinator history require additional source work.
 
 Injury-file time, sideline collection, browser checking and original report time
 remain distinct. A recent file or collection is not a recent report; original

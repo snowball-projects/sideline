@@ -56,3 +56,12 @@ GSIS identity, and preserves historical team subtotals and source provenance.
 These are not defensive-quality, participation or fantasy-advantage scores.
 No independently verified NFL agreement or endorsement is claimed. No warranties
 are provided under the source license. See docs/CONTRIBUTION_REVIEW.md.
+
+Explicit rookie seasons and observed 2025/2026 roster team/week records are
+derived from the reviewed nflverse-data player-reference and weekly-roster
+release assets under the same publisher CC BY 4.0 grant. sideline selects
+current defenders by GSIS identity, filters departed roster statuses, and
+aggregates source week observations without asserting tenure or games played.
+Player-reference photos, third-party ratings and draft-reference fields are
+excluded. Source and collection timestamps remain attached to the optional
+artifact. See docs/DATA_SOURCES.md for fixed asset URLs and review limits.
