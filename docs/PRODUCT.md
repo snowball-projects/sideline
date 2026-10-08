@@ -37,11 +37,9 @@ credible out-of-time validation and simple baselines.
 The initial implementation supplies current source-backed depth context and
 separate **2025 regular-season recorded events**, visibly naming historical
 teams. Passing disruption uses sacks/QB hits; coverage uses passes defended and
-interceptions. Bold event lines include a highest available displayed-measure
-total among that opposing roster, including ties and injured players. These
-are specific production comparisons, not an overall defender ranking. Missing
-history is not zero; previous teams/roles may differ. Details explain broad
-positional relevance and conditional absence effects. No favorable effect or
+interceptions. These separate production counts are not an overall defender ranking.
+Missing history is not zero; previous teams and roles may differ. Details show
+compact season-labelled production and source links. No favorable effect or
 confirmed absence is inferred from an undated Out/Q report.
 
 Current snap share was not approved because the obtainable PFR-derived family
@@ -55,7 +53,7 @@ rights, sample, coverage, interpretations and limitations.
 
 ## Implemented behavior
 
-Version 0.9.1 extends the founder's October 6 field-and-status direction.
+Version 0.9.2 extends the founder's October 6 field-and-status direction.
 The static dashboard retains six selected players, automatic opponents,
 explicit byes, source-relative completeness, missing reports, unknown kickoff,
 started-game uncertainty and freshness warnings. Selections are browser IDs,
@@ -76,14 +74,17 @@ more than eleven published first-depth identities retain all of them; no
 arbitrary eleven is chosen. Multiple compatible first-depth roles share one
 individual marker instead of duplicating a person. Stacks expose all
 matching identities in All, including Out players, backups and inactive players.
-A missing exact-match injury report is summarized once per opponent tile; only
-its repeated Unknown badges are suppressed. Individual details retain the reason
-availability is unknown, and partial-report omissions never establish health.
+A missing exact-match injury report is summarized once per opponent tile. Partial
+reports have one compact notice. Missing status uses neutral, badge-free markers;
+individual details retain the reason availability is unknown. Complete-report
+omissions remain distinct from partial coverage and report-only roster identities.
 
 All preserves every current opponent defensive roster member and unmatched
 defensive report entry. Out filters only explicit Out game designations;
-Uncertain includes Questionable and Doubtful with distinct status badges.
-Unknown appears only in All. Inactive roster context is not an Out designation.
+Uncertain includes Questionable, Doubtful, LP and DNP, excluding game Out.
+Game Out/Doubtful/Questionable badges take precedence over practice badges.
+Practice DNP never becomes game Out. Missing status appears only in All.
+Inactive roster context is not an Out designation.
 Depth and roster context are secondary row/detail text. A missing report,
 blank designation or badge-free row never establishes health or availability.
 No separate duplicate long roster panels or impact scores are introduced.

@@ -28,7 +28,7 @@ generic DB/LB/DL stacks and a secondary-only FS/SS stack. Six-tile checks mix
 that missing-report matchup with a smaller partial-report defense, asserting
 desktop line-of-scrimmage alignment despite different role wrapping and notices.
 Full-roster stack highlighting, All/Out/Uncertain filters, one shared missing
-Week 5 report notice, and ordinary partial-report Unknown states are covered.
+Week 5 report notice, and neutral partial-report states with one shared notice are covered.
 The existing pointer preview, keyboard/touch activation, repeated and interrupted
 dismissal, deferred-clock Escape/depth-expiry regressions, week/selection changes
 and explicit fictional mode remain part of the suite. Offscreen row activation
@@ -43,7 +43,12 @@ repository branch-protection settings or grant merge approval.
 The `field-browser-evidence` artifact contains the HTML report, traces on
 failure, failure screenshots, and positive screenshots of two/six selections,
 scrolled named tiles, dense mixed-matchup charts, colliding-name and multi-role
-details, missing reports, partial-report Unknown details, and missing-depth
+details, missing reports, partial-report missing-entry details, and missing-depth
 states on desktop and mobile. Evidence is retained for one day. Review those images before merging;
 passing geometry and behavior assertions do not replace visual review. Every
 screenshot uses synthetic test data and is not evidence about real NFL players.
+
+Practice regressions verify top-right LP/DNP badges, OUT/D/Q precedence,
+Uncertain membership and silent full/missing participation. Compact popups retain
+historical team subtotals and half sacks, with keyboard-accessible expandable
+source timestamps; complete coverage and report-only identity gaps stay distinct.

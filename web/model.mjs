@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.1";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.2";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -425,7 +425,6 @@ export function memberPills(member) {
     Out: "out",
     Doubtful: "doubtful",
     Questionable: "questionable",
-    Unknown: "unknown",
   }[entry.game_status];
   if (!key && entry.practice_status === "Did not practice") key = "dnp";
   if (!key && entry.practice_status === "Limited") key = "limited";
@@ -498,6 +497,11 @@ export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
     .filter((member) => DEFENSIVE_POSITIONS.has(member.position))
     .map((member) => {
       const injury = injuries.get(member.id) || null;
+      // A same-name report row with another ID is diagnostic evidence only.
+      // Preserve both identities; never repair the join by guessing a name.
+      const reportIdentityConflict = !injury && [...injuries.values()].some(
+        (entry) => entry.id !== member.id && entry.name === member.name,
+      );
       const depth = useDepth
         ? feed.depth.entries.filter(
             (entry) =>
@@ -530,17 +534,19 @@ export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
       )
         key = "reserve";
       else if (member.roster_status === "practice-squad") key = "squad";
+      else if (injury?.practice_status === "Did not practice") key = "dnp";
+      else if (injury?.practice_status === "Limited") key = "limited";
       else if (
         !comparison.report ||
         comparison.rosterStale ||
         comparison.stale ||
         comparison.sourceFileStale ||
         comparison.retrievalStale ||
+        (!injury && comparison.report.coverage !== "complete") ||
+        reportIdentityConflict ||
         injury?.game_status === "Unknown"
       )
         key = "unknown";
-      else if (injury?.practice_status === "Did not practice") key = "dnp";
-      else if (injury?.practice_status === "Limited") key = "limited";
       else if (starter) key = "starter";
       else key = member.roster_status === "active" ? "active" : "unknown";
       const status = { ...STATUS[key] };
@@ -561,6 +567,7 @@ export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
         starter,
         status,
         reportOnly: !rosterIds.has(member.id),
+        reportIdentityConflict,
       };
     })
     .sort(

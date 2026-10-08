@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.1 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.2 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -30,8 +30,9 @@ The field is a typical published depth-chart schematic, not a confirmed lineup.
 
 All keeps every defender, including backups, inactive/reserve, practice squad,
 unknown-depth and report-only identities. Out includes explicit Out game
-statuses only. Uncertain includes Questionable and Doubtful, keeping Q and D
-badges distinct. Unknown appears only in All. Missing status and inactive
+statuses only. Uncertain includes Questionable, Doubtful, LP and DNP, excluding
+Out. OUT/D/Q take precedence over LP/DNP on field markers and roster rows.
+Practice DNP is not game Out. Missing status stays neutral in All. Missing status and inactive
 roster membership do not imply health or Out. Actual depth and roster context
 are secondary row text; first string is chart context, not a game starter.
 
@@ -64,8 +65,8 @@ players keeps the fictional warning. It does not replace saved NFL selections.
 
 Game designation and practice participation are separate. Full practice is not
 a guarantee of playing; a blank source game designation is not “healthy.”
-Popup role context describes broad football possibilities, not individual
-coverage, replacement quality, proven fantasy effects or a start/sit decision.
+Defender popups keep name, source role, injury, practice, game designation and
+compact 2025 REG production. Source links and timestamps expand on demand.
 
 Matching defensive rows are displayed, including defenders without modeled
 positional relevance. Offensive, special-teams and unclassified positions are
@@ -76,16 +77,16 @@ not been established. No exact season/phase/week/game/opponent report produces o
 such as “Week 5 injury report not available yet” for a scheduled future kickoff.
 At or after kickoff, canceled/live/final games, and unknown kickoff it says
 “unavailable”; it does not promise a publication date. The field and roster do
-not repeat Unknown badges solely because this shared report is missing. Details
-still explain unknown availability, and distinct roster/injury/status evidence
-remains visible. A partial available report leaves unmatched identities unknown,
-not healthy. Earlier-week Out designations never carry forward.
+not repeat Unknown or question-mark badges for missing status. An available
+partial report gets one compact notice; its unmatched identities remain unknown.
+Details distinguish a complete-report omission, a partial-report omission,
+missing team coverage and a report-only identity absent from the roster. Earlier-week Out designations never carry forward.
 
 Report publication time, source file modification and sideline collection time
 are separate fields. The current nflverse injury CSV supplies **no report date
 or time**. Information and injury popups explicitly leave that vintage unknown,
-even when the file was freshly updated or retrieved. An undated Out designation
-retains the need to confirm current availability in its popup details.
+even when the file was freshly updated or retrieved. Defender source details
+retain the unknown report vintage without repetitive explanatory paragraphs.
 
 The UI flags a source file or collection older than 24 hours. If a future source
 provides exact report timestamps, report age over 48 hours is flagged; date-only
@@ -109,17 +110,15 @@ its named historical team(s), including players now on different teams. For
 selected QB/WR/TE players, defensive-line passing disruption uses sacks and QB
 hits; defensive-back coverage uses passes defended and interceptions. Linebacker
 rows show sacks and passes defended together because the coarse roster position
-does not establish a current rush/coverage assignment. RB/other selections receive
-broad role context and full historical counts in details, without an invented
-rushing-efficiency/benefit metric. All units are credited events; no snap,
+does not establish a current rush/coverage assignment. All selections receive
+full historical counts in details, without an invented rushing-efficiency or
+benefit metric. All units are credited events; no snap,
 pass-rush or target denominator is available. Half sacks are preserved.
 
-Historical leading-measure details identify a highest available displayed-event total
-among the current opposing roster's historical records; positive ties count,
-missing records do not become zero, and there is no composite ranking. The
-popup names the leading measure, all four counts, historical team subtotals,
-stat-game record count (not games played), source/file/retrieval times, role
-relevance and conditional absence limits. Reported Out/Q does not by itself
+Missing history does not become zero, and no composite ranking is supplied. The
+popup keeps all four recorded counts, named historical teams and compact
+multi-team subtotals. Expand Sources and timestamps for stat-row count and
+file/retrieval times. Stat rows are not games played. Reported Out/Q does not by itself
 confirm current participation. [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md)
 owns the source and metric decision.
 

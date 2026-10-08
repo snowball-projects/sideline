@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { normalizeContributions } from "../../scripts/contribution-data.mjs";
 import { readFile, readdir } from "node:fs/promises";
 import { ALTERNATE_DEFENDERS, DEFENDERS, DENSE_DEFENDERS, NAMED_DEFENDERS, NOW, SELECTED, fieldFixture, selectedIds } from "./field-fixture.mjs";
 
@@ -13,7 +14,7 @@ const tab = (page, name) => firstTile(page).locator(".status-tabs")
 const markerById = (tile, id) => tile.locator(`.defender-marker[data-defender-id="gsis:${id}"]`);
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-async function setup(page, count = 2, fixture = fieldFixture()) {
+async function setup(page, count = 2, fixture = fieldFixture(), history = null) {
   const errors = [];
   const externalRequests = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -30,7 +31,8 @@ async function setup(page, count = 2, fixture = fieldFixture()) {
     if (url.pathname === "/current.json")
       return route.fulfill({ json: fixture });
     if (url.pathname === "/contributions.json")
-      return route.fulfill({ status: 404, body: "Optional history unavailable in fixture" });
+      return history ? route.fulfill({ json: history })
+        : route.fulfill({ status: 404, body: "Optional history unavailable in fixture" });
     return route.continue();
   });
   await page.goto("/");
@@ -53,6 +55,12 @@ async function evidence(page, testInfo, name) {
 
 async function assertPopupFits(page) {
   await expect(popup(page)).toBeVisible();
+  // Native details toggle events are queued after the open attribute changes.
+  // Wait for the viewport clamp, including repositioning after expansion.
+  await expect.poll(async () => {
+    const rect = await popup(page).boundingBox();
+    return rect ? rect.y + rect.height : Infinity;
+  }).toBeLessThanOrEqual(page.viewportSize().height + 1);
   const rect = await popup(page).boundingBox();
   const viewport = page.viewportSize();
   expect(rect.width).toBeGreaterThan(200);
@@ -280,10 +288,10 @@ test("All, Out and Uncertain filter depth rows without hiding field context", as
   await expect(fieldMarkers).toHaveCount(11);
 
   await tab(page, "Uncertain").click();
-  await expect(depthRows).toHaveCount(3);
-  for (const name of ["Field Fixture Questionable", "Field Fixture Doubtful", "Depth Fixture Reserve"])
+  await expect(depthRows).toHaveCount(5);
+  for (const name of ["Field Fixture Questionable", "Field Fixture Doubtful", "Depth Fixture Reserve", "Field Fixture DNP", "Field Fixture Limited"])
     await expect(row(page, name)).toHaveCount(1);
-  for (const name of ["Field Fixture Out", "Field Fixture Unknown", "Field Fixture No Report", "Field Fixture DNP", "Field Fixture Limited"])
+  for (const name of ["Field Fixture Out", "Field Fixture Unknown", "Field Fixture No Report"])
     await expect(row(page, name)).toHaveCount(0);
   await expect(fieldMarkers).toHaveCount(11);
 
@@ -354,8 +362,8 @@ for (const count of [2, 6]) {
         await expect(tile.locator(".report-notice")).toHaveText("Week 1 injury report not available yet");
         await expect(tile.locator(".marker-status, .pill-status")).toHaveCount(0);
       } else {
-        await expect(tile.locator(".report-notice")).toHaveCount(0);
-        await expect(tile.locator(".defender-marker.state-unknown")).toHaveCount(4);
+        await expect(tile.locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
+        await expect(tile.locator(".defender-marker.state-neutral")).toHaveCount(6);
       }
       const identities = await tile.locator(".defender-marker").evaluateAll((markers) => markers.map((marker) => marker.dataset.defenderId));
       expect(new Set(identities).size).toBe(namedCount);
@@ -417,12 +425,12 @@ test("missing Week 5 report has one shared notice and keeps unknown details with
     await expect(tile.locator(".card-source")).toHaveCount(0);
   }
   await expect(marker(page)).toHaveAccessibleName(/availability unknown/i);
-  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/Report unavailable; availability unknown/);
+  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/Availability unknown; injury report unavailable/i);
   await evidence(page, testInfo, `missing-week-5-report-${isMobile ? "mobile" : "desktop"}`);
   if (isMobile) await marker(page).tap();
   else await marker(page).click();
   await assertPopupFits(page);
-  await expect(popup(page)).toContainText("Injury report unavailable. Game availability is unknown.");
+  await expect(popup(page)).toContainText("Availability unknown; injury report unavailable");
   await page.keyboard.press("Escape");
   await expect(popup(page)).toHaveCount(0);
   for (const filter of ["Out", "Uncertain"]) {
@@ -438,21 +446,20 @@ test("missing Week 5 report has one shared notice and keeps unknown details with
   await expect(firstTile(page).locator(".depth-panel .pill-status")).toHaveCount(0);
 });
 
-test("an available partial report retains Unknown badges and unconfirmed missing-entry details", async ({ page, isMobile }, testInfo) => {
+test("a partial report uses neutral markers, one notice and honest missing-entry details", async ({ page, isMobile }, testInfo) => {
   await setup(page);
-  await expect(firstTile(page).locator(".report-notice")).toHaveCount(0);
-  await expect(row(page, "Field Fixture Unknown").locator(".pill-status")).toHaveText("Unknown");
-  await expect(marker(page, "Field Fixture Unknown").locator(".marker-status")).toHaveText("?");
+  await expect(firstTile(page).locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
+  await expect(row(page, "Field Fixture Unknown").locator(".pill-status")).toHaveCount(0);
+  await expect(marker(page, "Field Fixture Unknown").locator(".marker-status")).toHaveCount(0);
   for (const name of ["Field Fixture No Report", "Field Fixture Corner", "Field Fixture Safety", "Depth Fixture Squad"]) {
-    await expect(row(page, name).locator(".pill-status")).toHaveText("Unknown");
-    await expect(row(page, name)).toHaveAccessibleName(/No matching injury entry; health and availability unconfirmed/);
-    await expect(row(page, name)).toContainText("health unconfirmed");
+    await expect(row(page, name).locator(".pill-status")).toHaveCount(0);
+    await expect(row(page, name)).toHaveAccessibleName(/No matching injury entry in partial report; availability unknown/);
   }
   for (const name of ["Field Fixture No Report", "Field Fixture Corner", "Field Fixture Safety"]) {
-    await expect(marker(page, name).locator(".marker-status")).toHaveText("?");
+    await expect(marker(page, name).locator(".marker-status")).toHaveCount(0);
     await expect(marker(page, name)).toHaveAccessibleName(/availability unknown/i);
   }
-  await expect(firstTile(page).locator(".defender-marker.state-unknown")).toHaveCount(4);
+  await expect(firstTile(page).locator(".defender-marker.state-neutral")).toHaveCount(6);
   await expect(marker(page, "Field Fixture Out").locator(".marker-status")).toHaveText("OUT");
   await expect(marker(page, "Field Fixture Questionable").locator(".marker-status")).toHaveText("Q");
   await expect(marker(page, "Field Fixture Doubtful").locator(".marker-status")).toHaveText("D");
@@ -470,7 +477,7 @@ test("an available partial report retains Unknown badges and unconfirmed missing
   await depthRows.evaluate((node) => node.dispatchEvent(new Event("scroll")));
   await expect(popup(page)).toBeVisible();
   await expect(row(page, "Field Fixture No Report")).toHaveAttribute("aria-expanded", "true");
-  await expect(popup(page)).toContainText("No matching injury entry in the available report. This does not establish health or game availability.");
+  await expect(popup(page)).toContainText("No matching injury entry in partial report; availability unknown");
   await evidence(page, testInfo, `partial-report-unknown-details-${isMobile ? "mobile" : "desktop"}`);
   // Actual movement after opening still dismisses pinned details. Ignoring an
   // already-accounted-for event must not disable ordinary scroll dismissal.
@@ -486,18 +493,16 @@ test("an available partial report retains Unknown badges and unconfirmed missing
   }
 });
 
-test("a present but empty partial report does not suppress each defender's Unknown status", async ({ page }) => {
+test("an empty partial report keeps all defenders neutral and coverage unconfirmed", async ({ page }) => {
   const fixture = fieldFixture();
   fixture.reports.find((report) => report.team === "CAR").entries = [];
   await setup(page, 2, fixture);
-  await expect(firstTile(page).locator(".report-notice")).toHaveCount(0);
+  await expect(firstTile(page).locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
   await expect(firstTile(page).locator(".depth-panel .injury-row")).toHaveCount(DEFENDERS.length);
-  await expect(firstTile(page).locator(".depth-panel .pill-status")).toHaveCount(DEFENDERS.length);
-  for (const badge of await firstTile(page).locator(".depth-panel .pill-status").all())
-    await expect(badge).toHaveText("Unknown");
-  await expect(firstTile(page).locator(".defender-marker.state-unknown")).toHaveCount(11);
-  await expect(firstTile(page).locator(".defender-marker .marker-status")).toHaveText(Array(11).fill("?"));
-  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/No matching injury entry; health and availability unconfirmed/);
+  await expect(firstTile(page).locator(".depth-panel .pill-status")).toHaveCount(0);
+  await expect(firstTile(page).locator(".defender-marker.state-neutral")).toHaveCount(11);
+  await expect(firstTile(page).locator(".defender-marker .marker-status")).toHaveCount(0);
+  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/No matching injury entry in partial report; availability unknown/);
   for (const filter of ["Out", "Uncertain"]) {
     await tab(page, filter).click();
     await expect(firstTile(page).locator(".depth-panel .injury-row")).toHaveCount(0);
@@ -684,4 +689,83 @@ test("public build excludes browser fixtures and keeps its example explicitly fi
     expect(content, entry).not.toContain("Field Fixture Out");
     expect(content, entry).not.toContain("fixture-selected-1");
   }
+});
+
+
+test("practice badges sit at top-right and keep game-designation precedence", async ({ page }) => {
+  await setup(page);
+  for (const [name, text] of [["Field Fixture Limited", "LP"], ["Field Fixture DNP", "DNP"],
+    ["Field Fixture Out", "OUT"], ["Field Fixture Questionable", "Q"], ["Field Fixture Doubtful", "D"]]) {
+    const target = marker(page, name);
+    const badge = target.locator(".marker-status");
+    await expect(badge).toHaveText(text);
+    const m = await target.boundingBox(), b = await badge.boundingBox();
+    expect(b.y).toBeLessThan(m.y + 2);
+    expect(b.x + b.width).toBeGreaterThan(m.x + m.width - 2);
+    expect(b.x).toBeGreaterThan(m.x + m.width / 2);
+  }
+  for (const name of ["Field Fixture Full", "Field Fixture Not Listed", "Field Fixture No Report"])
+    await expect(marker(page, name).locator(".marker-status")).toHaveCount(0);
+  await marker(page, "Field Fixture Limited").click();
+  await expect(popup(page)).toContainText("Limited");
+  await expect(popup(page)).toContainText("No designation");
+  await expect(popup(page)).not.toContainText("guarantee");
+  await expect(popup(page).locator("p")).toHaveCount(0);
+});
+
+test("complete-report omission differs from absent coverage and a report-only identity", async ({ page }) => {
+  const fixture = fieldFixture();
+  const report = fixture.reports.find((value) => value.team === "CAR");
+  report.coverage = "complete";
+  report.entries.push({ ...report.entries[0], id: "gsis:fixture-report-only", name: "Field Fixture Corner" });
+  await setup(page, 2, fixture);
+  await expect(firstTile(page).locator(".report-notice")).toHaveCount(0);
+  const target = row(page, "Field Fixture No Report");
+  await expect(target).toHaveAccessibleName(/Not listed in complete team report; availability unconfirmed/);
+  await target.click();
+  await expect(popup(page)).toContainText("Not listed in complete team report; availability unconfirmed");
+  await expect(popup(page)).not.toContainText("Full");
+  await page.keyboard.press("Escape");
+  const rosterIdentity = firstTile(page).locator('.injury-row[data-defender-id="gsis:fixture-corner"]');
+  await expect(rosterIdentity).toHaveAccessibleName(/Report\/roster IDs differ for this name; availability unknown/);
+  await rosterIdentity.click();
+  await expect(popup(page)).toContainText("Report/roster IDs differ for this name; availability unknown");
+  await expect(popup(page).locator("dt").filter({ hasText: /^Game$/ })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await firstTile(page).locator('.injury-row[data-defender-id="gsis:fixture-report-only"]').click();
+  await expect(popup(page)).toContainText("Report only · absent from current team roster");
+  await expect(popup(page)).toContainText("Out");
+});
+
+test("compact popup keeps historical teams, half sacks and keyboard-accessible sources", async ({ page, isMobile }, testInfo) => {
+  const history = normalizeContributions([
+    "player_id,position_group,season,season_type,week,game_id,team,opponent_team,def_sacks,def_qb_hits,def_pass_defended,def_interceptions",
+    "00-0012345,DL,2025,REG,1,2025_01_ARI_NO,ARI,NO,0.5,2,1,0",
+    "00-0012345,DL,2025,REG,2,2025_02_CAR_BUF,CAR,BUF,1,3,0,1",
+  ].join("\n"), { retrieved_at: NOW, source_updated_at: "2026-08-13T16:51:22.000Z" });
+  const defenders = DEFENDERS.map((entry) => entry[0] === "fixture-out"
+    ? ["00-0012345", ...entry.slice(1)] : entry);
+  await setup(page, 2, fieldFixture({ defenders }), history);
+  if (isMobile) await marker(page).tap();
+  else await marker(page).click();
+  await assertPopupFits(page);
+  await expect(popup(page)).toContainText("2025 REG · recorded production");
+  await expect(popup(page)).toContainText("ARI / CAR · 1.5 sacks · 5 QB hits · 1 PD · 1 INT");
+  await expect(popup(page)).toContainText("ARI: 0.5 sacks");
+  await expect(popup(page).locator("p")).toHaveCount(0);
+  await expect(popup(page).locator("details")).not.toHaveAttribute("open", "");
+  const summary = popup(page).locator("summary");
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  await expect(popup(page).locator("details")).toHaveAttribute("open", "");
+  await assertPopupFits(page);
+  await expect(popup(page)).toContainText("Injury file");
+  await expect(popup(page)).toContainText("Stats file");
+  await expect(popup(page).getByRole("link", { name: "nflverse 2025 stats", exact: true })).toHaveAttribute("href", /stats_player_week_2025/);
+  await page.keyboard.press("Tab");
+  await expect(popup(page).getByRole("link").first()).toBeFocused();
+  await evidence(page, testInfo, `compact-production-sources-${isMobile ? "mobile" : "desktop"}`);
+  await page.keyboard.press("Escape");
+  await expect(popup(page)).toHaveCount(0);
+  await expect(marker(page)).toBeFocused();
 });

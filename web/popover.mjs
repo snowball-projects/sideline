@@ -4,7 +4,7 @@ const attachments = new WeakMap();
 const restoredTriggers = new WeakSet();
 const POINTER_GRACE_MS = 180;
 const FOCUSABLE =
-  'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  'a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
 
 // Fixed viewport coordinates keep a report visible outside narrow, scrolling tiles.
 export function popoverPosition(rect, size, viewport, gap = 10, margin = 12) {
@@ -356,6 +356,7 @@ function openPopover(record, pinned = false) {
     });
   }
   listen(record, window, "resize", refreshPopover);
+  listen(record, panel, "toggle", refreshPopover, true);
   listen(record, window, "scroll", refreshPopover, true);
   listen(record, window, "blur", dismissPopover);
   if (window.visualViewport) {

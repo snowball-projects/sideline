@@ -2,12 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-  productionLeaders,
-} from "./contribution.mjs?v=0.9.1";
+} from "./contribution.mjs?v=0.9.2";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.1";
+} from "./refresh.mjs?v=0.9.2";
 import {
   fieldLayout,
   compactMarkerName,
@@ -16,8 +15,8 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.1";
-import { parseFeed } from "./feed.mjs?v=0.9.1";
+} from "./field.mjs?v=0.9.2";
+import { parseFeed } from "./feed.mjs?v=0.9.2";
 import {
   searchPlayers,
   opponentRoster,
@@ -30,19 +29,18 @@ import {
   comparePlayer,
   gameStateLabel,
   reportFreshnessLabel,
-  defenderRole,
   metricPerspective,
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.1";
+} from "./model.mjs?v=0.9.2";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.1";
+} from "./popover.mjs?v=0.9.2";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -479,7 +477,7 @@ function sourceDetails() {
     legend,
     node(
       "p",
-      "Position belongs beside the name. Secondary row text shows source depth and roster context. First depth is not a confirmed game starter. All retains every defender, including backups, reserves and report-only entries. Out includes only reported Out game designations; Uncertain includes Questionable and Doubtful. Unknown remains in All. Inactive roster context does not imply Out. Highlighted pills show reported injury or limited availability; Multi means multiple descriptions and ? means unknown. No pill does not confirm health. Roster and depth context describe the current team, not historical game rosters.",
+      "Position belongs beside the name. Secondary row text shows source depth and roster context. First depth is not a confirmed game starter. All retains every defender, including backups, reserves and report-only entries. Out includes only reported Out game designations; Uncertain includes Questionable, Doubtful, LP and DNP, excluding Out. Missing status remains in All. Inactive roster context does not imply Out. Highlighted pills show reported injury or limited availability; Multi means multiple injury descriptions. No pill does not confirm health. Roster and depth context describe the current team, not historical game rosters.",
       "small",
     ),
   );
@@ -562,222 +560,82 @@ function reportDetails(result) {
   );
   return panel;
 }
-function entryDetails(entry, result) {
+function memberDetails(member, result) {
   const panel = node("div");
-  panel.append(node("h2", entry.name + " · " + entry.position));
-  panel.append(
-    facts([
-      ["Injury", entry.injury],
-      ["Game", entry.game_status],
-      ["Practice", entry.practice_status],
-    ]),
-  );
-  if (entry.availability) panel.append(node("p", entry.availability));
-  if (entry.relevance)
-    panel.append(
-      node(
-        "p",
-        entry.relevance +
-          ": a broad positional possibility. Individual assignments, replacement quality and fantasy effects are not established.",
-      ),
-    );
-  if (entry.status_source !== "official")
-    panel.append(
-      node("p", "Official designations are not established by this source."),
-    );
-  else if (
-    entry.practice_status === "Full" ||
-    entry.game_status === "Not listed"
-  )
-    panel.append(
-      node(
-        "p",
-        "Full practice or no game designation does not guarantee participation.",
-        "small",
-      ),
-    );
-  if (entry.note) panel.append(node("p", entry.note, "small"));
-  const source = sourceFor(result.report.source_id),
-    block = node("div", undefined, "source-block");
-  block.append(
-    link(source.label, source.url),
-    facts([
-      ["Original report date", vintage(result.report)],
-      ["Source injury file updated", time(result.report.source_updated_at)],
-      ["sideline collected", time(result.report.retrieved_at)],
-      [
-        "Browser checked",
-        lastCheck ? time(new Date(lastCheck).toISOString()) : "not yet",
-      ],
-    ]),
-  );
-  panel.append(block);
-  return panel;
-}
-function memberDetails(member, result, leaders = {}) {
-  const panel = member.injury
-    ? entryDetails(member.injury, result)
-    : node("div");
-  if (!member.injury)
-    panel.append(node("h2", member.name + " · " + member.position));
-  const role = defenderRole(result.player.position, member.position);
-  panel.append(
-    node(
-      "p",
-      role +
-        ": broad positional context for " +
-        result.player.name +
-        ", not a confirmed individual matchup.",
-      "small",
-    ),
-  );
-  const history = defenderContribution(
-    contributions,
-    member.id,
-    metricPerspective(result.player.position, member.position),
-  );
-  const historyBlock = node("div", undefined, "source-block");
-  historyBlock.append(node("h3", "Recorded defensive production"));
-  if (history) {
-    historyBlock.append(
-      facts([
-        ["Window", history.period],
-        [
-          "Historical teams",
-          history.record.teams.map((team) => team.team).join(", "),
-        ],
-        ...history.allMetrics.map((metric) => [
-          metric.label,
-          String(metric.value),
-        ]),
-        [
-          "Game records",
-          String(history.record.recorded_games) +
-            " source stat rows; not games played",
-        ],
-      ]),
-    );
-    for (const team of history.record.teams)
-      historyBlock.append(
-        node(
-          "p",
-          team.team +
-            ": " +
-            team.recorded_games +
-            " stat-game records; " +
-            team.sacks +
-            " sacks, " +
-            team.qb_hits +
-            " QB hits, " +
-            team.passes_defended +
-            " passes defended, " +
-            team.interceptions +
-            " interceptions.",
-          "small",
-        ),
-      );
-    const leading = history.metrics.filter((metric) =>
-      leaders[metric.key]?.includes(member.id),
-    );
-    if (leading.length)
-      historyBlock.append(
-        node(
-          "p",
-          "Highest available 2025 total among the listed defenders: " +
-            leading.map((metric) => metric.label.toLowerCase()).join(", ") +
-            ". Ties are included; defenders with missing history are not compared. This is not an overall quality rank.",
-        ),
-      );
-    historyBlock.append(
-      node("p", history.relevance),
-      node("p", history.limitation, "small"),
-    );
-    if (
-      member.injury ||
-      [
-        "reserve",
-        "injured-reserve",
-        "inactive",
-        "suspended",
-        "pup",
-        "nfi",
-      ].includes(member.roster_status)
-    )
-      historyBlock.append(
-        node(
-          "p",
-          "If absent or limited, this role's contribution needs replacing. A benefit to " +
-            result.player.name +
-            " is possible, but its direction and size cannot be established without replacement and matchup evidence. The listed designation does not confirm current participation.",
-        ),
-      );
-    historyBlock.append(
-      link("nflverse 2025 recorded plays", contributions.source.url),
-      facts([
-        ["File updated", time(contributions.source.source_updated_at)],
-        ["Collected", time(contributions.source.retrieved_at)],
-      ]),
-    );
-  } else
-    historyBlock.append(
-      node(
-        "p",
-        contributions
-          ? "No matching 2025 defensive stat record. This is missing history, not zero production or a current quality judgment."
-          : "Historical production data is unavailable.",
-      ),
-    );
-  panel.append(historyBlock);
-  panel.append(facts([["Roster", member.roster_status.replaceAll("-", " ")]]));
+  panel.append(node("h2", member.name + " · " + member.position));
   if (member.depth.length)
-    panel.append(
-      facts([
-        [
-          "Depth chart",
-          member.depth
-            .map((entry) => entry.position + " #" + entry.rank)
-            .join(", "),
-        ],
-        ["Chart observed", time(member.depth[0].observed_at)],
-      ]),
-    );
-  if (member.starter)
-    panel.append(
-      node(
-        "p",
-        "First string on the depth chart; the starting lineup and game participation are not confirmed.",
-        "small",
-      ),
-    );
-  if (!member.injury)
-    panel.append(
-      node(
-        "p",
-        result.report
-          ? "No matching injury entry in the available report. This does not establish health or game availability."
-          : "Injury report unavailable. Game availability is unknown.",
-        "small",
-      ),
-    );
-  if (member.reportOnly)
-    panel.append(
-      node(
-        "p",
-        "Listed in the injury report, but this identity is absent from the current team roster.",
-        "small",
-      ),
-    );
-  const source = sourceFor(feed.roster.source_id);
-  const block = node("div", undefined, "source-block");
-  block.append(
-    link(source.label, source.url),
-    facts([["Roster collected", time(feed.roster.retrieved_at)]]),
-  );
-  if (member.depth.length) {
-    const source = sourceFor(feed.depth.source_id);
-    block.append(link(source.label, source.url));
+    panel.append(node("div", member.depth.map((entry) =>
+      entry.position + " #" + entry.rank).join(" · "), "small"));
+  if (member.injury) {
+    const entry = member.injury;
+    panel.append(facts([
+      ["Injury", entry.injury],
+      ["Game", entry.game_status === "Not listed" ? "No designation" : entry.game_status],
+      ["Practice", entry.practice_status === "Not listed" ? "Not reported" : entry.practice_status],
+    ]));
+    // Retain unrecognized source values, without repeating the source's generic
+    // report-date caveat in every defender popup.
+    const note = entry.note?.replace(
+      "Source supplies no report date; the designation may predate the dataset update.",
+      "",
+    ).trim();
+    if (note) panel.append(node("div", note, "small"));
+  } else {
+    panel.append(facts([["Status", fieldStatus(member, Boolean(result.report),
+      result.report?.coverage).label]]));
   }
-  panel.append(block);
+  if (member.reportOnly)
+    panel.append(facts([["Identity", "Report only · absent from current team roster"]]));
+
+  const history = defenderContribution(contributions, member.id,
+    metricPerspective(result.player.position, member.position));
+  const historyBlock = node("div", undefined, "source-block");
+  historyBlock.append(node("h3", "2025 REG · recorded production"));
+  if (history) {
+    historyBlock.append(node("div",
+      history.record.teams.map((team) => team.team).join(" / ") + " · " +
+      history.allMetrics.map((metric) => metric.value + " " + metric.short).join(" · "),
+      "production-counts"));
+    if (history.record.teams.length > 1)
+      for (const team of history.record.teams)
+        historyBlock.append(node("div", team.team + ": " + team.sacks + " sacks · " +
+          team.qb_hits + " QB hits · " + team.passes_defended + " PD · " +
+          team.interceptions + " INT", "small"));
+  } else {
+    historyBlock.append(node("div", contributions
+      ? "No matching 2025 stat record" : "Historical data unavailable", "small"));
+  }
+  panel.append(historyBlock);
+
+  const sources = node("details", undefined, "source-block");
+  sources.append(node("summary", "Sources and timestamps"));
+  if (result.report) {
+    const source = sourceFor(result.report.source_id);
+    sources.append(link(source.label, source.url), facts([
+      ["Coverage", result.report.coverage],
+      ["Report time", vintage(result.report)],
+      ["Injury file", time(result.report.source_updated_at)],
+      ["Collected", time(result.report.retrieved_at)],
+    ]));
+  }
+  if (history) {
+    sources.append(link("nflverse 2025 stats", contributions.source.url), facts([
+      ["Stat rows", String(history.record.recorded_games)],
+      ["Stats file", time(contributions.source.source_updated_at)],
+      ["Collected", time(contributions.source.retrieved_at)],
+    ]));
+  }
+  const rosterSource = sourceFor(feed.roster.source_id);
+  sources.append(link(rosterSource.label, rosterSource.url), facts([
+    ["Roster collected", time(feed.roster.retrieved_at)],
+  ]));
+  if (member.depth.length) {
+    const depthSource = sourceFor(feed.depth.source_id);
+    sources.append(link(depthSource.label, depthSource.url), facts([
+      ["Chart observed", time(member.depth[0].observed_at)],
+    ]));
+  }
+  panel.append(sources);
   return panel;
 }
 function attachMemberDetails(control, member, result, preview = false) {
@@ -793,11 +651,7 @@ function attachMemberDetails(control, member, result, preview = false) {
         weekKey,
       );
       return current
-        ? memberDetails(
-            current.member,
-            current.result,
-            productionLeaders(contributions, current.members),
-          )
+        ? memberDetails(current.member, current.result)
         : node(
             "p",
             "Defender details are no longer available for this opponent.",
@@ -808,9 +662,8 @@ function attachMemberDetails(control, member, result, preview = false) {
 }
 function renderMember(member, result) {
   const pills = memberPills(member);
-  const unknown = member.injury?.game_status === "Unknown" ||
-    (Boolean(result.report) && !member.injury && result.report.coverage !== "complete");
-  const key = unknown ? "unknown" : pills.key;
+  const status = fieldStatus(member, Boolean(result.report), result.report?.coverage);
+  const key = status.key;
   const item = node("li", undefined, "injury depth-row"),
     row = button("", null, "injury-row state-" + key);
   row.dataset.focusKey = "injury:" + member.id;
@@ -830,9 +683,7 @@ function renderMember(member, result) {
           member.injury.game_status +
           ". Practice: " +
           member.injury.practice_status
-        : result.report
-          ? "No matching injury entry; health and availability unconfirmed"
-          : "Report unavailable; availability unknown") +
+        : status.label) +
       ". Activate for details.",
   );
   const identity = node("span", undefined, "member-identity");
@@ -841,16 +692,16 @@ function renderMember(member, result) {
     node("span", member.position, "member-position"),
   );
   row.append(identity);
-  if (pills.injury || pills.status || unknown) {
+  if (pills.injury || status.text) {
     const badges = node("span", undefined, "member-pills");
     badges.setAttribute("aria-hidden", "true");
     if (pills.injury)
       badges.append(node("span", pills.injury, "member-pill pill-injury"));
-    if (unknown || pills.status)
+    if (status.text)
       badges.append(
         node(
           "span",
-          unknown ? "Unknown" : pills.status,
+          status.text,
           "member-pill pill-status",
         ),
       );
@@ -859,10 +710,7 @@ function renderMember(member, result) {
   row.append(
     node(
       "span",
-      depthSummary(member) +
-        (!member.injury && result.report
-          ? " · no status reported; health unconfirmed"
-          : ""),
+      depthSummary(member),
       "member-depth",
     ),
   );
@@ -1200,6 +1048,8 @@ function renderCards() {
       const reportNoticeSlot = node("div", undefined, "report-notice-slot");
       if (result.state === "missing-report")
         reportNoticeSlot.append(node("p", result.reportNotice, "report-notice"));
+      else if (result.report && result.report.coverage !== "complete")
+        reportNoticeSlot.append(node("p", "Partial injury report · unlisted defenders unconfirmed", "report-notice"));
       card.append(reportNoticeSlot);
       const members = opponentRoster(feed, result, weekKey);
       if (members.length) {

@@ -6,7 +6,7 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.9.1 adds named field markers, published depth roles and shared missing-report notices.
+Version 0.9.2 adds practice badges, neutral missing-status markers and compact defender details.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
@@ -21,10 +21,10 @@ roster without assigning a person. Stacks highlight matching rows in All.
 Every available defender remains accessible, including backups, inactive/reserve players and report-only identities.
 
 All is the complete roster. Out contains explicit Out game designations;
-Uncertain contains Questionable and Doubtful with their distinct badges.
-Unknown stays in All, and missing status never means healthy. Source-backed
+Uncertain contains Questionable, Doubtful, LP and DNP, excluding game Out.
+Missing status stays neutral in All and never means healthy. Source-backed
 depth and roster context are secondary text. Hover, keyboard focus or tap an X
-for full injury, availability, depth and source details. Escape, Close, outside
+for compact injury, practice, game and recorded-stat details; expand Sources and timestamps for provenance. Escape, Close, outside
 press and leaving the preview dismiss it. Remove a selected player with ×.
 Mobile tiles stack; larger screens preserve aligned comparison fields.
 

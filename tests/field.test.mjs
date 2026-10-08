@@ -118,7 +118,7 @@ test("more than eleven first-depth members all remain named without truncating t
   );
 });
 
-test("Uncertain contains only Questionable and Doubtful; Out requires its exact game designation", () => {
+test("Uncertain includes Q, D, LP and DNP; Out requires its exact game designation", () => {
   const members = [
     member("out", "DB", { injury: { game_status: "Out" } }),
     member("q", "DB", { injury: { game_status: "Questionable" } }),
@@ -128,20 +128,23 @@ test("Uncertain contains only Questionable and Doubtful; Out requires its exact 
     member("limited", "DB", {
       injury: { game_status: "Not listed", practice_status: "Limited" },
     }),
+    member("dnp", "DB", { injury: { game_status: "Unknown", practice_status: "Did not practice" } }),
+    member("full", "DB", { injury: { game_status: "Not listed", practice_status: "Full" } }),
+    member("out-dnp", "DB", { injury: { game_status: "Out", practice_status: "Did not practice" } }),
   ];
   assert.deepEqual(filterDefenders(members, "all"), members);
   assert.notEqual(filterDefenders(members, "all"), members);
   assert.deepEqual(
     filterDefenders(members, "out").map((value) => value.id),
-    ["out"],
+    ["out", "out-dnp"],
   );
   assert.deepEqual(
     filterDefenders(members, "uncertain").map((value) => value.id),
-    ["q", "d"],
+    ["q", "d", "limited", "dnp"],
   );
   assert.equal(fieldStatus(members[1]).text, "Q");
   assert.equal(fieldStatus(members[2]).text, "D");
-  assert.equal(fieldStatus(members[3]).key, "unknown");
+  assert.equal(fieldStatus(members[3]).key, "neutral");
   assert.equal(fieldStatus(members[4]).text, "");
 });
 
@@ -167,8 +170,8 @@ test("missing report coverage never becomes no injury or health and never change
     label: "Availability unknown; injury report unavailable",
   });
   assert.equal(
-    fieldStatus(source, true).label,
-    "No game designation; availability unconfirmed",
+    fieldStatus(source, true, "complete").label,
+    "Not listed in complete team report; availability unconfirmed",
   );
   assert.equal(flatten(fieldLayout([source]))[0].representatives[0], source);
 });
@@ -180,9 +183,9 @@ test("partial reports distinguish a missing injury entry from an entry with no g
   });
   for (const coverage of ["partial", "unknown"])
     assert.deepEqual(fieldStatus(unlisted, true, coverage), {
-      text: "?",
-      key: "unknown",
-      label: "No matching injury entry; availability unknown",
+      text: "",
+      key: "neutral",
+      label: "No matching injury entry in partial report; availability unknown",
     });
   assert.deepEqual(fieldStatus(unlisted, false, "partial"), {
     text: "",
@@ -190,9 +193,9 @@ test("partial reports distinguish a missing injury entry from an entry with no g
     label: "Availability unknown; injury report unavailable",
   });
   assert.deepEqual(fieldStatus(listed, true, "partial"), {
-    text: "",
-    key: "neutral",
-    label: "No game designation; availability unconfirmed",
+    text: "LP",
+    key: "limited",
+    label: "Reported limited practice; game availability unconfirmed",
   });
   assert.equal(fieldStatus(unlisted).key, "neutral");
   assert.equal(fieldStatus(unlisted, true, "complete").key, "neutral");
@@ -473,4 +476,24 @@ test("compact marker names preserve surnames, suffixes, punctuation and compound
   ]) assert.equal(compactMarkerName(name), compact, name);
   assert.equal(compactMarkerName({ name: "David Bailey" }), "D. Bailey");
   assert.equal(compactMarkerName(null), "");
+});
+
+
+test("game designation precedes practice while unknown game status preserves LP/DNP", () => {
+  for (const game_status of ["Out", "Doubtful", "Questionable", "Unknown", "Not listed"])
+    for (const practice_status of ["Did not practice", "Limited", "Full", "Unknown", "Not listed"]) {
+      const value = member("test", "DB", { injury: { game_status, practice_status } });
+      const expected = { Out: "OUT", Doubtful: "D", Questionable: "Q" }[game_status]
+        || { "Did not practice": "DNP", Limited: "LP" }[practice_status] || "";
+      assert.equal(fieldStatus(value).text, expected, game_status + "/" + practice_status);
+      assert.equal(fieldStatus(value, false).text, "");
+    }
+});
+
+test("an identity conflict stays neutral and distinct from a complete-report omission", () => {
+  const player = member("roster", "DB", { reportIdentityConflict: true });
+  assert.deepEqual(fieldStatus(player, true, "complete"), {
+    text: "", key: "neutral",
+    label: "Report/roster IDs differ for this name; availability unknown",
+  });
 });
