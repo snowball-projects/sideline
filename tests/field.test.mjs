@@ -167,7 +167,7 @@ test("missing report coverage never becomes no injury or health and never change
   assert.deepEqual(fieldStatus(source, false), {
     text: "",
     key: "neutral",
-    label: "Availability unknown; injury report unavailable",
+    label: "Availability unknown; injury report missing from this feed",
   });
   assert.equal(
     fieldStatus(source, true, "complete").label,
@@ -190,7 +190,7 @@ test("partial reports distinguish a missing injury entry from an entry with no g
   assert.deepEqual(fieldStatus(unlisted, false, "partial"), {
     text: "",
     key: "neutral",
-    label: "Availability unknown; injury report unavailable",
+    label: "Availability unknown; injury report missing from this feed",
   });
   assert.deepEqual(fieldStatus(listed, true, "partial"), {
     text: "LP",

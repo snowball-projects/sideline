@@ -359,10 +359,10 @@ for (const count of [2, 6]) {
         await expect(markerById(tile, "fixture-backup").locator(".defender-name")).toHaveText("N. Robinson");
         for (const position of ["DB", "LB", "DL", "FS/SS"])
           await expect(tile.locator(".defender-stack .defender-position").filter({ hasText: new RegExp(`^${escapeRegex(position)}$`) })).toHaveCount(1);
-        await expect(tile.locator(".report-notice")).toHaveText("Week 1 injury report not available yet");
+        await expect(tile.locator(".report-notice")).toHaveText("Week 1 injury report missing from this feed");
         await expect(tile.locator(".marker-status, .pill-status")).toHaveCount(0);
       } else {
-        await expect(tile.locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
+        await expect(tile.locator(".report-notice")).toHaveCount(0);
         await expect(tile.locator(".defender-marker.state-neutral")).toHaveCount(6);
       }
       const identities = await tile.locator(".defender-marker").evaluateAll((markers) => markers.map((marker) => marker.dataset.defenderId));
@@ -415,8 +415,8 @@ test("missing Week 5 report has one shared notice and keeps unknown details with
   await setup(page, 2, fixture);
   for (const tile of await page.locator(".player-card").all()) {
     await expect(tile.locator(".report-notice")).toHaveCount(1);
-    await expect(tile.locator(".report-notice")).toHaveText("Week 5 injury report not available yet");
-    await expect(tile.getByText("Week 5 injury report not available yet", { exact: true })).toHaveCount(1);
+    await expect(tile.locator(".report-notice")).toHaveText("Week 5 injury report missing from this feed");
+    await expect(tile.getByText("Week 5 injury report missing from this feed", { exact: true })).toHaveCount(1);
     await expect(tile.locator(".roster-notice")).toHaveCount(0);
     await expect(tile.locator(".depth-panel .pill-status")).toHaveCount(0);
     await expect(tile.locator(".defender-marker")).toHaveCount(11);
@@ -425,19 +425,19 @@ test("missing Week 5 report has one shared notice and keeps unknown details with
     await expect(tile.locator(".card-source")).toHaveCount(0);
   }
   await expect(marker(page)).toHaveAccessibleName(/availability unknown/i);
-  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/Availability unknown; injury report unavailable/i);
+  await expect(row(page, "Field Fixture Out")).toHaveAccessibleName(/Availability unknown; injury report missing from this feed/i);
   await evidence(page, testInfo, `missing-week-5-report-${isMobile ? "mobile" : "desktop"}`);
   if (isMobile) await marker(page).tap();
   else await marker(page).click();
   await assertPopupFits(page);
-  await expect(popup(page)).toContainText("Availability unknown; injury report unavailable");
+  await expect(popup(page)).toContainText("Availability unknown; injury report missing from this feed");
   await page.keyboard.press("Escape");
   await expect(popup(page)).toHaveCount(0);
   for (const filter of ["Out", "Uncertain"]) {
     await tab(page, filter).click();
     await expect(firstTile(page).locator(".depth-panel .injury-row")).toHaveCount(0);
     await expect(firstTile(page).locator(".depth-panel")).toContainText("Availability is unknown");
-    await expect(firstTile(page).locator(".report-notice")).toHaveText("Week 5 injury report not available yet");
+    await expect(firstTile(page).locator(".report-notice")).toHaveText("Week 5 injury report missing from this feed");
     await expect(firstTile(page).locator(".defender-marker")).toHaveCount(11);
     await expect(firstTile(page).locator(".defender-marker .marker-status")).toHaveCount(0);
   }
@@ -448,7 +448,7 @@ test("missing Week 5 report has one shared notice and keeps unknown details with
 
 test("a partial report uses neutral markers, one notice and honest missing-entry details", async ({ page, isMobile }, testInfo) => {
   await setup(page);
-  await expect(firstTile(page).locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
+  await expect(firstTile(page).locator(".report-notice")).toHaveCount(0);
   await expect(row(page, "Field Fixture Unknown").locator(".pill-status")).toHaveCount(0);
   await expect(marker(page, "Field Fixture Unknown").locator(".marker-status")).toHaveCount(0);
   for (const name of ["Field Fixture No Report", "Field Fixture Corner", "Field Fixture Safety", "Depth Fixture Squad"]) {
@@ -497,7 +497,7 @@ test("an empty partial report keeps all defenders neutral and coverage unconfirm
   const fixture = fieldFixture();
   fixture.reports.find((report) => report.team === "CAR").entries = [];
   await setup(page, 2, fixture);
-  await expect(firstTile(page).locator(".report-notice")).toHaveText("Partial injury report · unlisted defenders unconfirmed");
+  await expect(firstTile(page).locator(".report-notice")).toHaveCount(0);
   await expect(firstTile(page).locator(".depth-panel .injury-row")).toHaveCount(DEFENDERS.length);
   await expect(firstTile(page).locator(".depth-panel .pill-status")).toHaveCount(0);
   await expect(firstTile(page).locator(".defender-marker.state-neutral")).toHaveCount(11);
@@ -515,7 +515,7 @@ test("a missing report after kickoff does not promise that its publication is st
   fixture.reports = fixture.reports.filter((report) => report.team !== "CAR");
   await setup(page, 2, fixture);
   await expect(firstTile(page).locator(".report-notice")).toHaveCount(1);
-  await expect(firstTile(page).locator(".report-notice")).toHaveText("Week 5 injury report unavailable");
+  await expect(firstTile(page).locator(".report-notice")).toHaveText("Week 5 injury report missing from this feed");
   await expect(firstTile(page).locator(".kickoff")).toContainText("Start passed");
   await expect(firstTile(page).locator(".depth-panel .pill-status")).toHaveCount(0);
   await expect(marker(page)).toHaveAccessibleName(/availability unknown/i);
@@ -753,11 +753,11 @@ test("compact popup keeps historical teams, half sacks and keyboard-accessible s
   await expect(popup(page)).toContainText("ARI / CAR · 1.5 sacks · 5 QB hits · 1 PD · 1 INT");
   await expect(popup(page)).toContainText("ARI: 0.5 sacks");
   await expect(popup(page).locator("p")).toHaveCount(0);
-  await expect(popup(page).locator("details")).not.toHaveAttribute("open", "");
-  const summary = popup(page).locator("summary");
+  await expect(popup(page).locator("details").filter({ has: page.getByText("Sources and timestamps", { exact: true }) })).not.toHaveAttribute("open", "");
+  const summary = popup(page).getByText("Sources and timestamps", { exact: true });
   await summary.focus();
   await page.keyboard.press("Enter");
-  await expect(popup(page).locator("details")).toHaveAttribute("open", "");
+  await expect(popup(page).locator("details").filter({ has: page.getByText("Sources and timestamps", { exact: true }) })).toHaveAttribute("open", "");
   await assertPopupFits(page);
   await expect(popup(page)).toContainText("Injury file");
   await expect(popup(page)).toContainText("Stats file");
@@ -768,4 +768,96 @@ test("compact popup keeps historical teams, half sacks and keyboard-accessible s
   await page.keyboard.press("Escape");
   await expect(popup(page)).toHaveCount(0);
   await expect(marker(page)).toBeFocused();
+});
+
+test("optional player details lazily show bio and source weekly injury text with accessible dismissal", async ({ page, isMobile }, testInfo) => {
+  const fixture = fieldFixture({ week: 5 });
+  const defender = fixture.players.find((player) => player.id === "gsis:fixture-out");
+  defender.bio = { birth_date: "2001-09-13", years_exp: 0, entry_year: 2026,
+    college: "College Fixture", draft_club: "TEN", draft_number: 146 };
+  const current = fixture.reports.find((report) => report.team === "CAR");
+  const entry = current.entries.find((entry) => entry.id === defender.id);
+  for (let week = 1; week < 5; week++) {
+    const start = Date.parse(fixture.weeks[0].starts_at) - (5 - week) * 7 * 86400000;
+    const key = `2026-REG-${week}`;
+    fixture.weeks.push({ ...fixture.weeks[0], key, week, label: `Week ${week}`,
+      starts_at: new Date(start).toISOString(), ends_at: new Date(start + 7 * 86400000).toISOString() });
+    const game = { ...fixture.games[0], id: `prior-week-${week}`, week_key: key,
+      kickoff: new Date(start + 5 * 86400000).toISOString(), status: "final" };
+    fixture.games.push(game);
+    fixture.reports.push({ ...current, game_id: game.id, week_key: key,
+      entries: [{ ...entry, injury: `Ankle; Wrist ${week}`, game_status: "Not listed", practice_status: "Limited" }] });
+  }
+  const { errors, externalRequests } = await setup(page, 2, fixture);
+  if (isMobile) await marker(page).tap();
+  else await marker(page).click();
+  await expect(popup(page).locator(".player-details h3")).toHaveCount(0);
+  await expect(popup(page)).not.toContainText("College Fixture");
+  await expect(popup(page)).not.toContainText("Historical data unavailable");
+  const summary = popup(page).getByText("Player details", { exact: true });
+  if (isMobile) await summary.tap();
+  else { await summary.focus(); await page.keyboard.press("Enter"); }
+  await expect(popup(page)).toContainText("25 · 2001-09-13");
+  await expect(popup(page)).toContainText("0 years");
+  await expect(popup(page)).toContainText("NFL eligible since");
+  await expect(popup(page)).toContainText("TEN · #146");
+  await expect(popup(page)).not.toContainText("Rookie season");
+  await expect(popup(page)).not.toContainText("Team tenure");
+  await expect(popup(page).locator(".injury-history")).not.toHaveAttribute("open", "");
+  const history = popup(page).getByText("2026 injury records · 5 reported weeks", { exact: true });
+  if (isMobile) await history.tap();
+  else { await history.focus(); await page.keyboard.press("Enter"); }
+  await expect(popup(page).locator(".injury-record")).toHaveCount(5);
+  await expect(popup(page).locator(".injury-record").first()).toContainText("Week 5 · CAR");
+  await expect(popup(page).locator(".injury-record").last()).toContainText("Ankle; Wrist 1");
+  await expect(popup(page)).toContainText("Practice · undated");
+  await assertPopupFits(page);
+  expect(await popup(page).evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(false);
+  await history.click();
+  await history.click();
+  await expect(popup(page).locator(".injury-record")).toHaveCount(5);
+  await evidence(page, testInfo, `player-bio-weekly-records-${isMobile ? "mobile" : "desktop"}`);
+  if (isMobile) await popup(page).getByRole("button", { name: "Close details" }).tap();
+  else await page.keyboard.press("Escape");
+  await expect(popup(page)).toHaveCount(0);
+  await expect(marker(page)).toBeFocused();
+  await marker(page).click();
+  await expect(popup(page).locator(".player-details h3")).toHaveCount(0);
+  await page.locator("#search").click();
+  await expect(popup(page)).toHaveCount(0);
+  expect(errors).toEqual([]);
+  expect(externalRequests).toEqual([]);
+});
+
+test("unreported defender without bio has no empty optional section", async ({ page }) => {
+  await setup(page);
+  await marker(page, "Field Fixture No Report").click();
+  await expect(popup(page).getByText("Player details", { exact: true })).toHaveCount(0);
+  await expect(popup(page).locator(".injury-history")).toHaveCount(0);
+  await expect(popup(page)).not.toContainText("2025 REG");
+});
+
+test("earlier weekly records retain injury provenance when current team coverage is missing", async ({ page }) => {
+  const fixture = fieldFixture({ week: 5 });
+  const report = fixture.reports.find((report) => report.team === "CAR");
+  const start = Date.parse(fixture.weeks[0].starts_at) - 7 * 86400000;
+  const week = { ...fixture.weeks[0], key: "2026-REG-4", week: 4, label: "Week 4",
+    starts_at: new Date(start).toISOString(), ends_at: fixture.weeks[0].starts_at };
+  fixture.weeks.push(week);
+  const game = { ...fixture.games[0], id: "earlier-week", week_key: week.key,
+    kickoff: new Date(start + 5 * 86400000).toISOString(), status: "final" };
+  fixture.games.push(game);
+  fixture.reports = fixture.reports.filter((value) => value !== report);
+  fixture.reports.push({ ...report, game_id: game.id, week_key: week.key });
+  await setup(page, 2, fixture);
+  await expect(marker(page).locator(".marker-status")).toHaveCount(0);
+  await marker(page).click();
+  await expect(popup(page)).toContainText("Availability unknown; injury report missing from this feed");
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await expect(popup(page)).toContainText("2026 injury records · 1 reported week");
+  await popup(page).getByText("Sources and timestamps", { exact: true }).click();
+  await expect(popup(page).getByRole("link", { name: /nflverse.*injur/i })).toHaveAttribute("href", /injuries_2026.csv/);
+  await expect(popup(page)).toContainText("History injury file");
+  await expect(popup(page).locator("dt").filter({ hasText: /^Coverage$/ })).toHaveCount(0);
+  await assertPopupFits(page);
 });

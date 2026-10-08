@@ -30,7 +30,7 @@ test("week rollover never carries an earlier Out designation into a missing repo
   feed.weeks.push({ key: nextKey, label: "Week 5", season: 2026, week: 5, starts_at: "2026-10-06T04:00:00Z", ends_at: "2026-10-13T04:00:00Z", byes: [] });
   feed.games.push({ ...earlier.game, id: "week-5-game", week_key: nextKey, kickoff: "2026-10-11T17:00:00Z" });
   const result = comparePlayer(feed, player, nextKey, Date.parse("2026-10-06T15:00:00Z"));
-  assert.equal(result.reportNotice, "Week 5 injury report not available yet");
+  assert.equal(result.reportNotice, "Week 5 injury report missing from this feed");
   assert.equal(result.state, "missing-report");
   const members = opponentRoster(feed, result, nextKey, now);
   assert.ok(members.length > 0);
@@ -41,11 +41,11 @@ test("missing-report wording does not promise Wednesday or pending publication a
   const week = { label: "Week 5" };
   const game = { status: "scheduled", kickoff: "2026-10-11T17:00:00Z" };
   for (const time of ["2026-10-06T15:00:00Z", "2026-10-08T15:00:00Z"])
-    assert.equal(missingReportLabel(week, game, Date.parse(time)), "Week 5 injury report not available yet");
-  assert.equal(missingReportLabel(week, game, Date.parse(game.kickoff)), "Week 5 injury report unavailable");
+    assert.equal(missingReportLabel(week, game, Date.parse(time)), "Week 5 injury report missing from this feed");
+  assert.equal(missingReportLabel(week, game, Date.parse(game.kickoff)), "Week 5 injury report missing from this feed");
   for (const status of ["tbd", "final", "in-progress", "canceled"])
-    assert.equal(missingReportLabel(week, { ...game, status }, now), "Week 5 injury report unavailable");
-  assert.equal(missingReportLabel(week, { ...game, kickoff: null }, now), "Week 5 injury report unavailable");
+    assert.equal(missingReportLabel(week, { ...game, status }, now), "Week 5 injury report missing from this feed");
+  assert.equal(missingReportLabel(week, { ...game, kickoff: null }, now), "Week 5 injury report missing from this feed");
 });
 
 test("a partial available report leaves an unmatched roster identity without an inferred healthy entry", () => {

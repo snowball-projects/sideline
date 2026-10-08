@@ -376,6 +376,7 @@ export function validateFeed(input, now = Date.now()) {
       "team",
       "position",
       "roster_status",
+      "bio",
     ]);
     id(player.id, "Player ID");
     unique(playerIds, player.id, "player ID");
@@ -383,6 +384,20 @@ export function validateFeed(input, now = Date.now()) {
     player.team = team(player.team, "player team");
     choice(player.position, POSITIONS, "player position");
     choice(player.roster_status, ROSTER_STATUSES, "roster status");
+    if (player.bio !== undefined) {
+      const bio = player.bio;
+      object(bio, "Player bio", ["birth_date", "years_exp", "entry_year", "college", "draft_club", "draft_number"]);
+      requireValue(Object.keys(bio).length > 0, "Player bio cannot be empty.");
+      if (bio.birth_date !== undefined) {
+        dateOnly(bio.birth_date, "Birth date");
+        requireValue(bio.birth_date >= "1900-01-01" && Date.parse(bio.birth_date) <= now, "Birth date outside supported range.");
+      }
+      if (bio.college !== undefined) text(bio.college, "College", 200);
+      if (bio.draft_club !== undefined) choice(bio.draft_club, [...TEAMS, "AZ", "OAK", "SD", "STL"], "draft team");
+      for (const [field, min, max] of [["years_exp", 0, 50], ["entry_year", 1920, 2100], ["draft_number", 1, 1000]])
+        if (bio[field] !== undefined)
+          requireValue(Number.isInteger(bio[field]) && bio[field] >= min && bio[field] <= max, `Invalid bio ${field}.`);
+    }
   }
   for (const game of data.games) {
     object(game, "Game", [

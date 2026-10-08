@@ -53,7 +53,7 @@ rights, sample, coverage, interpretations and limitations.
 
 ## Implemented behavior
 
-Version 0.9.2 extends the founder's October 6 field-and-status direction.
+Version 0.9.3 extends the founder's October 6 field-and-status direction.
 The static dashboard retains six selected players, automatic opponents,
 explicit byes, source-relative completeness, missing reports, unknown kickoff,
 started-game uncertainty and freshness warnings. Selections are browser IDs,
@@ -75,7 +75,7 @@ arbitrary eleven is chosen. Multiple compatible first-depth roles share one
 individual marker instead of duplicating a person. Stacks expose all
 matching identities in All, including Out players, backups and inactive players.
 A missing exact-match injury report is summarized once per opponent tile. Partial
-reports have one compact notice. Missing status uses neutral, badge-free markers;
+coverage is retained in source details. Missing status uses neutral, badge-free markers;
 individual details retain the reason availability is unknown. Complete-report
 omissions remain distinct from partial coverage and report-only roster identities.
 
@@ -92,7 +92,13 @@ No separate duplicate long roster panels or impact scores are introduced.
 Hover/focus previews and tap/click details expose injury, availability, actual
 position, source-backed depth and source evidence. Leave, Close, Escape, outside
 press, focus changes and state changes dismiss details reliably. Historical
-production and its limits remain in details rather than crowding the field.
+production and its source metadata remain in details rather than crowding the field.
+An optional, initially collapsed player section supplies available roster bio
+facts and current-season weekly injury records through the selected week. It
+preserves source injury text and reported teams, counts reported weeks, labels
+practice undated, and omits unsupported facts and empty sections. Rookie season,
+continuous team tenure, daily progression and coordinator history require
+additional source work.
 
 Injury-file time, sideline collection, browser checking and original report time
 remain distinct. A recent file or collection is not a recent report; original

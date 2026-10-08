@@ -6,7 +6,7 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.9.2 adds practice badges, neutral missing-status markers and compact defender details.
+Version 0.9.3 adds optional defender bio and weekly injury records while keeping the field and primary popup compact.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.

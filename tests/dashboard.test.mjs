@@ -32,6 +32,19 @@ function rejects(mutate, match) {
   assert.throws(() => validateFeed(data, now), match);
 }
 
+test("optional roster bio accepts old feeds and rejects malformed dates, numbers and unsupported claims", () => {
+  assert.doesNotThrow(() => validateFeed(fixture(), now));
+  const data = fixture();
+  data.players[0].bio = { birth_date: "2000-02-29", years_exp: 0, entry_year: 2026, college: "College Fixture", draft_club: "TEN", draft_number: 146 };
+  assert.equal(validateFeed(data, now).players[0].bio.years_exp, 0);
+  for (const draft_club of ["AZ", "OAK", "SD", "STL"]) {
+    data.players[0].bio.draft_club = draft_club;
+    assert.equal(validateFeed(data, now).players[0].bio.draft_club, draft_club);
+  }
+  for (const bio of [{}, { birth_date: "2001-02-29" }, { birth_date: "2027-01-01" }, { years_exp: -1 }, { years_exp: "2" }, { entry_year: 1910 }, { draft_club: "unknown" }, { draft_number: 0 }, { team_tenure: 8 }, { college: "x".repeat(201) }])
+    rejects((feed) => { feed.players[0].bio = bio; }, /bio|Birth date|College|draft team/i);
+});
+
 test("search matches names, accents, team and position without filtering injured current members", () => {
   const data = validateFeed(fixture(), now);
   assert.equal(searchPlayers(data, "eli")[0].roster_status, "injured-reserve");

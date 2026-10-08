@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.2";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.3";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -312,11 +312,8 @@ export function comparePlayer(feed, player, weekKey, now = Date.now()) {
 
 // Exact matchup coverage is established by comparePlayer above, never a file's
 // recency or another team's/week's rows. No release-day promise is inferred.
-export function missingReportLabel(week, game, now = Date.now()) {
-  const upcoming = game?.status === "scheduled" && game.kickoff &&
-    Date.parse(game.kickoff) > now;
-  return (week?.label || "Matchup") + " injury report " +
-    (upcoming ? "not available yet" : "unavailable");
+export function missingReportLabel(week) {
+  return (week?.label || "Matchup") + " injury report missing from this feed";
 }
 
 export const STATUS_LEGEND = [

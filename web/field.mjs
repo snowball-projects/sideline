@@ -157,7 +157,7 @@ export function fieldStatus(
     return {
       text: "",
       key: "neutral",
-      label: "Availability unknown; injury report unavailable",
+      label: "Availability unknown; injury report missing from this feed",
     };
   if (!member.injury)
     return {

@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.2 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.3 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -66,7 +66,17 @@ players keeps the fictional warning. It does not replace saved NFL selections.
 Game designation and practice participation are separate. Full practice is not
 a guarantee of playing; a blank source game designation is not “healthy.”
 Defender popups keep name, source role, injury, practice, game designation and
-compact 2025 REG production. Source links and timestamps expand on demand.
+compact 2025 REG production when a matching stat record exists. Source links
+and timestamps expand on demand. Player details starts collapsed and builds its
+contents on first opening: available age/birth date, league experience, NFL
+eligibility year, college and draft team/pick, plus expandable current-season
+injury records through the selected week. Rows join exact player IDs across
+reported teams and retain original injury/body-part text. Counts describe
+reported weeks, not injuries; omitted weeks do not establish health. These are
+latest stored weekly rows, not preserved daily revisions or an as-of snapshot.
+Practice is labelled undated because no practice day is supplied. Eligibility
+year is not presented as rookie season or debut. No uninterrupted team tenure
+or coordinator history is inferred. Unavailable optional sections are omitted.
 
 Matching defensive rows are displayed, including defenders without modeled
 positional relevance. Offensive, special-teams and unclassified positions are
@@ -74,11 +84,10 @@ excluded from the tiles by the founder's latest instruction. The collector
 still preserves all source report rows. A row count is only a count. Source coverage remains
 `partial` because independent completeness against original team reports has
 not been established. No exact season/phase/week/game/opponent report produces one matchup notice,
-such as “Week 5 injury report not available yet” for a scheduled future kickoff.
-At or after kickoff, canceled/live/final games, and unknown kickoff it says
-“unavailable”; it does not promise a publication date. The field and roster do
-not repeat Unknown or question-mark badges for missing status. An available
-partial report gets one compact notice; its unmatched identities remain unknown.
+such as “Week 5 injury report missing from this feed.” This describes collection
+coverage, not whether an official team report exists. The field and roster do
+not repeat Unknown or question-mark badges for missing status. Partial coverage
+stays in source details; unmatched identities remain unknown without a tile notice.
 Details distinguish a complete-report omission, a partial-report omission,
 missing team coverage and a report-only identity absent from the roster. Earlier-week Out designations never carry forward.
 
@@ -194,7 +203,8 @@ It is separate from the historical Python snapshot schema.
 | `sources`                                         | Stable ID, publisher label, HTTPS asset/license URLs and reviewed permission note                              |
 | `roster`, `schedule`                              | Source ID, original vintage or null, optional source file update, retrieval and coverage                       |
 | `weeks`                                           | Stable phase/season/week key, label, time window and explicitly confirmed bye teams                            |
-| `players`                                         | Stable source ID, name, current team, position and roster status                                               |
+| `players`                                         | Stable source ID, name, current team, position, roster status and optional `bio`                               |
+| `players[].bio` (optional)                         | Supplied birth date, league experience, NFL eligibility year, college, draft club/pick; absent fields omitted  |
 | `games`                                           | Stable game ID, week key, teams, kickoff or null, schedule/game status                                         |
 | `depth` (optional for older/fictional feeds)      | Source metadata and latest team observations: stable player ID, team, position, rank and observation timestamp |
 | `reports`                                         | Exact game/week/team, source metadata and all matching injury `entries`                                        |
