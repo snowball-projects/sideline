@@ -56,6 +56,24 @@ test("a partial available report leaves an unmatched roster identity without an 
   feed.players.push({ id: "unlisted-defender", name: "Unlisted Defender", position: "LB", team: result.opponent, roster_status: "active" });
   const member = opponentRoster(feed, result, weekKey, now).find((m) => m.id === "unlisted-defender");
   assert.equal(member.injury, null);
+  assert.equal(member.status.key, "unknown");
   assert.equal(result.report.coverage, "partial");
   assert.equal(result.reportNotice, undefined);
+});
+
+test("same-name conflicting report IDs remain separate and never become complete-report omissions", () => {
+  const feed = fixture();
+  const player = feed.players.find((p) => p.id === "demo-kai");
+  const result = comparePlayer(feed, player, weekKey, now);
+  result.report.coverage = "complete";
+  const entry = result.entries.find((entry) => entry.game_status === "Out");
+  feed.players.push({ id: "different-roster-id", name: entry.name, position: entry.position,
+    team: result.opponent, roster_status: "active" });
+  const members = opponentRoster(feed, result, weekKey, now);
+  const roster = members.find((member) => member.id === "different-roster-id");
+  assert.equal(roster.injury, null);
+  assert.equal(roster.reportIdentityConflict, true);
+  assert.equal(roster.status.key, "unknown");
+  assert.equal(members.find((member) => member.id === entry.id).injury.game_status, "Out");
+  assert.equal(members.filter((member) => member.name === entry.name).length, 2);
 });

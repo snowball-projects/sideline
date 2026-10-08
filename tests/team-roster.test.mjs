@@ -339,5 +339,5 @@ test("row pills show only reported injuries and meaningful availability, never r
   member.injury.practice_status = "Full";
   assert.equal(memberPills(member).status, null);
   member.injury.game_status = "Unknown";
-  assert.equal(memberPills(member).status, "?");
+  assert.equal(memberPills(member).status, null);
 });

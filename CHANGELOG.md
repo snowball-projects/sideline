@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.9.1 - proposed
+## 0.9.2 - proposed
+
+- Show top-right LP/DNP practice badges and include those defenders in Uncertain;
+  preserve game OUT/D/Q precedence and exclude game Out from Uncertain.
+- Use neutral markers for missing status with one compact team coverage notice.
+- Replace long defender popups with compact status and season-labelled stats;
+  keep source links and timestamps in an accessible expandable section.
+- Record the October 8 source, join, collection and deployment diagnosis.
+
+## 0.9.1 - 2026-10-06
 
 - Name individual field markers and preserve full accessible identities.
 - Use published defensive depth positions, retain multiple assignments, and

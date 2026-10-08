@@ -910,10 +910,10 @@ body {
   width: 76px;
   min-height: 48px;
   padding: 5px 2px;
-  border: 1.5px solid #718b66;
+  border: 1.5px solid var(--status-color, #718b66);
   border-radius: 11px;
-  background: #fbfcf4;
-  color: #355740;
+  background: var(--status-fill, #fbfcf4);
+  color: #596254;
   box-shadow: 0 2px 3px #2c4f3510;
 }
 .defender-marker:hover,
@@ -932,6 +932,17 @@ body {
   line-height: 12px;
   font-weight: 650;
   text-align: center;
+}
+.popover summary {
+  cursor: pointer;
+  min-height: 24px;
+}
+.popover details[open] summary {
+  margin-bottom: 8px;
+}
+.production-counts {
+  font-size: 12px;
+  line-height: 1.6;
 }
 .report-notice {
   margin: 0 12px;

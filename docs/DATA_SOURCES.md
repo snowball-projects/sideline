@@ -246,3 +246,80 @@ no live/final/cancelled/postponed state is provided. Scores and elapsed kickoff
 do not establish one. No new game-status source or faster upstream collection
 is introduced. The browser checks shared data and updates clock labels; it does
 not force injury-source updates.
+
+## October 8, 2026 freshness and coverage investigation
+
+This is a point-in-time observation, not a new source or scheduling policy.
+The live `current.json`, a fresh Chromium response and the existing Pages
+artifact from [run 37754495107](https://github.com/snowball-projects/sideline/actions/runs/37754495107)
+all carried the same generated feed. The downloaded artifact and public JSON
+matched SHA-256 `e71a4a1b6d29313df2a3eaa2e98c96a117a76a7b66faff9a64556c7365586149`.
+
+| Event | Exact UTC timestamp |
+| --- | --- |
+| Published injury asset update | 2026-10-08T06:01:28.000Z |
+| sideline retrieved injuries | 2026-10-08T09:07:57.408Z |
+| sideline generated feed | 2026-10-08T09:07:57.610Z |
+| Pages artifact created | 2026-10-08T09:08:01Z |
+| Live JSON HTTP Last-Modified | 2026-10-08T09:08:10Z |
+| Pages action reported success | 2026-10-08T09:08:13.7636126Z |
+| Public HTTP response observed | 2026-10-08T15:41:49Z |
+| Fresh source inspection generated (inspection only) | 2026-10-08T15:43:22.295Z |
+
+“File 9h old” at approximately 15:41 UTC is the floored difference from
+06:01:28, not the age of the 09:07 collection or the original team report.
+`reported_at` remains null: the current source supplies no report or practice-day
+timestamp. A browser check reads same-origin JSON with `cache: no-cache`; it
+cannot cause a collection or establish a new original-report date. The observed
+public response was a cache miss (`Age: 0`), and a new browser session loaded
+`app.mjs?v=0.9.1` and the same feed.
+
+Week 5 contains 21 team reports and 222 all-position injury rows. Exact matchup
+and stable-ID checks for the founder's three WR comparisons produced:
+
+| Selected WR | Opponent | Team report rows | Defensive matches | Roster defenders without an injury entry |
+| --- | --- | ---: | ---: | ---: |
+| Parker Washington (JAX) | PHI | report absent | 0 | 36 |
+| Denzel Boston (CLE) | NYJ | 8 | 3 | 38 |
+| Malachi Fields (NYG) | WAS | 23 | 11 | 27 |
+
+All reported defensive IDs for NYJ and WAS match their current roster; neither
+has a report-only defensive identity. NYJ's Francisco Mauigoa and Jarvis
+Brownlee Jr. report DNP; Kingsley Enagbare reports LP. WAS has four LP, three
+DNP and four Full defensive rows. These rows have no game designation. The
+other NYJ/WAS defenders are absent from partial source reports, and PHI has
+missing team coverage. Neither case establishes health. Complete-report omissions
+remain separate in the UI. If a same-name report identity has a different ID,
+both identities remain intact and the mismatch is labelled; names never repair
+joins or transfer statuses.
+
+The current [publisher injury workflow](https://github.com/nflverse/nflverse-rosters/blob/main/.github/workflows/update_injuries.yaml)
+configures 07:07 UTC daily in September–February. Its October 8
+[scheduled run 37793089786](https://github.com/nflverse/nflverse-rosters/actions/runs/37793089786)
+was created and started at **14:30:53Z** and finished at **14:32:52Z**; the injury
+asset update became **14:32:41Z**. The fresh inspection saw that newer file,
+roster update 14:34:41Z, depth update 14:33:15Z and schedule update 15:06:52Z,
+but still the same 21 Week 5 teams, NYJ 8 rows, WAS 23 and no PHI. Thus collecting
+the newer file would reduce file age but would not fill this coverage gap.
+
+sideline still configures `23 * * * *`. Actual scheduled runs on October 8 were
+created at **02:02:49Z** and **09:07:45Z**; no later run was present during this
+inspection. The latter also started at 09:07:45Z, so the observed delay was
+before run creation, not a long executing collection. Upstream has the same
+created/start pattern. The APIs do not identify the scheduler's internal reason
+for these gaps; configured cron is not evidence that every hourly trigger ran.
+The preceding three sideline failures ([October 6 21:42 run](https://github.com/snowball-projects/sideline/actions/runs/37535725812),
+[October 7 01:38 run](https://github.com/snowball-projects/sideline/actions/runs/37558086604),
+[October 7 08:49 run](https://github.com/snowball-projects/sideline/actions/runs/37596351781))
+each failed on the required schedule release's HTTP 404. The collector correctly
+rejected the update and kept the previous deployment. Later successful runs
+published normally; the inspected 09:08 artifact proves that deployment succeeded.
+No workflow was dispatched, no refresh schedule changed and no site deployed by
+this investigation. An immediate publication or a scheduling change requires
+separate approval; a new source completeness claim requires separate evidence.
+
+A local `npm run refresh` generated a validated feed at
+`2026-10-08T15:54:54.492Z`, with the newer source-file timestamps above and
+unchanged Week 5 coverage. `npm run build:live` included both validated current
+and 2025 historical data. These ignored local files were used for verification
+only and were not committed or deployed.

@@ -141,7 +141,9 @@ export function filterDefenders(members, filter = "all") {
     return members.filter((member) => member.injury?.game_status === "Out");
   if (filter === "uncertain")
     return members.filter((member) =>
-      ["Questionable", "Doubtful"].includes(member.injury?.game_status),
+      member.injury?.game_status !== "Out" &&
+      (["Questionable", "Doubtful"].includes(member.injury?.game_status) ||
+        ["Limited", "Did not practice"].includes(member.injury?.practice_status)),
     );
   return [...members];
 }
@@ -149,7 +151,7 @@ export function filterDefenders(members, filter = "all") {
 export function fieldStatus(
   member,
   reportAvailable = true,
-  reportCoverage = "complete",
+  reportCoverage = "unknown",
 ) {
   if (!reportAvailable)
     return {
@@ -157,11 +159,15 @@ export function fieldStatus(
       key: "neutral",
       label: "Availability unknown; injury report unavailable",
     };
-  if (reportCoverage !== "complete" && !member.injury)
+  if (!member.injury)
     return {
-      text: "?",
-      key: "unknown",
-      label: "No matching injury entry; availability unknown",
+      text: "",
+      key: "neutral",
+      label: member.reportIdentityConflict
+        ? "Report/roster IDs differ for this name; availability unknown"
+        : reportCoverage === "complete"
+        ? "Not listed in complete team report; availability unconfirmed"
+        : "No matching injury entry in partial report; availability unknown",
     };
   const gameStatus = member.injury?.game_status;
   return (
@@ -173,11 +179,15 @@ export function fieldStatus(
         label: "Reported Questionable",
       },
       Doubtful: { text: "D", key: "doubtful", label: "Reported Doubtful" },
-      Unknown: { text: "?", key: "unknown", label: "Availability unknown" },
     }[gameStatus] || {
+      "Did not practice": { text: "DNP", key: "dnp", label: "Reported did not practice; game availability unconfirmed" },
+      Limited: { text: "LP", key: "limited", label: "Reported limited practice; game availability unconfirmed" },
+    }[member.injury.practice_status] || {
       text: "",
       key: "neutral",
-      label: "No game designation; availability unconfirmed",
+      label: gameStatus === "Unknown"
+        ? "Game designation unknown; availability unconfirmed"
+        : "No game designation; availability unconfirmed",
     }
   );
 }
