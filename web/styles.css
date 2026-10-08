@@ -1304,3 +1304,6 @@ body {
   border-style: dashed;
   background: #f2f6ea;
 }
+
+.injury-season { display: flex; align-items: center; gap: 6px; margin: 8px 0; }
+.injury-season select { width: auto; padding: 3px 6px; }

@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.9.4 - proposed
+## 0.9.5 - proposed
+
+- Add a bounded optional 2025 injury archive for exact-ID current defenders, preserving original reported teams, weeks, body-part text and practice/game statuses.
+- Reuse collapsed injury records with a small season choice; current-season history remains the default when present. Empty archive sections are omitted.
+- Keep archive status separate from current badges, filters and coverage; missing weeks never establish health, and practice remains undated.
+- Retain validated optional history after collection/browser failure or an older browser artifact without blocking fresh current injuries.
+
+## 0.9.4 - 2026-10-08
 
 - Add explicit player-reference rookie seasons and expandable 2025/2026 observed roster teams/weeks, joined only by GSIS identity.
 - Preserve gaps, transfers and REG/POST labels without claiming continuous tenure or games played.

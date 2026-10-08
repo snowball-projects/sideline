@@ -25,3 +25,6 @@ web/player-history.json.pending
 
 playwright-report/
 test-results/
+
+web/injury-history.json
+web/injury-history.json.pending
