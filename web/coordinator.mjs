@@ -9,11 +9,10 @@ const SOURCE_URLS = {
 };
 const TITLES = { dc: "Defensive Coordinator", acting_dc: "Acting Defensive Coordinator", co_dc: "Co-Defensive Coordinator" };
 export const MAX_COORDINATOR_BYTES = 16384;
-export const COORDINATOR_RECHECK_MS = 7 * 86400000;
 export function validateCoordinators(data, now = Date.now()) {
   const invalid = () => { throw new Error("Invalid coordinator facts pilot."); };
   const keys = (value, expected) => value && Object.keys(value).sort().join() === [...expected].sort().join();
-  if (!keys(data, ["schema_version", "season", "checked_at", "appointments"]) || data.schema_version !== 1 || data.season !== 2026 ||
+  if (!keys(data, ["schema_version", "season", "checked_at", "maintenance", "appointments"]) || data.schema_version !== 1 || data.season !== 2026 || data.maintenance !== "manual" ||
       typeof data.checked_at !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(data.checked_at) || !Number.isFinite(Date.parse(data.checked_at)) ||
       Date.parse(data.checked_at) > now + 300000 ||
       !Array.isArray(data.appointments) || data.appointments.length > 12) invalid();
@@ -35,7 +34,7 @@ export function validateCoordinators(data, now = Date.now()) {
 }
 export function coordinatorFor(data, team, { mode, season, now = Date.now() } = {}) {
   if (!data || mode !== "live" || season !== data.season ||
-      now < Date.parse(data.checked_at) || now - Date.parse(data.checked_at) > COORDINATOR_RECHECK_MS) return null;
+      now < Date.parse(data.checked_at)) return null;
   const appointments = data.appointments.filter(record => record.team === team);
   return appointments.length ? appointments : null;
 }

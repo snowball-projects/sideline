@@ -108,7 +108,7 @@ and coordinator history require additional source work. A bounded current-season
 coordinator pilot may show one optional team-context line for individually
 reviewed role/start-season facts, with provenance in existing Sources. It is
 not league-wide coverage, a play-calling assignment or a continuous-duration
-calculation; missing and expired observations are omitted. The optional 2025 injury
+calculation; missing observations and unsupported seasons are omitted. The optional 2025 injury
 archive reuses the collapsed injury-record section with a season choice. Current
 records remain the default when present; historical statuses never supply a
 current badge, filter or coverage state.

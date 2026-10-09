@@ -2,6 +2,7 @@
   "schema_version": 1,
   "season": 2026,
   "checked_at": "2026-10-09T03:48:05.346Z",
+  "maintenance": "manual",
   "appointments": [
     {
       "team": "PHI",

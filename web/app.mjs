@@ -352,13 +352,8 @@ function appendCoordinatorSources(panel, team) {
       details.append(source);
     }
   }
-  details.append(facts([["Checked", time(coordinators.checked_at)]]));
+  details.append(facts([["Checked", time(coordinators.checked_at)], ["Maintenance", "Manual"]]));
   panel.append(details);
-}
-function viewClockKey() {
-  return clockFingerprint(feed, weekKey) + JSON.stringify(
-    coordinators?.appointments.map(record => Boolean(teamCoordinators(record.team))),
-  );
 }
 function sourceDetails() {
   const panel = node("div");
@@ -1084,7 +1079,7 @@ function emptySlot() {
   return slot;
 }
 function renderCards() {
-  if (feed) renderedClockKey = viewClockKey();
+  if (feed) renderedClockKey = clockFingerprint(feed, weekKey);
   pendingClock = false;
   const cards = $("cards"),
     focused = document.activeElement;
@@ -1508,10 +1503,10 @@ function updateClock() {
     renderWeeks();
     if (
       previousWeek !== weekKey ||
-      renderedClockKey !== viewClockKey()
+      renderedClockKey !== clockFingerprint(feed, weekKey)
     )
       renderCards();
-  } else if (renderedClockKey !== viewClockKey()) {
+  } else if (renderedClockKey !== clockFingerprint(feed, weekKey)) {
     pendingClock = true;
     renderRefreshState();
   }

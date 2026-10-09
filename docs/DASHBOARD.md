@@ -86,11 +86,12 @@ for example “DC Vic Fangio · since 2024”, only in live 2026 views. The Sour
 area identifies its six-team scope, original role, source links and checked time.
 It contains PHI, NYJ, CLE, WAS, NE and MIA; all other teams have no new placeholder
 or notice. NE uses its formal 2026 coordinator appointment, not 2025 play-calling
-duties; TB has no inferred coordinator. These are manually recorded facts with
-a seven-day recheck window. Before the checked time, after that window, in other
-seasons or in the fictional example, the line is omitted. The page clock expires
-visible facts safely through the existing interaction deferral. Fetch failure
-can retain an unexpired validated pilot, but cannot renew its checked timestamp.
+duties; TB has no inferred coordinator. These are manually maintained factual
+observations for 2026. Their original
+checked date and manual maintenance status stay in Sources; they do not expire
+automatically or acquire a new checked date on refresh. Before the checked time,
+in other seasons or in the fictional example, the line is omitted. Fetch failure
+can retain a validated pilot but cannot renew its checked timestamp.
 No coordinator field enters injuries, filters, matchup resolution or production.
 
 When 2025 archive records match, the existing collapsed injury section includes

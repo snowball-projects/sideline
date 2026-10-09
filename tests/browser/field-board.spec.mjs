@@ -1235,15 +1235,22 @@ test('six comparison tiles align with mixed coordinator coverage and wrap safely
   expect(errors).toEqual([]);
 });
 
-test('coordinator pilot expires on the page clock while current injury data remains usable', async ({page}) => {
-  const facts={...coachingFacts(),checked_at:new Date(Date.parse(NOW)-7*86400000+1000).toISOString()};
+test('manually maintained coordinator facts remain available after thirty days with original provenance', async ({page}) => {
+  const facts={...coachingFacts(),checked_at:new Date(Date.parse(NOW)-30*86400000).toISOString()};
   const {errors}=await setup(page,2,coachingFixture(),null,null,null,null,facts);
   await expect(firstTile(page).locator('.coordinator-context')).toHaveCount(1);
   await page.locator('#reports').focus();
   await page.clock.setFixedTime(new Date(Date.parse(NOW)+1001));
   await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
-  await expect(page.locator('.coordinator-context')).toHaveCount(0);
+  await expect(firstTile(page).locator('.coordinator-context')).toHaveText('DC Zak Kuhr · since 2026');
   await expect(firstTile(page).locator('.injury-row')).toHaveCount(DEFENDERS.length);
   await tab(page,'Uncertain').click();await expect(firstTile(page).locator('.injury-row')).toHaveCount(5);
+  const info=firstTile(page).getByRole('button',{name:'NE report source and freshness'});
+  await info.click();
+  const details=popup(page).locator('details').filter({has:page.locator('summary',{hasText:'Coordinator · Zak Kuhr'})});
+  await details.locator('summary').click();
+  await expect(details).toContainText('Aug 14');
+  await expect(details).toContainText(/Maintenance\s*Manual/);
+  await page.keyboard.press('Escape');
   expect(errors).toEqual([]);
 });

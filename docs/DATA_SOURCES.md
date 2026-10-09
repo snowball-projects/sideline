@@ -572,12 +572,12 @@ does not authorize systematic retrieval or establish a league-wide source
 permission: existing NFL/team collection restrictions and injury-source holds
 remain. No all-team crawler or 32-team manual registry is introduced.
 
-Facts are visible only in live 2026 context from their checked timestamp through
-seven days afterward. The seven-day window is a conservative operating recheck
-rule, not evidence that a title cannot change inside that period. Updating the
-feed or deploying again never advances `checked_at`; a new manual review is
-required. After expiry the optional line is omitted without repetitive warning
-badges. A future review must respect the applicable source access scope.
+Facts remain available in live 2026 context with their original checked timestamp
+and `maintenance: manual`. There is no automatic age cutoff. The role/start-season
+line describes the recorded 2026 appointment; the Sources area preserves when
+it was checked. Updating the feed or deploying again never advances `checked_at`.
+Corrections require a manual source-backed amendment that respects the applicable
+access scope. No automatic scraper, recheck claim or warning paragraph is added.
 
 Current coverage is exactly 6/32 teams. The other 26, historical changes, exact
 effective dates, current acting/shared exceptions elsewhere and predecessor

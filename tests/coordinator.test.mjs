@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { coordinatorFor, coordinatorLabel, validateCoordinators, COORDINATOR_RECHECK_MS } from '../web/coordinator.mjs';
+import { coordinatorFor, coordinatorLabel, validateCoordinators } from '../web/coordinator.mjs';
 const pilot = JSON.parse(await readFile(new URL('../web/coordinators.json', import.meta.url), 'utf8'));
 const now = Date.parse(pilot.checked_at);
 const context = {mode:'live', season:2026, now};
@@ -18,10 +18,12 @@ test('reviewed pilot preserves formal coordinator role and season, rather than c
   assert.equal(coordinatorFor(null, 'NE', context), null);
 });
 
-test('manual observations never become current facts before checking or beyond their recheck window', () => {
+test('manual facts remain available with their original checked date without an automatic expiry or retimestamp', () => {
   assert.equal(coordinatorFor(pilot,'PHI',{...context, now:now-1}),null);
-  assert.ok(coordinatorFor(pilot,'PHI',{...context, now:now+COORDINATOR_RECHECK_MS}));
-  assert.equal(coordinatorFor(pilot,'PHI',{...context, now:now+COORDINATOR_RECHECK_MS+1}),null);
+  assert.ok(coordinatorFor(pilot,'PHI',{...context, now:now+30*86400000}));
+  assert.ok(coordinatorFor(pilot,'PHI',{...context, now:now+365*86400000}));
+  assert.equal(pilot.checked_at,'2026-10-09T03:48:05.346Z');
+  assert.equal(pilot.maintenance,'manual');
   assert.throws(()=>validateCoordinators(pilot,now-300001));
 });
 
@@ -45,7 +47,7 @@ test('optional facts reject unrelated source paths, metadata, conflicting roles 
 
 test('explicitly sourced shared roles remain an array and acting roles retain their title', () => {
   const base=structuredClone(pilot.appointments.find(r=>r.team==='NE'));
-  const shared={schema_version:1,season:2026,checked_at:pilot.checked_at,appointments:[
+  const shared={schema_version:1,season:2026,checked_at:pilot.checked_at,maintenance:'manual',appointments:[
     {...base,name:'Synthetic Coach One',role:'co_dc',title:'Co-Defensive Coordinator'},
     {...base,name:'Synthetic Coach Two',role:'co_dc',title:'Co-Defensive Coordinator'},
   ]};

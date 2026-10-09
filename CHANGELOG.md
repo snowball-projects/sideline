@@ -4,7 +4,7 @@
 
 - Add an optional six-team coordinator facts pilot: one compact team line with role/start-season provenance in existing Sources.
 - Keep New England's formal 2026 appointment separate from earlier play-calling; omit Tampa Bay and other unreviewed teams.
-- Hide facts outside the reviewed season, before verification or after seven days without a manual recheck; optional failure never changes injuries or filters.
+- Keep manually maintained facts available with their original checked date in Sources; omit unsupported seasons/teams, and preserve injuries and filters after optional failure.
 
 ## 0.9.6 - 2026-10-09
 
