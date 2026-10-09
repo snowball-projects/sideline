@@ -2,6 +2,8 @@ let active = null;
 let nextId = 0;
 const attachments = new WeakMap();
 const restoredTriggers = new WeakSet();
+const previewTriggers = new WeakSet();
+const suppressedPreviews = new WeakSet();
 const POINTER_GRACE_MS = 180;
 const FOCUSABLE =
   'a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
@@ -205,11 +207,28 @@ export function focusPopoverTrigger(trigger) {
 
 function closeAndRestore(record, restore = false) {
   const shouldRestore = restore || record.panel.contains(document.activeElement);
+  const point = record.pointerPosition;
   dismissPopover();
+  // Removing a panel can uncover a marker beneath a stationary mouse. That
+  // synthetic pointerenter is not a request for another preview. Leave/reenter,
+  // click or deliberate keyboard focus can still open the exposed marker.
+  for (let exposed = point && document.elementFromPoint?.(point.x, point.y);
+       exposed; exposed = exposed.parentElement) {
+    if (previewTriggers.has(exposed)) {
+      suppressedPreviews.add(exposed);
+      break;
+    }
+  }
   if (shouldRestore) focusPopoverTrigger(record.trigger);
+}
+function rememberPointer(record, event) {
+  if (event.pointerType === "touch") record.pointerPosition = null;
+  else if (Number.isFinite(event.clientX) && Number.isFinite(event.clientY))
+    record.pointerPosition = {x: event.clientX, y: event.clientY};
 }
 
 function onOutsidePointer(event) {
+  if (active) rememberPointer(active, event);
   if (event.target.closest?.("[data-preserve-popover]")) return;
   if (
     active &&
@@ -364,6 +383,7 @@ function openPopover(record, pinned = false) {
     listen(record, window.visualViewport, "scroll", refreshPopover);
   }
   listen(record, document, "pointerdown", onOutsidePointer, true);
+  listen(record, document, "pointermove", event => rememberPointer(record, event), true);
   listen(record, document, "keydown", onKeydown, true);
   listen(record, document, "focusin", onFocusChange);
   listen(record, document, "focusout", onFocusOut);
@@ -404,8 +424,11 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
   // Native buttons emit click for pointer/touch, Enter and Space. A click
   // pins an existing preview; only the next click toggles that popup closed.
   // Default source-information controls remain deliberately click-only.
-  const activate = () => {
-    if (active === record && record.pinned) dismissPopover();
+  const activate = (event) => {
+    suppressedPreviews.delete(trigger);
+    record.pointerPosition = null;
+    if (event.detail) rememberPointer(record, event);
+    if (active === record && record.pinned) closeAndRestore(record);
     else if (active === record) {
       record.pinned = true;
       clearLeaveTimer(record);
@@ -414,20 +437,28 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
   const enter = (event) => {
     if (event.pointerType === "touch") return;
     record.overTrigger = true;
+    rememberPointer(record, event);
     clearLeaveTimer(record);
+    if (suppressedPreviews.has(trigger)) return;
     // A deliberate click stays pinned until another deliberate interaction.
     if (!active?.pinned) openPopover(record);
   };
   const leave = (event) => {
     if (event.pointerType === "touch") return;
     record.overTrigger = false;
+    suppressedPreviews.delete(trigger);
     scheduleLeave(record);
   };
   const focus = () => {
-    if (!restoredTriggers.has(trigger)) openPopover(record);
+    if (!restoredTriggers.has(trigger)) {
+      suppressedPreviews.delete(trigger);
+      record.pointerPosition = null;
+      openPopover(record);
+    }
   };
   trigger.addEventListener("click", activate);
   if (preview) {
+    previewTriggers.add(trigger);
     trigger.addEventListener("pointerenter", enter);
     trigger.addEventListener("pointerleave", leave);
     trigger.addEventListener("focus", focus);
@@ -443,6 +474,8 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
     trigger.removeAttribute("aria-haspopup");
     trigger.removeAttribute("aria-controls");
     trigger.removeAttribute("aria-expanded");
+    previewTriggers.delete(trigger);
+    suppressedPreviews.delete(trigger);
     attachments.delete(trigger);
   };
   attachments.set(trigger, cleanup);

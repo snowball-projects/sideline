@@ -4,6 +4,7 @@
 
 - Expand manual defensive coaching facts to all 32 teams: 31 formal coordinators and Tampa Bay’s explicitly titled head coach/defensive playcaller.
 - Add 255 selected prior jobs and source-backed prior coordinator records in collapsed Sources, preserving interim appointments, separate stints and play-calling exceptions.
+- Keep explicit popup dismissal stable when removing an overlay exposes a marker beneath a stationary pointer.
 - Preserve each current/historical fact’s original checked time; retain unknown transition dates and source conflicts without affecting injuries, filters or production.
 
 ## 0.9.7 - 2026-10-09

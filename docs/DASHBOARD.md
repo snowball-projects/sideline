@@ -98,7 +98,9 @@ optional artifacts retain only validated prior facts while current injuries can
 update. Before each record’s checked time, outside live 2026 or in the fictional
 example, its line is omitted. Facts have no automatic expiry or renewed checked
 date on refresh. No coaching field enters injuries, filters, matchup resolution
-or production. No provider, scraper, refresh schedule or paid service is added.
+or production. Explicit dismissal suppresses an uncovered stationary-pointer
+preview until leave/reentry, click or deliberate focus; normal hover and touch
+activation remain available. No provider, scraper, refresh schedule or paid service is added.
 
 When 2025 archive records match, the existing collapsed injury section includes
 a small Season choice. It defaults to current-season records when available;

@@ -607,3 +607,27 @@ test("default click-only controls still toggle and get explicit dismissal", (t) 
   emit(env.panel().children[0], "click");
   env.assertClean();
 });
+
+
+test("explicit dismissal ignores a stationary pointer exposing another marker until deliberate reentry", (t) => {
+  const env = environment(t);
+  const { trigger: source } = env.attach({preview:false});
+  const { trigger: exposed } = env.attach({preview:true});
+  env.doc.elementFromPoint = (x,y) => { assert.equal(x,100); assert.equal(y,100); return exposed; };
+  for (const method of ["Escape","Close"]) {
+    emit(source,"click");
+    const panel=env.panel();
+    panel.children[0].focus();
+    emit(env.doc,"pointermove",{pointerType:"mouse",clientX:100,clientY:100});
+    if(method==="Escape") emit(env.doc,"keydown",{key:"Escape"});
+    else emit(panel.children[0],"click");
+    env.assertClean();
+    assert.equal(env.doc.activeElement,source);
+    emit(exposed,"pointerenter",{pointerType:"mouse",clientX:100,clientY:100});
+    env.assertClean();
+    emit(exposed,"pointerleave",{pointerType:"mouse"});
+    emit(exposed,"pointerenter",{pointerType:"mouse",clientX:100,clientY:100});
+    assert.equal(isPopoverOpen(),true);
+    dismissPopover();
+  }
+});

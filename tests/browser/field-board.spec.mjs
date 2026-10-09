@@ -1283,7 +1283,21 @@ test('selected coaching history preserves formal predecessor and prior play-call
  await jobs.locator('summary').click();await expect(jobs).toContainText('TEN · 2021–2023');
  await expect(jobs).toContainText('Defensive Quality Control');
  await assertPopupFits(page);await evidence(page,testInfo,`coaching-history-${isMobile?'mobile':'desktop'}`);
+ const uncovered=marker(page,'Field Fixture Full');
+ if(isMobile){
+  const target=await uncovered.boundingBox(),panel=await popup(page).boundingBox();
+  const x=target.x+target.width/2,y=target.y+target.height/2;
+  expect(x).toBeGreaterThan(panel.x);expect(x).toBeLessThan(panel.x+panel.width);
+  expect(y).toBeGreaterThan(panel.y);expect(y).toBeLessThan(panel.y+panel.height);
+  // Closing the overlay exposes a marker beneath an unmoved mouse.
+  await page.mouse.move(x,y);await expect(popup(page)).toContainText('NE report');
+ }
  await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);await expect(info).toBeFocused();
+ if(isMobile){
+  await page.mouse.move(1,1);await uncovered.hover();
+  await expect(popup(page)).toContainText('Field Fixture Full');
+  await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);
+ }
  await expect(firstTile(page).locator('.coordinator-context')).toHaveText('DC Zak Kuhr · since 2026');
  await tab(page,'Uncertain').click();await expect(firstTile(page).locator('.injury-row')).toHaveCount(5);
  expect(errors).toEqual([]);expect(externalRequests).toEqual([]);
