@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.7";
+} from "./contribution.mjs?v=0.9.8";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.7";
+} from "./refresh.mjs?v=0.9.8";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,12 +15,12 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.7";
-import { parseFeed } from "./feed.mjs?v=0.9.7";
-import { validateCoordinators, coordinatorFor, coordinatorLabel, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.7";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.7";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.7";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.7";
+} from "./field.mjs?v=0.9.8";
+import { parseFeed } from "./feed.mjs?v=0.9.8";
+import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.8";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.8";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.8";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.8";
 import {
   searchPlayers,
   opponentRoster,
@@ -37,14 +37,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.7";
+} from "./model.mjs?v=0.9.8";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.7";
+} from "./popover.mjs?v=0.9.8";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -339,20 +339,62 @@ function teamCoordinators(team) {
     mode: activeMode, season: feed?.weeks.find(week => week.key === weekKey)?.season,
   });
 }
+function appendCoachingEvidence(panel, record) {
+  const source = node("p");
+  for (const [index, url] of record.sources.entries()) {
+    if (index) source.append(document.createTextNode(" · "));
+    source.append(link("Source " + (index + 1), url));
+  }
+  panel.append(source, facts([["Checked", time(record.checked_at)]]));
+}
 function appendCoordinatorSources(panel, team) {
   const records = teamCoordinators(team);
   if (!records) return;
   const details = node("details", undefined, "source-block");
-  details.append(node("summary", "Coordinator · " + records.map(record => record.name).join(" / ")));
+  const exception = records[0].role === "hc_playcaller";
+  details.append(node("summary", (exception ? "Defensive leadership" : "Coordinator") + " · " + records.map(record => record.name).join(" / ")));
   for (const record of records) {
-    details.append(facts([["Role", record.title], ["Since season", String(record.start_season)]]));
+    details.append(facts([["Role", record.title], ["Since season", String(record.start_season)], ["Checked", time(record.checked_at)], ["Maintenance", "Manual"]]));
     for (const [index, url] of record.sources.entries()) {
       const source = node("p");
-      source.append(link(index ? "Appointment announcement" : "Team biography", url));
+      source.append(link(index ? "Role source" : "Team biography", url));
       details.append(source);
     }
   }
-  details.append(facts([["Checked", time(coordinators.checked_at)], ["Maintenance", "Manual"]]));
+  const history = coordinators.history.find(record => record.team === team);
+  if (history) {
+    if (history.predecessors.length) {
+      const predecessors = node("details", undefined, "source-block");
+      predecessors.append(node("summary", "Prior coordinators"));
+      for (const record of history.predecessors) {
+        const label = {immediate:"Predecessor", previous_season:"Previous season", previous_formal:"Earlier formal role"}[record.relationship];
+        predecessors.append(node("h3", label + " · " + record.name));
+        predecessors.append(node("p", record.title + " · " + coachingSeasons(record) + (record.scope ? " · " + record.scope : "")));
+        appendCoachingEvidence(predecessors, record);
+      }
+      details.append(predecessors);
+    }
+    if (history.prior_jobs.length) {
+      const jobs = node("details", undefined, "source-block");
+      jobs.append(node("summary", "Prior jobs · selected records"));
+      for (const record of history.prior_jobs) {
+        jobs.append(node("h3", record.organization + " · " + coachingSeasons(record)));
+        jobs.append(node("p", record.title + (record.scope ? " · " + record.scope : "")));
+        appendCoachingEvidence(jobs, record);
+      }
+      details.append(jobs);
+    }
+    if (history.play_callers.length) {
+      const callers = node("details", undefined, "source-block");
+      callers.append(node("summary", "Defensive play-calling · recorded seasons"));
+      for (const record of history.play_callers) {
+        callers.append(node("h3", record.name + " · " + record.organization + " · " + record.season));
+        callers.append(node("p", record.title + (record.scope ? " · " + record.scope : "")));
+        appendCoachingEvidence(callers, record);
+      }
+      details.append(callers);
+    }
+  }
   panel.append(details);
 }
 function sourceDetails() {
@@ -484,7 +526,7 @@ function sourceDetails() {
     .filter(team => teamCoordinators(team));
   if (coveredTeams.length) {
     const details = node("details", undefined, "source-block");
-    details.append(node("summary", "Coordinator pilot · " + coveredTeams.length + " / 32 teams"));
+    details.append(node("summary", "Defensive coaching · " + coveredTeams.length + " / 32 teams"));
     for (const team of coveredTeams) appendCoordinatorSources(details, team);
     panel.append(details);
   }

@@ -1,30 +1,93 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "season": 2026,
-  "checked_at": "2026-10-09T03:48:05.346Z",
+  "checked_at": "2026-10-09T13:39:21Z",
   "maintenance": "manual",
   "appointments": [
     {
-      "team": "PHI",
-      "name": "Vic Fangio",
+      "team": "ARI",
+      "name": "Nick Rallis",
       "role": "dc",
       "title": "Defensive Coordinator",
-      "start_season": 2024,
+      "start_season": 2023,
       "sources": [
-        "https://www.philadelphiaeagles.com/team/coaches/vic-fangio",
-        "https://www.philadelphiaeagles.com/news/eagles-name-vic-fangio-defensive-coordinator"
-      ]
+        "https://www.azcardinals.com/team/coaches-roster/nick-rallis",
+        "https://www.azcardinals.com/news/cardinals-officially-name-nick-rallis-drew-petzing-as-new-coordinators"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
     },
     {
-      "team": "NYJ",
-      "name": "Brian Duker",
+      "team": "ATL",
+      "name": "Jeff Ulbrich",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich",
+        "https://www.atlantafalcons.com/news/atlanta-falcons-announce-jeff-ulbrich-as-next-defensive-coordinator",
+        "https://www.atlantafalcons.com/news/retain-jeff-ulbrich-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
+    },
+    {
+      "team": "BAL",
+      "name": "Anthony Weaver",
       "role": "dc",
       "title": "Defensive Coordinator",
       "start_season": 2026,
       "sources": [
-        "https://www.newyorkjets.com/team/coaches-roster/brian-duker",
-        "https://www.newyorkjets.com/news/brian-duker-jets-defensive-coordinator-01-28-2026"
-      ]
+        "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver",
+        "https://www.baltimoreravens.com/news/anthony-weaver-ravens-defensive-coordinator-hire-jesse-minter"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
+    },
+    {
+      "team": "BUF",
+      "name": "Jim Leonhard",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.buffalobills.com/team/coaches-roster/jim-leonhard",
+        "https://www.buffalobills.com/news/bills-hire-former-buffalo-safety-jim-leonhard-as-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
+    },
+    {
+      "team": "CAR",
+      "name": "Ejiro Evero",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2023,
+      "sources": [
+        "https://www.panthers.com/team/coaches-roster/ejiro-evero",
+        "https://www.panthers.com/news/panthers-agree-to-terms-with-ejiro-evero-to-become-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
+    },
+    {
+      "team": "CHI",
+      "name": "Dennis Allen",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.chicagobears.com/team/coaches/dennis-allen",
+        "https://www.chicagobears.com/news/bears-announce-addition-of-coordinators"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
+    },
+    {
+      "team": "CIN",
+      "name": "Al Golden",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.bengals.com/team/coaches-roster/al-golden",
+        "https://www.bengals.com/news/bengals-hire-al-golden-as-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:36:50Z"
     },
     {
       "team": "CLE",
@@ -35,17 +98,166 @@
       "sources": [
         "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg",
         "https://www.clevelandbrowns.com/news/browns-name-coordinators-for-the-2026-coaching-staff"
-      ]
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
     },
     {
-      "team": "WAS",
-      "name": "Daronte Jones",
+      "team": "DAL",
+      "name": "Christian Parker",
       "role": "dc",
       "title": "Defensive Coordinator",
       "start_season": 2026,
       "sources": [
-        "https://www.commanders.com/team/coaches-roster/daronte-jones"
-      ]
+        "https://www.dallascowboys.com/team/coaches-roster/christian-parker",
+        "https://www.dallascowboys.com/news/cowboys-working-towards-hiring-christian-parker-as-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "DEN",
+      "name": "Vance Joseph",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2023,
+      "sources": [
+        "https://www.denverbroncos.com/team/coaches-roster/vance-joseph",
+        "https://www.denverbroncos.com/news/broncos-announce-series-of-coaching-hires"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "DET",
+      "name": "Kelvin Sheppard",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.detroitlions.com/team/coaches-roster/kelvin-sheppard",
+        "https://www.detroitlions.com/news/5-things-to-know-about-new-dc-kelvin-sheppard"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "GB",
+      "name": "Jonathan Gannon",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.packers.com/team/coaches-roster/jonathan-gannon",
+        "https://www.packers.com/news/packers-name-jonathan-gannon-defensive-coordinator-feb-2-2026"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "HOU",
+      "name": "Matt Burke",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2023,
+      "sources": [
+        "https://www.houstontexans.com/team/coaches-roster/matt-burke",
+        "https://www.houstontexans.com/news/houston-texans-announce-2026-coaching-staff"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "IND",
+      "name": "Lou Anarumo",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.colts.com/team/coaches-roster/lou-anarumo",
+        "https://www.colts.com/news/lou-anarumo-defensive-coordinator-hired-cincinnati-bengals-2025-season"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "JAX",
+      "name": "Anthony Campanile",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.jaguars.com/team/coaches-roster/anthony-campanile",
+        "https://www.jaguars.com/news/k000156-jaguars-hire-anthony-campanile-as-defensive-coordinator",
+        "https://www.jaguars.com/news/k00022-jaguars-retain-offensive-coordinator-grant-udinski-defensive-coordinator-anthony-campanile"
+      ],
+      "checked_at": "2026-10-09T13:39:21Z"
+    },
+    {
+      "team": "KC",
+      "name": "Steve Spagnuolo",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2019,
+      "sources": [
+        "https://www.chiefs.com/team/coaches-roster/steve-spagnuolo",
+        "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
+    },
+    {
+      "team": "LAC",
+      "name": "Chris O'Leary",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.chargers.com/team/coaches-roster/chris-o-leary",
+        "https://www.chargers.com/news/agree-to-terms-chris-oleary-defensive-coordinator-2026"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
+    },
+    {
+      "team": "LAR",
+      "name": "Chris Shula",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2024,
+      "sources": [
+        "https://www.therams.com/team/coaches-roster/chris-shula",
+        "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
+    },
+    {
+      "team": "LV",
+      "name": "Rob Leonard",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.raiders.com/team/coaches-roster/rob-leonard",
+        "https://www.raiders.com/news/rob-leonard-named-raiders-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
+    },
+    {
+      "team": "MIA",
+      "name": "Sean Duggan",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
+    },
+    {
+      "team": "MIN",
+      "name": "Brian Flores",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2023,
+      "sources": [
+        "https://www.vikings.com/team/coaches-roster/brian-flores",
+        "https://www.vikings.com/news/brian-flores-defensive-coordinator-hired-2023",
+        "https://www.vikings.com/news/brian-flores-defensive-coordinator-contract-extension-2026",
+        "https://www.vikings.com/video/brian-flores-on-dallas-turner-pass-rush-teaching-defensive-scheme-philosophy-adapting-game-plan"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
     },
     {
       "team": "NE",
@@ -56,16 +268,3754 @@
       "sources": [
         "https://www.patriots.com/team/coaches-roster/zak-kuhr",
         "https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach"
-      ]
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
     },
     {
-      "team": "MIA",
-      "name": "Sean Duggan",
+      "team": "NO",
+      "name": "Brandon Staley",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2025,
+      "sources": [
+        "https://www.neworleanssaints.com/team/coaches-roster/brandon-staley",
+        "https://www.neworleanssaints.com/news/new-orleans-saints-coaching-staff-2025-saints-coordinators-assistant-coaches-kellen-moore"
+      ],
+      "checked_at": "2026-10-09T13:37:08Z"
+    },
+    {
+      "team": "NYG",
+      "name": "Dennard Wilson",
       "role": "dc",
       "title": "Defensive Coordinator",
       "start_season": 2026,
       "sources": [
-        "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+        "https://www.giants.com/team/coaches-roster/dennard-wilson",
+        "https://www.giants.com/news/john-harbaugh-announces-2026-coaching-staff-coordinators-matt-nagy-dennard-wilson-chris-horton"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "NYJ",
+      "name": "Brian Duker",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.newyorkjets.com/team/coaches-roster/brian-duker",
+        "https://www.newyorkjets.com/news/brian-duker-jets-defensive-coordinator-01-28-2026"
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
+    },
+    {
+      "team": "PHI",
+      "name": "Vic Fangio",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2024,
+      "sources": [
+        "https://www.philadelphiaeagles.com/team/coaches/vic-fangio",
+        "https://www.philadelphiaeagles.com/news/eagles-name-vic-fangio-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
+    },
+    {
+      "team": "PIT",
+      "name": "Patrick Graham",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.steelers.com/team/coaches-roster/patrick-graham",
+        "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "SEA",
+      "name": "Aden Durde",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2024,
+      "sources": [
+        "https://www.seahawks.com/team/coaches-roster/aden-durde"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "SF",
+      "name": "Raheem Morris",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.49ers.com/team/coaches-roster/raheem-morris",
+        "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "TB",
+      "name": "Todd Bowles",
+      "role": "hc_playcaller",
+      "title": "Head Coach",
+      "start_season": 2022,
+      "sources": [
+        "https://www.buccaneers.com/team/coaches-roster/todd-bowles",
+        "https://www.buccaneers.com/team/coaches-roster/",
+        "https://www.buccaneers.com/news/alex-anzalone-diversified-role-todd-bowles-defense-2026"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "TEN",
+      "name": "Gus Bradley",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley",
+        "https://www.tennesseetitans.com/news/titans-hire-gus-bradley-as-defensive-coordinator"
+      ],
+      "checked_at": "2026-10-09T13:39:00Z"
+    },
+    {
+      "team": "WAS",
+      "name": "Daronte Jones",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.commanders.com/team/coaches-roster/daronte-jones"
+      ],
+      "checked_at": "2026-10-09T03:48:05.346Z"
+    }
+  ],
+  "history": [
+    {
+      "team": "ARI",
+      "name": "Nick Rallis",
+      "prior_jobs": [
+        {
+          "organization": "Philadelphia Eagles",
+          "title": "Linebackers Coach",
+          "start_season": 2021,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.azcardinals.com/team/coaches-roster/nick-rallis"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Minnesota Vikings",
+          "title": "Defensive Quality Control / Assistant Linebackers Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.azcardinals.com/team/coaches-roster/nick-rallis"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Minnesota Vikings",
+          "title": "Defensive Quality Control Coach",
+          "start_season": 2018,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.azcardinals.com/team/coaches-roster/nick-rallis"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Wake Forest",
+          "title": "Quality Control Coach",
+          "start_season": 2017,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.azcardinals.com/team/coaches-roster/nick-rallis"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Vance Joseph",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2022,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph",
+            "https://www.azcardinals.com/news/one-nfl-coaching-job-filled-four-to-go-as-cardinals-continue-interviews"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "ATL",
+      "name": "Jeff Ulbrich",
+      "prior_jobs": [
+        {
+          "organization": "New York Jets",
+          "title": "Interim Head Coach",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": "after first five games",
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New York Jets",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/news/atlanta-falcons-announce-jeff-ulbrich-as-next-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Atlanta Falcons",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": "final 11 games",
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Atlanta Falcons",
+          "title": "Assistant Head Coach / Linebackers Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Atlanta Falcons",
+          "title": "Linebackers Coach",
+          "start_season": 2015,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "UCLA",
+          "title": "Defensive Coordinator",
+          "start_season": 2014,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "UCLA",
+          "title": "Assistant Head Coach / Linebackers / Special Teams",
+          "start_season": 2012,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Seattle Seahawks",
+          "title": "Special Teams Assistant",
+          "start_season": 2010,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/team/coaches-roster/jeff-ulbrich"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Jimmy Lake",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.atlantafalcons.com/news/atlanta-falcons-announce-jeff-ulbrich-as-next-defensive-coordinator",
+            "https://www.atlantafalcons.com/news/atlanta-falcons-part-ways-with-defensive-coordinator-jimmy-lake-defensive-line-coach-jay-rodgers"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "BAL",
+      "name": "Anthony Weaver",
+      "prior_jobs": [
+        {
+          "organization": "Miami Dolphins",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Baltimore Ravens",
+          "title": "Assistant Head Coach / Defensive Line Coach",
+          "start_season": 2022,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Baltimore Ravens",
+          "title": "Run Game Coordinator / Defensive Line Coach",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Houston Texans",
+          "title": "Defensive Coordinator / Defensive Line Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Houston Texans",
+          "title": "Defensive Line Coach",
+          "start_season": 2016,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Cleveland Browns",
+          "title": "Defensive Line Coach",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Buffalo Bills",
+          "title": "Defensive Line Coach",
+          "start_season": 2013,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New York Jets",
+          "title": "Assistant Defensive Line Coach",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "North Texas",
+          "title": "Linebackers Coach",
+          "start_season": 2011,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Florida",
+          "title": "Graduate Assistant",
+          "start_season": 2010,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Zach Orr",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.chargers.com/news/zach-orr-defensive-coordinator-search-interview",
+            "https://www.baltimoreravens.com/news/anthony-weaver-ravens-defensive-coordinator-hire-jesse-minter"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "Jesse Minter",
+          "title": "Head Coach",
+          "season": 2026,
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/news/anthony-weaver-ravens-defensive-coordinator-hire-jesse-minter"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z",
+          "organization": "BAL"
+        }
+      ]
+    },
+    {
+      "team": "BUF",
+      "name": "Jim Leonhard",
+      "prior_jobs": [
+        {
+          "organization": "Denver Broncos",
+          "title": "Assistant Head Coach / Defensive Pass Game Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.buffalobills.com/news/bills-hire-former-buffalo-safety-jim-leonhard-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Denver Broncos",
+          "title": "Defensive Backs Coach / Defensive Pass Game Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.buffalobills.com/news/bills-hire-former-buffalo-safety-jim-leonhard-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Wisconsin",
+          "title": "Interim Head Coach",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://uwbadgers.com/sports/football/roster/coaches/jim-leonhard/1965"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Wisconsin",
+          "title": "Defensive Coordinator",
+          "start_season": 2017,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://uwbadgers.com/sports/football/roster/coaches/jim-leonhard/1965"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Wisconsin",
+          "title": "Defensive Backs Coach",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://uwbadgers.com/sports/football/roster/coaches/jim-leonhard/1965"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Bobby Babich",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/bobby-babich",
+            "https://www.buffalobills.com/news/buffalo-bills-promote-bobby-babich-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "CAR",
+      "name": "Ejiro Evero",
+      "prior_jobs": [
+        {
+          "organization": "Denver Broncos",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Los Angeles Rams",
+          "title": "Secondary Coach / Passing Game Coordinator",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Los Angeles Rams",
+          "title": "Safeties Coach",
+          "start_season": 2017,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Green Bay Packers",
+          "title": "Defensive Quality Control",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "San Francisco 49ers",
+          "title": "Defensive Assistant",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "San Francisco 49ers",
+          "title": "Offensive Assistant",
+          "start_season": 2012,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "San Francisco 49ers",
+          "title": "Quality Control",
+          "start_season": 2011,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Redlands",
+          "title": "Special Teams Coordinator / Defensive Backs",
+          "start_season": 2010,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Tampa Bay Buccaneers",
+          "title": "Defensive Quality Control",
+          "start_season": 2007,
+          "end_season": 2009,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "UC Davis",
+          "title": "Assistant Coach",
+          "start_season": 2005,
+          "end_season": 2006,
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/team/coaches-roster/ejiro-evero"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Al Holcomb",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2022,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.panthers.com/news/al-holcomb-taking-over-defensive-play-calling"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "CHI",
+      "name": "Dennis Allen",
+      "prior_jobs": [
+        {
+          "organization": "New Orleans Saints",
+          "title": "Head Coach",
+          "start_season": 2022,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New Orleans Saints",
+          "title": "Defensive Coordinator",
+          "start_season": 2015,
+          "end_season": 2021,
+          "scope": "assumed coordinator duties in Week 11 of 2015",
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New Orleans Saints",
+          "title": "Senior Defensive Assistant",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Oakland Raiders",
+          "title": "Head Coach",
+          "start_season": 2012,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Denver Broncos",
+          "title": "Defensive Coordinator",
+          "start_season": 2011,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New Orleans Saints",
+          "title": "Secondary Coach",
+          "start_season": 2008,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "New Orleans Saints",
+          "title": "Assistant Defensive Line Coach",
+          "start_season": 2006,
+          "end_season": 2007,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Atlanta Falcons",
+          "title": "Defensive Quality Control / Defensive Assistant",
+          "start_season": 2002,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/team/coaches/dennis-allen"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Eric Washington",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.chicagobears.com/news/bears-hire-eric-washington-as-defensive-coordinator",
+            "https://www.chicagobears.com/news/bears-announce-addition-of-coordinators"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "CIN",
+      "name": "Al Golden",
+      "prior_jobs": [
+        {
+          "organization": "Notre Dame",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Notre Dame",
+          "title": "Defensive Coordinator / Linebackers Coach",
+          "start_season": 2022,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Cincinnati Bengals",
+          "title": "Linebackers Coach",
+          "start_season": 2020,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Detroit Lions",
+          "title": "Linebackers Coach",
+          "start_season": 2018,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Detroit Lions",
+          "title": "Tight Ends Coach",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Miami (Florida)",
+          "title": "Head Coach",
+          "start_season": 2011,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Temple",
+          "title": "Head Coach",
+          "start_season": 2006,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Virginia",
+          "title": "Defensive Coordinator",
+          "start_season": 2001,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Penn State",
+          "title": "Linebackers / Recruiting Coordinator",
+          "start_season": 2000,
+          "end_season": 2000,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Linebackers Coach",
+          "start_season": 1997,
+          "end_season": 1999,
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/team/coaches-roster/al-golden"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Lou Anarumo",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.bengals.com/news/reports-bengals-part-ways-with-defensive-coordinator-lou-anarumo",
+            "https://www.bengals.com/news/al-golden-s-varied-resume-he-s-really-on-the-details"
+          ],
+          "checked_at": "2026-10-09T13:36:50Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "CLE",
+      "name": "Mike Rutenberg",
+      "prior_jobs": [
+        {
+          "organization": "ATL",
+          "title": "Defensive Pass Game Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Linebackers Coach",
+          "start_season": 2021,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "SF",
+          "title": "Pass Game Specialist",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "JAX",
+          "title": "Assistant Linebackers Coach",
+          "start_season": 2018,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "JAX",
+          "title": "Defensive Assistant",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "JAX",
+          "title": "Assistant Defensive Backs Coach",
+          "start_season": 2013,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "New Mexico State",
+          "title": "Defensive Pass Game Coordinator/Defensive Backs Coach",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Jim Schwartz",
+          "title": "Defensive Coordinator",
+          "start_season": 2023,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.clevelandbrowns.com/news/jim-schwartz-named-browns-defensive-coordinator",
+            "https://www.clevelandbrowns.com/news/jim-schwartz-resigns-as-browns-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "DAL",
+      "name": "Christian Parker",
+      "prior_jobs": [
+        {
+          "organization": "PHI",
+          "title": "Defensive Pass Game Coordinator / Defensive Backs",
+          "start_season": 2024,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "DEN",
+          "title": "Defensive Backs",
+          "start_season": 2021,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "GB",
+          "title": "Defensive Quality Control",
+          "start_season": 2019,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Texas A&M",
+          "title": "Defensive Analyst",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Notre Dame",
+          "title": "Defensive Analyst",
+          "start_season": 2017,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Norfolk State",
+          "title": "Defensive Backs / Recruiting Coordinator",
+          "start_season": 2015,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Virginia State",
+          "title": "Secondary / Recruiting Coordinator",
+          "start_season": 2014,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Virginia State",
+          "title": "Cornerbacks",
+          "start_season": 2013,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/team/coaches-roster/christian-parker"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Matt Eberflus",
+          "title": "Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.dallascowboys.com/news/christian-parker-cowboys-part-ways-with-several-defensive-coaches",
+            "https://www.dallascowboys.com/news/past-present-matt-eberflus-expected-to-join-49ers-staff"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "DEN",
+      "name": "Vance Joseph",
+      "prior_jobs": [
+        {
+          "organization": "ARI",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "DEN",
+          "title": "Head Coach",
+          "start_season": 2017,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Defensive Coordinator",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "CIN",
+          "title": "Defensive Backs",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "HOU",
+          "title": "Defensive Backs",
+          "start_season": 2011,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "SF",
+          "title": "Defensive Backs",
+          "start_season": 2006,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "SF",
+          "title": "Assistant Defensive Backs",
+          "start_season": 2005,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Bowling Green",
+          "title": "Defensive Backs",
+          "start_season": 2004,
+          "end_season": 2004,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Colorado",
+          "title": "Defensive Backs",
+          "start_season": 2002,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Wyoming",
+          "title": "Defensive Backs",
+          "start_season": 2002,
+          "end_season": 2002,
+          "scope": "spring only",
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Colorado",
+          "title": "Graduate Assistant",
+          "start_season": 1999,
+          "end_season": 2001,
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/team/coaches-roster/vance-joseph"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Ejiro Evero",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2022,
+          "relationship": "previous_season",
+          "scope": null,
+          "sources": [
+            "https://www.denverbroncos.com/video/broncos-country-connected-the-scheme-always-has-to-start-with-the-players-dc-eji",
+            "https://www.denverbroncos.com/video/ejiro-evero-a-lot-of-guys-have-done-a-good-job-stepping-up"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "DET",
+      "name": "Kelvin Sheppard",
+      "prior_jobs": [
+        {
+          "organization": "DET",
+          "title": "Linebackers",
+          "start_season": 2022,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.detroitlions.com/team/coaches-roster/kelvin-sheppard"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "DET",
+          "title": "Outside Linebackers",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.detroitlions.com/team/coaches-roster/kelvin-sheppard"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "LSU",
+          "title": "Director of Player Development",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.detroitlions.com/team/coaches-roster/kelvin-sheppard"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Aaron Glenn",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.detroitlions.com/news/5-things-to-know-about-new-dc-kelvin-sheppard",
+            "https://www.detroitlions.com/news/week-3-opponent-what-the-jets-are-saying-glenn-goff-gibbs"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "GB",
+      "name": "Jonathan Gannon",
+      "prior_jobs": [
+        {
+          "organization": "ARI",
+          "title": "Head Coach",
+          "start_season": 2023,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "IND",
+          "title": "Defensive Backs / Cornerbacks",
+          "start_season": 2018,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIN",
+          "title": "Assistant Defensive Backs / Quality Control",
+          "start_season": 2014,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "TEN",
+          "title": "Defensive Assistant / Quality Control",
+          "start_season": 2012,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "St. Louis Rams",
+          "title": "Scout",
+          "start_season": 2009,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Defensive Quality Control",
+          "start_season": 2007,
+          "end_season": 2007,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Louisville",
+          "title": "Graduate Assistant",
+          "start_season": 2006,
+          "end_season": 2006,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Louisville",
+          "title": "Student Assistant",
+          "start_season": 2003,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/team/coaches-roster/jonathan-gannon"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Jeff Hafley",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.packers.com/news/5-things-to-know-about-new-packers-defensive-coordinator-jonathan-gannon-2-2-2026",
+            "https://www.packers.com/news/new-formula-same-goals-for-packers-resurgent-defense-dec-17-2025",
+            "https://www.packers.com/news/jonathan-gannon-building-new-system-for-packers-defense-2026"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "HOU",
+      "name": "Matt Burke",
+      "prior_jobs": [
+        {
+          "organization": "ARI",
+          "title": "Defensive Line",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Game Management",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Run Game Coordinator / Defensive Line",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Assistant",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Defensive Coordinator",
+          "start_season": 2017,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Linebackers",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "CIN",
+          "title": "Linebackers",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "DET",
+          "title": "Linebackers",
+          "start_season": 2009,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "TEN",
+          "title": "Defensive Assistant / Quality Control",
+          "start_season": 2006,
+          "end_season": 2008,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "TEN",
+          "title": "Administrative Assistant",
+          "start_season": 2004,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/team/coaches-roster/matt-burke"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Lovie Smith",
+          "title": "Associate Head Coach / Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2021,
+          "relationship": "previous_formal",
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/news/14-things-to-know-about-head-coach-lovie-smith"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "DeMeco Ryans",
+          "title": "Head Coach",
+          "season": 2026,
+          "scope": "Takeover reported October 7, 2026",
+          "sources": [
+            "https://www.houstontexans.com/podcasts/demeco-ryans-takes-over-defensive-play-calling-as-nick-caserio-ed-ingram-preview-texans-at-titans-texans-all-access",
+            "https://www.houstontexans.com/podcasts/"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z",
+          "organization": "HOU"
+        },
+        {
+          "name": "Lovie Smith",
+          "title": "Head Coach",
+          "season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.houstontexans.com/news/houston-texans-announce-2022-coaching-staff",
+            "https://www.houstontexans.com/news/texans-hc-lovie-smith-i-will-be-calling-the-defenses"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z",
+          "organization": "HOU"
+        }
+      ]
+    },
+    {
+      "team": "IND",
+      "name": "Lou Anarumo",
+      "prior_jobs": [
+        {
+          "organization": "CIN",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Defensive Backs",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Defensive Backs",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": "final 12 games",
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Defensive Backs",
+          "start_season": 2012,
+          "end_season": 2015,
+          "scope": "2015 before interim promotion",
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Purdue",
+          "title": "Defensive Backs",
+          "start_season": 2004,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Marshall",
+          "title": "Defensive Backs",
+          "start_season": 2001,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Marshall",
+          "title": "Special Teams Coordinator",
+          "start_season": 2003,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Harvard",
+          "title": "Assistant Head Coach / Defensive Backs / Special Teams Coordinator",
+          "start_season": 1995,
+          "end_season": 2000,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "U.S. Merchant Marine Academy",
+          "title": "Defensive Coordinator / Defensive Backs",
+          "start_season": 1992,
+          "end_season": 1994,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Syracuse",
+          "title": "Graduate Assistant",
+          "start_season": 1990,
+          "end_season": 1991,
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Wagner",
+          "title": "Part-Time Running Backs",
+          "start_season": 1990,
+          "end_season": 1990,
+          "scope": "January-June",
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "U.S. Merchant Marine Academy",
+          "title": "Part-Time Running Backs",
+          "start_season": 1989,
+          "end_season": 1990,
+          "scope": "September 1989-January 1990",
+          "sources": [
+            "https://www.colts.com/team/coaches-roster/lou-anarumo"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Gus Bradley",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.colts.com/news/colts-2025-training-camp-preview-lou-anarumo-defense-kenny-moore-cam-bynum-laiatu-latu",
+            "https://www.colts.com/news/lou-anarumo-blitzes-coverage-schemes-tackling-fixes-new-defensive-coordinator-cincinnati-bengals"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "JAX",
+      "name": "Anthony Campanile",
+      "prior_jobs": [
+        {
+          "organization": "GB",
+          "title": "Linebackers / Running Game Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Linebackers",
+          "start_season": 2020,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Michigan",
+          "title": "Linebackers",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Co-Defensive Coordinator / Defensive Backs",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Defensive Backs",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Rutgers",
+          "title": "Wide Receivers",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Rutgers",
+          "title": "Tight Ends",
+          "start_season": 2013,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Rutgers",
+          "title": "Defensive Assistant",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Don Bosco Prep",
+          "title": "Offensive Coordinator",
+          "start_season": 2010,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Don Bosco Prep",
+          "title": "Linebackers",
+          "start_season": 2007,
+          "end_season": 2009,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Fair Lawn High School",
+          "title": "Assistant",
+          "start_season": 2006,
+          "end_season": 2006,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        },
+        {
+          "organization": "Rutgers",
+          "title": "Student Assistant",
+          "start_season": 2005,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/team/coaches-roster/anthony-campanile"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Ryan Nielsen",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2024,
+          "relationship": "previous_season",
+          "scope": null,
+          "sources": [
+            "https://www.jaguars.com/news/jaguars-hire-ryan-nielsen-as-defensive-coordinator",
+            "https://www.jaguars.com/video/k000025-ryan-nielsen-reflects-on-jaguars-defense-in-2024-press-conference"
+          ],
+          "checked_at": "2026-10-09T13:39:21Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "KC",
+      "name": "Steve Spagnuolo",
+      "prior_jobs": [
+        {
+          "organization": "NYG",
+          "title": "Defensive Coordinator",
+          "start_season": 2015,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Interim Head Coach",
+          "start_season": 2017,
+          "end_season": 2017,
+          "scope": "final four weeks of 2017",
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Assistant Head Coach/Secondary Coach",
+          "start_season": 2014,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Senior Defensive Assistant",
+          "start_season": 2013,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NO",
+          "title": "Defensive Coordinator",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "STL",
+          "title": "Head Coach",
+          "start_season": 2009,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Defensive Coordinator",
+          "start_season": 2007,
+          "end_season": 2008,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Linebackers Coach",
+          "start_season": 2004,
+          "end_season": 2006,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Backs Coach",
+          "start_season": 2001,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Assistant/Quality Control Coach",
+          "start_season": 1999,
+          "end_season": 2000,
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-hire-steve-spagnuolo-as-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Bob Sutton",
+          "title": "Defensive Coordinator",
+          "start_season": 2013,
+          "end_season": 2018,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.chiefs.com/news/chiefs-name-bob-sutton-as-defensive-coordinator-9342416",
+            "https://www.chiefs.com/news/bob-sutton-relieved-of-defensive-coordinator-duties"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "LAC",
+      "name": "Chris O'Leary",
+      "prior_jobs": [
+        {
+          "organization": "Western Michigan",
+          "title": "Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.chargers.com/team/coaches-roster/chris-o-leary"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAC",
+          "title": "Safeties Coach",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.chargers.com/team/coaches-roster/chris-o-leary"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Jesse Minter",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.chargers.com/news/jesse-minter-ravens-head-coach",
+            "https://www.baltimoreravens.com/news/jesse-minter-five-things-to-know-ravens-interview"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "LAR",
+      "name": "Chris Shula",
+      "prior_jobs": [
+        {
+          "organization": "LAR",
+          "title": "Linebackers Coach/Pass Rush Coordinator",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAR",
+          "title": "Defensive Backs Coach/Pass Game Coordinator",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAR",
+          "title": "Linebackers Coach",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAR",
+          "title": "Outside Linebackers Coach",
+          "start_season": 2019,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAR",
+          "title": "Assistant Linebackers Coach",
+          "start_season": 2017,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "SD",
+          "title": "Defensive Quality Control Coach",
+          "start_season": 2015,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Raheem Morris",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2023,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.therams.com/news/rams-promote-chris-shula-to-defensive-coordinator",
+            "https://www.therams.com/news/nfl-head-coaches-react-to-aaron-donald-s-retirement-reflect-on-his-legacy-and-impact"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "LV",
+      "name": "Rob Leonard",
+      "prior_jobs": [
+        {
+          "organization": "LV",
+          "title": "Defensive Line Coach/Run Game Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/news/rob-leonard-defensive-line-coach-run-game-coordinator-enters-third-year-with-raiders"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LV",
+          "title": "Defensive Line Coach",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/news/rob-leonard-named-raiders-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Outside Linebackers Coach",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/team/coaches-roster/rob-leonard"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Assistant Defensive Line Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/team/coaches-roster/rob-leonard"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Linebackers Coach",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/team/coaches-roster/rob-leonard"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Outside Linebackers Coach",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/team/coaches-roster/rob-leonard"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Assistant Defensive Line Coach",
+          "start_season": 2017,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.raiders.com/team/coaches-roster/rob-leonard"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Patrick Graham",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/team/coaches-roster/patrick-graham",
+            "https://www.raiders.com/news/rob-leonard-named-raiders-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "MIA",
+      "name": "Sean Duggan",
+      "prior_jobs": [
+        {
+          "organization": "GB",
+          "title": "Linebackers Coach",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "GB",
+          "title": "Defensive Assistant",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Co-Defensive Coordinator/Linebackers Coach",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Linebackers Coach",
+          "start_season": 2020,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Ohio State",
+          "title": "Graduate Assistant",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "UMass",
+          "title": "Linebackers Coach",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Hawai'i",
+          "title": "Linebackers Coach",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Boston College",
+          "title": "Defensive Graduate Assistant",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Anthony Weaver",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.baltimoreravens.com/team/coaches-roster/anthony-weaver"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "MIN",
+      "name": "Brian Flores",
+      "prior_jobs": [
+        {
+          "organization": "PIT",
+          "title": "Senior Defensive Assistant/Linebackers Coach",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.vikings.com/team/coaches-roster/brian-flores"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Head Coach",
+          "start_season": 2019,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.vikings.com/team/coaches-roster/brian-flores"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Linebackers Coach",
+          "start_season": 2016,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.vikings.com/team/coaches-roster/brian-flores"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Safeties Coach",
+          "start_season": 2012,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.vikings.com/team/coaches-roster/brian-flores"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Ed Donatell",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2022,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.vikings.com/news/2023-training-camp-preview-defensive-line"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "organization": "NE",
+          "name": "Brian Flores",
+          "title": "Linebackers Coach",
+          "season": 2018,
+          "scope": "Defensive play-calling duty",
+          "sources": [
+            "https://www.vikings.com/team/coaches-roster/brian-flores"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ]
+    },
+    {
+      "team": "NE",
+      "name": "Zak Kuhr",
+      "prior_jobs": [
+        {
+          "organization": "NE",
+          "title": "Inside Linebackers Coach",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/team/coaches-roster/zak-kuhr"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Defensive Assistant",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/team/coaches-roster/zak-kuhr"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "TEN",
+          "title": "Inside Linebackers Assistant",
+          "start_season": 2021,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/news/patriots-announce-new-additions-to-coaching-staff-x8810"
+          ],
+          "checked_at": "2026-10-09T13:39:08Z"
+        },
+        {
+          "organization": "TEN",
+          "title": "Defensive Quality Control",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/news/patriots-announce-new-additions-to-coaching-staff-x8810",
+            "https://www.tennesseetitans.com/team/transactions/2020"
+          ],
+          "checked_at": "2026-10-09T13:39:08Z"
+        },
+        {
+          "organization": "Texas",
+          "title": "Assistant Coach",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/team/coaches-roster/zak-kuhr"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Texas State",
+          "title": "Co-Offensive Coordinator/Running Backs Coach",
+          "start_season": 2017,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/team/coaches-roster/zak-kuhr"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Terrell Williams",
+          "title": "Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.patriots.com/team/coaches-roster/terrell-williams",
+            "https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "Zak Kuhr",
+          "title": "Inside Linebackers Coach",
+          "season": 2025,
+          "scope": "After regular-season opener, final 20 games including postseason",
+          "sources": [
+            "https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z",
+          "organization": "NE"
+        }
+      ]
+    },
+    {
+      "team": "NO",
+      "name": "Brandon Staley",
+      "prior_jobs": [
+        {
+          "organization": "SF",
+          "title": "Assistant Head Coach/Defense",
+          "start_season": 2024,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-ahead-of-2024-season"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAC",
+          "title": "Head Coach",
+          "start_season": 2021,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.neworleanssaints.com/team/coaches-roster/brandon-staley"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        },
+        {
+          "organization": "LAR",
+          "title": "Defensive Coordinator",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.neworleanssaints.com/team/coaches-roster/brandon-staley"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Joe Woods",
+          "title": "Defensive Coordinator",
+          "start_season": 2023,
+          "end_season": 2024,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.neworleanssaints.com/news/las-vegas-raiders-vs-new-orleans-saints-game-preview-2026-nfl-season-week-3-series-history-stats-connections",
+            "https://www.neworleanssaints.com/video/joe-woods-defensive-coordinator-interview-1-2-2025-new-orleans-saints-vs-tampa-bay-buccaneers-2024-nfl-week-18"
+          ],
+          "checked_at": "2026-10-09T13:37:08Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "NYG",
+      "name": "Dennard Wilson",
+      "prior_jobs": [
+        {
+          "organization": "TEN",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Defensive Backs",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Passing Game Coordinator / Defensive Backs",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Defensive Backs",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Passing Game Coordinator / Defensive Backs",
+          "start_season": 2019,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Defensive Backs",
+          "start_season": 2017,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "STL/LA",
+          "title": "Defensive Backs",
+          "start_season": 2015,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "STL",
+          "title": "Defensive Quality Control",
+          "start_season": 2012,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Charlie Bullen",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": "final five games",
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/charlie-bullen",
+            "https://www.giants.com/news/shane-bowen-relieved-of-duties-charlie-bullen-named-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "name": "Shane Bowen",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "previous_formal",
+          "scope": "2025 partial; followed by Charlie Bullen",
+          "sources": [
+            "https://www.giants.com/news/shane-bowen-relieved-of-duties-charlie-bullen-named-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "NYJ",
+      "name": "Brian Duker",
+      "prior_jobs": [
+        {
+          "organization": "MIA",
+          "title": "Pass Game Coordinator/Secondary",
+          "start_season": 2024,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "DET",
+          "title": "Defensive Backs Coach",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "DET",
+          "title": "Safeties Coach",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "DET",
+          "title": "Defensive Assistant",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Defensive Coaching Analyst",
+          "start_season": 2019,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Defensive Staff Assistant/Coaching Analyst",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "SF",
+          "title": "Defensive Analyst",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "CLE",
+          "title": "Defensive Intern",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/team/coaches-roster/brian-duker"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Chris Harris",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": "final three regular-season games",
+          "sources": [
+            "https://www.newyorkjets.com/news/steve-wilks-relieved-of-duties-jets-defensive-coordinator-12-15-2025",
+            "https://www.newyorkjets.com/team/coaches-roster/chris-harris"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "name": "Steve Wilks",
+          "title": "Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "previous_formal",
+          "scope": null,
+          "sources": [
+            "https://www.newyorkjets.com/news/defensive-coordinator-steve-wilks-confident-jets-defenseaaron-glenn-otas-05-29-2025",
+            "https://www.newyorkjets.com/news/steve-wilks-relieved-of-duties-jets-defensive-coordinator-12-15-2025"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "PHI",
+      "name": "Vic Fangio",
+      "prior_jobs": [
+        {
+          "organization": "MIA",
+          "title": "Defensive Coordinator",
+          "start_season": 2023,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/news/eagles-name-vic-fangio-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Consultant",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "DEN",
+          "title": "Head Coach",
+          "start_season": 2019,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "CHI",
+          "title": "Defensive Coordinator",
+          "start_season": 2015,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "SF",
+          "title": "Defensive Coordinator",
+          "start_season": 2011,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Stanford",
+          "title": "Defensive Coordinator",
+          "start_season": 2010,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Linebackers Coach",
+          "start_season": 2009,
+          "end_season": 2009,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "BAL",
+          "title": "Special Assistant to the Head Coach/Defensive Assistant",
+          "start_season": 2006,
+          "end_season": 2008,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "HOU",
+          "title": "Defensive Coordinator",
+          "start_season": 2002,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "IND",
+          "title": "Defensive Coordinator",
+          "start_season": 1999,
+          "end_season": 2001,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "CAR",
+          "title": "Defensive Coordinator",
+          "start_season": 1995,
+          "end_season": 1998,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "NO",
+          "title": "Linebackers Coach",
+          "start_season": 1986,
+          "end_season": 1994,
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/vic-fangio"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Sean Desai",
+          "title": "Defensive Coordinator",
+          "start_season": 2023,
+          "end_season": 2023,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/news/eagles-name-sean-desai-defensive-coordinator",
+            "https://www.philadelphiaeagles.com/news/morning-roundup-i-still-see-light-at-the-end-of-the-tunnel"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "Matt Patricia",
+          "title": "Senior Defensive Assistant",
+          "season": 2023,
+          "scope": "late-season play-caller",
+          "sources": [
+            "https://www.philadelphiaeagles.com/news/morning-roundup-i-still-see-light-at-the-end-of-the-tunnel"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z",
+          "organization": "PHI"
+        }
+      ]
+    },
+    {
+      "team": "PIT",
+      "name": "Patrick Graham",
+      "prior_jobs": [
+        {
+          "organization": "LV",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Assistant Head Coach / Defensive Coordinator",
+          "start_season": 2020,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "GB",
+          "title": "Inside Linebackers / Defensive Run Game Coordinator",
+          "start_season": 2018,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYG",
+          "title": "Defensive Line",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Linebackers",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Defensive Line",
+          "start_season": 2012,
+          "end_season": 2013,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Linebackers",
+          "start_season": 2011,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Defensive Assistant",
+          "start_season": 2010,
+          "end_season": 2010,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NE",
+          "title": "Coaching Assistant",
+          "start_season": 2009,
+          "end_season": 2009,
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/news/graham-named-steelers-defensive-coordinator"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Teryl Austin",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.azcardinals.com/team/coaches-roster/teryl-austin"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "SEA",
+      "name": "Aden Durde",
+      "prior_jobs": [
+        {
+          "organization": "DAL",
+          "title": "Defensive Line",
+          "start_season": 2021,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Outside Linebackers",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Defensive Assistant",
+          "start_season": 2018,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Coaching Intern",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": "training camp fellowship",
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "DAL",
+          "title": "Coaching Intern",
+          "start_season": 2014,
+          "end_season": 2015,
+          "scope": "training camp fellowship",
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "London Warriors",
+          "title": "Defensive Coordinator",
+          "start_season": 2011,
+          "end_season": 2016,
+          "scope": "British American football",
+          "sources": [
+            "https://www.seahawks.com/team/coaches-roster/aden-durde"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Clint Hurtt",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2023,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.philadelphiaeagles.com/team/coaches/clint-hurtt"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "SF",
+      "name": "Raheem Morris",
+      "prior_jobs": [
+        {
+          "organization": "ATL",
+          "title": "Head Coach",
+          "start_season": 2024,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/team/coaches-roster/raheem-morris"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "LA",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2023,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/team/coaches-roster/raheem-morris"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Defensive Coordinator",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": "first part of season; then interim Head Coach",
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Interim Head Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": "final part of season",
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Assistant Head Coach / Wide Receivers / Passing Game Coordinator",
+          "start_season": 2017,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Assistant Head Coach / Wide Receivers",
+          "start_season": 2016,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ATL",
+          "title": "Assistant Head Coach / Defensive Passing Game Coordinator",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "WAS",
+          "title": "Secondary",
+          "start_season": 2012,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "TB",
+          "title": "Head Coach",
+          "start_season": 2009,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "TB",
+          "title": "Defensive Backs",
+          "start_season": 2007,
+          "end_season": 2008,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "TB",
+          "title": "Assistant Defensive Backs",
+          "start_season": 2004,
+          "end_season": 2005,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "TB",
+          "title": "Defensive Assistant",
+          "start_season": 2003,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "TB",
+          "title": "Defensive Quality Control",
+          "start_season": 2002,
+          "end_season": 2002,
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Robert Saleh",
+          "title": "Defensive Coordinator",
+          "start_season": 2025,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.49ers.com/news/49ers-kickoff-preseason-at-home-5-takeaways-from-tenvssf"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "play_callers": []
+    },
+    {
+      "team": "TB",
+      "name": "Todd Bowles",
+      "prior_jobs": [
+        {
+          "organization": "TB",
+          "title": "Defensive Coordinator",
+          "start_season": 2019,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Head Coach",
+          "start_season": 2015,
+          "end_season": 2018,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "ARI",
+          "title": "Defensive Coordinator",
+          "start_season": 2013,
+          "end_season": 2014,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Interim Defensive Coordinator",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": "final ten games",
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "PHI",
+          "title": "Secondary",
+          "start_season": 2012,
+          "end_season": 2012,
+          "scope": "before interim coordinator appointment",
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Assistant Head Coach / Secondary",
+          "start_season": 2008,
+          "end_season": 2011,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Interim Head Coach",
+          "start_season": 2011,
+          "end_season": 2011,
+          "scope": "final three games",
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "DAL",
+          "title": "Defensive Backs",
+          "start_season": 2005,
+          "end_season": 2007,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "CLE",
+          "title": "Secondary",
+          "start_season": 2004,
+          "end_season": 2004,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "CLE",
+          "title": "Defensive Nickel Package",
+          "start_season": 2001,
+          "end_season": 2003,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "NYJ",
+          "title": "Defensive Backs",
+          "start_season": 2000,
+          "end_season": 2000,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [],
+      "play_callers": [
+        {
+          "name": "Todd Bowles",
+          "title": "Head Coach",
+          "season": 2026,
+          "scope": null,
+          "sources": [
+            "https://www.buccaneers.com/team/coaches-roster/todd-bowles",
+            "https://www.buccaneers.com/team/coaches-roster/",
+            "https://www.buccaneers.com/news/alex-anzalone-diversified-role-todd-bowles-defense-2026"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z",
+          "organization": "TB"
+        }
+      ]
+    },
+    {
+      "team": "TEN",
+      "name": "Gus Bradley",
+      "prior_jobs": [
+        {
+          "organization": "SF",
+          "title": "Assistant Head Coach of Defense",
+          "start_season": 2025,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "IND",
+          "title": "Defensive Coordinator",
+          "start_season": 2022,
+          "end_season": 2024,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "LV",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "LAC",
+          "title": "Defensive Coordinator",
+          "start_season": 2017,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "JAX",
+          "title": "Head Coach",
+          "start_season": 2013,
+          "end_season": 2016,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        },
+        {
+          "organization": "SEA",
+          "title": "Defensive Coordinator",
+          "start_season": 2009,
+          "end_season": 2012,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Dennard Wilson",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.giants.com/team/coaches-roster/dennard-wilson"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "Robert Saleh",
+          "title": "Head Coach",
+          "season": 2026,
+          "scope": null,
+          "sources": [
+            "https://www.tennesseetitans.com/news/new-titans-dc-gus-bradley-preaches-consistency-while-playing-fast-and-violent"
+          ],
+          "checked_at": "2026-10-09T13:39:00Z",
+          "organization": "TEN"
+        }
+      ]
+    },
+    {
+      "team": "WAS",
+      "name": "Daronte Jones",
+      "prior_jobs": [
+        {
+          "organization": "MIN",
+          "title": "Defensive Pass Game Coordinator/Defensive Backs Coach",
+          "start_season": 2023,
+          "end_season": 2025,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "MIN",
+          "title": "Defensive Backs Coach",
+          "start_season": 2022,
+          "end_season": 2022,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "LSU",
+          "title": "Defensive Coordinator",
+          "start_season": 2021,
+          "end_season": 2021,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "MIN",
+          "title": "Defensive Backs Coach",
+          "start_season": 2020,
+          "end_season": 2020,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "CIN",
+          "title": "Secondary/Cornerbacks Coach",
+          "start_season": 2018,
+          "end_season": 2019,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "MIA",
+          "title": "Assistant Defensive Backs Coach",
+          "start_season": 2016,
+          "end_season": 2017,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        },
+        {
+          "organization": "Wisconsin",
+          "title": "Defensive Backs Coach",
+          "start_season": 2015,
+          "end_season": 2015,
+          "scope": null,
+          "sources": [
+            "https://www.commanders.com/team/coaches-roster/daronte-jones"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "predecessors": [
+        {
+          "name": "Joe Whitt Jr.",
+          "title": "Defensive Coordinator",
+          "start_season": 2024,
+          "end_season": 2025,
+          "relationship": "immediate",
+          "scope": null,
+          "sources": [
+            "https://www.steelers.com/team/coaches-roster/joe-whitt-jr",
+            "https://www.commanders.com/news/five-things-to-know-about-commanders-defensive-coordinator-joe-whitt-jr",
+            "https://www.commanders.com/news/commanders-defensive-coordinator-command-center-podcast"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z"
+        }
+      ],
+      "play_callers": [
+        {
+          "name": "Dan Quinn",
+          "title": "Head Coach",
+          "season": 2025,
+          "scope": "remainder of 2025 season",
+          "sources": [
+            "https://www.commanders.com/news/dan-quinn-explains-decision-to-take-over-role-as-defensive-play-caller"
+          ],
+          "checked_at": "2026-10-09T13:38:00Z",
+          "organization": "WAS"
+        }
       ]
     }
   ]

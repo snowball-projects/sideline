@@ -532,7 +532,7 @@ unchanged. This increment starts no broad dataset pipeline or backend migration,
 and changes no refresh cadence or service cost.
 
 
-## October 9, 2026 coordinator facts pilot (proposed)
+## October 9, 2026 published coordinator facts pilot
 
 `web/coordinators.json` contains six independently recorded, sparse facts from
 the bounded biography research checked at 03:48:05 UTC on October 9. This pilot
@@ -583,3 +583,35 @@ Current coverage is exactly 6/32 teams. The other 26, historical changes, exact
 effective dates, current acting/shared exceptions elsewhere and predecessor
 coverage remain unreviewed. Wikidata still lacks a reliable league-wide role/
 tenure feed. No automated coaching-data infrastructure is justified by this slice.
+
+
+## October 9, 2026 all-team manual coaching batch (proposed)
+
+The approved follow-up expands the earlier six-team scope through bounded,
+individual primary-source research. It supersedes that pilot’s unreviewed-team
+coverage limit; that limit was a work-scope choice, not a technical barrier or
+a finding that sparse facts were forbidden. The nflverse/CC0 feed limits above
+still preclude claiming a reliable automatic all-team coordinator/history feed.
+
+The independently recorded batch covers all 32 current 2026 team contexts:
+31 formally titled coordinators and Tampa Bay’s documented head coach/defensive
+playcaller. It adds 255 selected prior-job ranges, 33 prior-coordinator records
+for 31 teams, and nine recorded play-calling observations. Immediate predecessor
+relationships are supported for 28 teams; Denver/Jacksonville remain separate
+previous-season observations, Houston preserves an earlier formal role across
+its 2022 head-coach exception, and Tampa Bay has no invented predecessor of a
+new DC appointment. Exact source links, individual checked dates, conflicts and
+the next coverage priorities are in [COACHING_REVIEW.md](COACHING_REVIEW.md).
+
+The original six appointment checks remain 03:48:05.346 UTC. New individual
+research checks are 13:36:50–13:39:21 UTC, with history checks kept separate from
+current appointments. Refresh/build/deployment never changes them. This batch
+copies no source prose/images, introduces no provider calls or automated
+retrieval, and establishes no blanket source-content reuse grant. Existing
+restrictions on direct systematic NFL/team collection and held injury sources
+remain; no denied source was bypassed. Generic copyright terms are not treated
+as a prohibition on independently recorded sparse factual titles/season ranges.
+
+All current roles/start seasons are covered, but selected historical records
+are not complete careers or league-wide succession chains. Contradictory dates
+and unsupported transitions are omitted rather than reconciled silently.

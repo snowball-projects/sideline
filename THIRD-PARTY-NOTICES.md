@@ -79,10 +79,12 @@ distinct injury counts, current availability or a complete career history.
 The source warranty disclaimer and lack of endorsement above apply.
 
 
-The optional coordinator pilot contains independently recorded factual names,
-roles and start seasons for PHI, NYJ, CLE, WAS, NE and MIA, checked October 9,
-2026. `web/coordinators.json` and docs/DATA_SOURCES.md retain the exact team
-biography/appointment links. It reproduces no biography prose or coach images,
-and does not claim that nflverse's CC BY grant covers those team pages. Team
-site content remains subject to its own terms; no endorsement or systematic
-collection permission is claimed.
+The optional defensive coaching artifact contains independently recorded factual
+names, titles, season ranges and checked dates for all 32 teams: 31 formal
+coordinators and one separately titled head coach/defensive playcaller. Selected
+prior-job/predecessor facts retain exact primary-source links in
+`web/coordinators.json` and docs/COACHING_REVIEW.md. It reproduces no biography
+prose or coach images, and does not claim that nflverse’s CC BY grant covers team
+pages. Team content remains subject to its own terms; no endorsement, content
+reuse licence or systematic collection permission is claimed. This is a bounded
+manual research batch, not an automated team-site feed.
