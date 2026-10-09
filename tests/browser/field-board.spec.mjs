@@ -1303,6 +1303,39 @@ test('selected coaching history preserves formal predecessor and prior play-call
  expect(errors).toEqual([]);expect(externalRequests).toEqual([]);
 });
 
+test('first deliberate hover opens after Escape and immediate mouse-away from an uncovered marker',async({page},testInfo)=>{
+ await page.setViewportSize({width:390,height:844});
+ const {errors,externalRequests}=await setup(page,2,coachingFixture(),null,null,null,null,coachingFacts());
+ const info=firstTile(page).getByRole('button',{name:'NE report source and freshness'});
+ const uncovered=marker(page,'Field Fixture Full');
+ const cdp=await page.context().newCDPSession(page);
+ for(let cycle=0;cycle<3;cycle++){
+  await info.focus();await page.keyboard.press('Enter');
+  const coaching=popup(page).locator('details').filter({has:page.locator('summary',{hasText:'Coordinator · Zak Kuhr'})}).first();
+  await coaching.locator(':scope > summary').click();
+  for(const label of ['Prior coordinators','Defensive play-calling · recorded seasons','Prior jobs · selected records']){
+   await coaching.locator('details').filter({has:page.locator('summary',{hasText:label})}).locator(':scope > summary').click();
+  }
+  await assertPopupFits(page);
+  const target=await uncovered.boundingBox(),panel=await popup(page).boundingBox();
+  const x=target.x+target.width/2,y=target.y+target.height/2;
+  expect(x).toBeGreaterThan(panel.x);expect(x).toBeLessThan(panel.x+panel.width);
+  expect(y).toBeGreaterThan(panel.y);expect(y).toBeLessThan(panel.y+panel.height);
+  await page.mouse.move(x,y);
+  // Native input can leave the removed overlay before Chromium sends any
+  // boundary events to the marker beneath it. No settling delay or retry.
+  await cdp.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+  await cdp.send('Input.dispatchMouseEvent',{type:'mouseMoved',x:1,y:1});
+  await cdp.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+  await expect(popup(page)).toHaveCount(0);await expect(info).toBeFocused();
+  await uncovered.hover();await expect(popup(page)).toContainText('Field Fixture Full');
+  await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);
+ }
+ await cdp.detach();
+ await evidence(page,testInfo,'escape-immediate-mouse-away');
+ expect(errors).toEqual([]);expect(externalRequests).toEqual([]);
+});
+
 test('six fully covered comparison tiles retain field alignment and safe 320px coaching lines',async({page,isMobile},testInfo)=>{
  const fixture=JSON.parse(JSON.stringify(fieldFixture({alternateDefenders:ALTERNATE_DEFENDERS})).replaceAll('"CAR"','"NE"'));
  const {errors}=await setup(page,6,fixture,null,null,null,null,coachingFacts());

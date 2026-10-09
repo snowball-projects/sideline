@@ -3,7 +3,7 @@ let nextId = 0;
 const attachments = new WeakMap();
 const restoredTriggers = new WeakSet();
 const previewTriggers = new WeakSet();
-const suppressedPreviews = new WeakSet();
+const suppressedPreviews = new Set();
 const POINTER_GRACE_MS = 180;
 const FOCUSABLE =
   'a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
@@ -205,6 +205,30 @@ export function focusPopoverTrigger(trigger) {
   }
 }
 
+function clearSuppressedPreview(trigger) {
+  if (!suppressedPreviews.delete(trigger)) return;
+  if (!suppressedPreviews.size)
+    document.removeEventListener("pointermove", onSuppressedPointerMove, true);
+}
+
+function onSuppressedPointerMove(event) {
+  if (event.pointerType === "touch" ||
+      !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+  for (const trigger of suppressedPreviews) {
+    const rect = trigger.getBoundingClientRect();
+    if (!trigger.isConnected ||
+        event.clientX < rect.left || event.clientX >= rect.right ||
+        event.clientY < rect.top || event.clientY >= rect.bottom)
+      clearSuppressedPreview(trigger);
+  }
+}
+
+function suppressPreview(trigger) {
+  if (!suppressedPreviews.size)
+    document.addEventListener("pointermove", onSuppressedPointerMove, true);
+  suppressedPreviews.add(trigger);
+}
+
 function closeAndRestore(record, restore = false) {
   const shouldRestore = restore || record.panel.contains(document.activeElement);
   const point = record.pointerPosition;
@@ -215,7 +239,9 @@ function closeAndRestore(record, restore = false) {
   for (let exposed = point && document.elementFromPoint?.(point.x, point.y);
        exposed; exposed = exposed.parentElement) {
     if (previewTriggers.has(exposed)) {
-      suppressedPreviews.add(exposed);
+      // A rapid move after removal can skip this marker's enter/leave events.
+      // Track actual movement until the pointer leaves its bounds instead.
+      suppressPreview(exposed);
       break;
     }
   }
@@ -425,7 +451,7 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
   // pins an existing preview; only the next click toggles that popup closed.
   // Default source-information controls remain deliberately click-only.
   const activate = (event) => {
-    suppressedPreviews.delete(trigger);
+    clearSuppressedPreview(trigger);
     record.pointerPosition = null;
     if (event.detail) rememberPointer(record, event);
     if (active === record && record.pinned) closeAndRestore(record);
@@ -446,12 +472,12 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
   const leave = (event) => {
     if (event.pointerType === "touch") return;
     record.overTrigger = false;
-    suppressedPreviews.delete(trigger);
+    clearSuppressedPreview(trigger);
     scheduleLeave(record);
   };
   const focus = () => {
     if (!restoredTriggers.has(trigger)) {
-      suppressedPreviews.delete(trigger);
+      clearSuppressedPreview(trigger);
       record.pointerPosition = null;
       openPopover(record);
     }
@@ -475,7 +501,7 @@ export function attachPopover(trigger, content, { id, label, preview = false } =
     trigger.removeAttribute("aria-controls");
     trigger.removeAttribute("aria-expanded");
     previewTriggers.delete(trigger);
-    suppressedPreviews.delete(trigger);
+    clearSuppressedPreview(trigger);
     attachments.delete(trigger);
   };
   attachments.set(trigger, cleanup);

@@ -156,11 +156,11 @@ function environment(t) {
     return { trigger, cleanup };
   };
   const panel = () => doc.body.children.find((child) => child.className === "popover");
-  const assertClean = () => {
+  const assertClean = ({ suppressedPreview = false } = {}) => {
     assert.equal(isPopoverOpen(), false);
     assert.equal(panel(), undefined);
     assert.equal(observers.size, 0);
-    assert.equal(doc.listenerCount, 0);
+    assert.equal(doc.listenerCount, suppressedPreview ? 1 : 0);
     assert.equal(win.listenerCount, 0);
     assert.equal(win.visualViewport.listenerCount, 0);
   };
@@ -621,13 +621,51 @@ test("explicit dismissal ignores a stationary pointer exposing another marker un
     emit(env.doc,"pointermove",{pointerType:"mouse",clientX:100,clientY:100});
     if(method==="Escape") emit(env.doc,"keydown",{key:"Escape"});
     else emit(panel.children[0],"click");
-    env.assertClean();
+    env.assertClean({ suppressedPreview: true });
     assert.equal(env.doc.activeElement,source);
     emit(exposed,"pointerenter",{pointerType:"mouse",clientX:100,clientY:100});
-    env.assertClean();
+    env.assertClean({ suppressedPreview: true });
     emit(exposed,"pointerleave",{pointerType:"mouse"});
     emit(exposed,"pointerenter",{pointerType:"mouse",clientX:100,clientY:100});
     assert.equal(isPopoverOpen(),true);
     dismissPopover();
   }
+});
+
+test("immediate mouse-away clears dismissal suppression without marker boundary events", (t) => {
+  const env = environment(t);
+  const { trigger: source } = env.attach({ preview: false });
+  const { trigger: exposed, cleanup } = env.attach({ preview: true });
+  env.doc.elementFromPoint = () => exposed;
+  emit(source, "click");
+  env.panel().children[0].focus();
+  emit(env.doc, "pointermove", { pointerType: "mouse", clientX: 100, clientY: 100 });
+  emit(env.doc, "keydown", { key: "Escape" });
+  assert.equal(isPopoverOpen(), false);
+  assert.equal(env.doc.activeElement, source);
+  emit(env.doc, "pointermove", { pointerType: "mouse", clientX: 100, clientY: 100 });
+  emit(env.doc, "pointermove", { pointerType: "touch", clientX: 1, clientY: 1 });
+  env.assertClean({ suppressedPreview: true });
+  // Chromium can move straight from the removed overlay to another element,
+  // without ever delivering enter/leave to the uncovered marker.
+  emit(env.doc, "pointermove", { pointerType: "mouse", clientX: 1, clientY: 1 });
+  env.assertClean();
+  emit(exposed, "pointerenter", { pointerType: "mouse", clientX: 100, clientY: 100 });
+  assert.equal(isPopoverOpen(), true);
+  dismissPopover();
+  cleanup();
+  env.assertClean();
+});
+
+test("removing a suppressed marker releases its pointer tracking", (t) => {
+  const env = environment(t);
+  const { trigger: source } = env.attach({ preview: false });
+  const { trigger: exposed, cleanup } = env.attach({ preview: true });
+  env.doc.elementFromPoint = () => exposed;
+  emit(source, "click");
+  emit(env.doc, "pointermove", { pointerType: "mouse", clientX: 100, clientY: 100 });
+  emit(env.doc, "keydown", { key: "Escape" });
+  env.assertClean({ suppressedPreview: true });
+  cleanup();
+  env.assertClean();
 });
