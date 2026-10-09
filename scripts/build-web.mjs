@@ -94,6 +94,12 @@ try {
 } catch (error) {
   console.warn(`Optional historical data omitted: ${error.message}`);
 }
+try {
+  validateContributions(JSON.parse(await readFile(new URL("web/contributions-2024.json", root), "utf8")), Date.now(), 2024);
+  files.push("contributions-2024.json");
+} catch (error) {
+  console.warn(`Optional 2024 production omitted: ${error.message}`);
+}
 const html = await readFile(new URL("web/index.html", root), "utf8");
 try {
   validatePlayerHistory(JSON.parse(await readFile(new URL("web/player-history.json", root), "utf8")));

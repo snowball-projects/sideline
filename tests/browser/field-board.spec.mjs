@@ -16,7 +16,7 @@ const tab = (page, name) => firstTile(page).locator(".status-tabs")
 const markerById = (tile, id) => tile.locator(`.defender-marker[data-defender-id="gsis:${id}"]`);
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-async function setup(page, count = 2, fixture = fieldFixture(), history = null, playerHistory = null, archive = null) {
+async function setup(page, count = 2, fixture = fieldFixture(), history = null, playerHistory = null, archive = null, olderProduction = null) {
   const errors = [];
   const externalRequests = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -38,6 +38,9 @@ async function setup(page, count = 2, fixture = fieldFixture(), history = null, 
     if (url.pathname === "/injury-history.json")
       return archive ? route.fulfill({ json: archive })
         : route.fulfill({ status: 404, body: "Optional injury archive unavailable in fixture" });
+    if (url.pathname === "/contributions-2024.json")
+      return olderProduction ? route.fulfill({ json: olderProduction })
+        : route.fulfill({ status: 404, body: "Optional 2024 production unavailable in fixture" });
     if (url.pathname === "/player-history.json")
       return playerHistory ? route.fulfill({ json: playerHistory })
         : route.fulfill({ status: 404, body: "Optional player history unavailable in fixture" });
@@ -1050,4 +1053,98 @@ test("archive joins never borrow same-name records or create empty history for a
   await marker(page).click();
   await expect(popup(page).getByText("Player details", { exact: true })).toHaveCount(0);
   await expect(popup(page).getByRole("link", { name: "nflverse 2025 injury records", exact: true })).toHaveCount(0);
+});
+
+const production2024Fixture = () => normalizeContributions([
+  "player_id,position_group,season,season_type,week,game_id,team,opponent_team,def_sacks,def_qb_hits,def_pass_defended,def_interceptions",
+  "00-0012345,DL,2024,REG,1,2024_01_TEN_NYJ,TEN,NYJ,0.5,2,1,0",
+  "00-0012345,DL,2024,REG,2,2024_02_NYJ_TEN,NYJ,TEN,2,7,2,1",
+  "00-0012346,DB,2024,REG,1,2024_01_TEN_NYJ,TEN,NYJ,0,0,0,0",
+].join("\n"), { retrieved_at: NOW, source_updated_at: "2026-08-13T16:49:10.000Z" }, Date.parse(NOW), 2024);
+const productionDefenders = () => DEFENDERS.map(entry => entry[0] === "fixture-out"
+  ? ["00-0012345", ...entry.slice(1)] : entry[0] === "fixture-limited" ? ["00-0012346", ...entry.slice(1)] : entry);
+
+test("optional 2024 production is lazy, season-labelled and independent of current badges and 2025 counts", async ({ page, isMobile }, testInfo) => {
+  const baseline = normalizeContributions([
+    "player_id,position_group,season,season_type,week,game_id,team,opponent_team,def_sacks,def_qb_hits,def_pass_defended,def_interceptions",
+    "00-0012345,DL,2025,REG,1,2025_01_ARI_NO,ARI,NO,0.5,2,1,0",
+  ].join("\n"), { retrieved_at: NOW, source_updated_at: "2026-08-13T16:51:22.000Z" });
+  const { errors, externalRequests } = await setup(page, 2, fieldFixture({ defenders: productionDefenders() }), baseline, null, null, production2024Fixture());
+  const badge = await marker(page).locator(".marker-status").innerText();
+  if (isMobile) await marker(page).tap(); else await marker(page).click();
+  await expect(popup(page)).toContainText("2025 REG · recorded production");
+  await expect(popup(page)).toContainText("ARI · 0.5 sacks · 2 QB hits · 1 PD · 0 INT");
+  await expect(popup(page).locator(".production-history")).toHaveCount(0);
+  await popup(page).getByText("Player details", { exact: true }).click();
+  const production = popup(page).locator(".production-history");
+  await expect(production).not.toHaveAttribute("open", "");
+  const summary = production.locator("summary");
+  await expect(summary).toHaveText("2024 REG · recorded production");
+  if (isMobile) await summary.tap(); else { await summary.focus(); await page.keyboard.press("Enter"); }
+  await expect(production).toHaveAttribute("open", "");
+  await expect(production).toContainText("NYJ / TEN · 2.5 sacks · 9 QB hits · 3 PD · 1 INT");
+  await expect(production).toContainText("TEN: 0.5 sacks · 2 QB hits");
+  await expect(production).toContainText("NYJ: 2 sacks · 7 QB hits");
+  await assertPopupFits(page);
+  expect(await popup(page).evaluate(el => el.scrollWidth > el.clientWidth)).toBe(false);
+  await expect(popup(page).locator("p")).toHaveCount(0);
+  await evidence(page, testInfo, `2024-production-${isMobile ? "mobile" : "desktop"}`);
+  await popup(page).getByText("Sources and timestamps", { exact: true }).click();
+  await expect(popup(page).getByRole("link", { name: "nflverse 2024 stats", exact: true })).toHaveAttribute("href", /stats_player_week_2024\.csv\.gz$/);
+  await expect(popup(page)).toContainText("2024 stat rows");
+  await expect(popup(page)).toContainText("2024 stats file");
+  await page.keyboard.press("Escape");
+  await expect(popup(page)).toHaveCount(0); await expect(marker(page)).toBeFocused();
+  await expect(marker(page).locator(".marker-status")).toHaveText(badge);
+  await marker(page).click();
+  await expect(popup(page)).toContainText("ARI · 0.5 sacks · 2 QB hits · 1 PD · 0 INT");
+  await expect(popup(page).locator(".player-details")).not.toHaveAttribute("open", "");
+  expect(errors).toEqual([]); expect(externalRequests).toEqual([]);
+});
+
+test("2024 history preserves reported zero, omits missing IDs and cannot substitute for an unavailable 2025 baseline", async ({ page }) => {
+  const fixture = fieldFixture({ defenders: productionDefenders() });
+  fixture.reports = fixture.reports.filter(report => report.team !== "CAR");
+  await setup(page, 2, fixture, null, null, null, production2024Fixture());
+  await row(page, "Field Fixture Out").click();
+  await expect(popup(page).locator("h3").filter({ hasText: "2025 REG" })).toHaveCount(0);
+  await expect(popup(page)).toContainText("Availability unknown");
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await popup(page).locator(".production-history summary").click();
+  await expect(popup(page).locator(".production-history")).toContainText("2.5 sacks");
+  await page.keyboard.press("Escape");
+  await expect(marker(page).locator(".marker-status")).toHaveCount(0);
+  await tab(page, "Uncertain").click(); await expect(firstTile(page).locator(".injury-row")).toHaveCount(0);
+  await tab(page, "All").click();
+  await row(page, "Field Fixture Limited").click();
+  await popup(page).getByText("Player details", { exact: true }).click();
+  await popup(page).locator(".production-history summary").click();
+  await expect(popup(page).locator(".production-history")).toContainText("TEN · 0 sacks · 0 QB hits · 0 PD · 0 INT");
+  await page.keyboard.press("Escape");
+  await row(page, "Field Fixture Unknown").click();
+  await expect(popup(page).locator(".player-details")).toHaveCount(0);
+  await expect(popup(page).locator(".production-history")).toHaveCount(0);
+});
+
+test("failed, malformed or older 2024 history retains valid counts while fresh current injuries still update", async ({ page }) => {
+  const older = production2024Fixture();
+  const fixture = fieldFixture({ defenders: productionDefenders() });
+  await setup(page, 2, fixture, null, null, null, older);
+  const fresh = structuredClone(fixture); fresh.generated_at = "2026-09-13T12:01:00.000Z";
+  fresh.reports.find(r => r.team === "CAR").entries.find(e => e.id === "gsis:00-0012346").practice_status = "Did not practice";
+  await page.route("**/current.json", route => route.fulfill({ json: fresh }));
+  const stale = structuredClone(older); stale.source.retrieved_at = "2026-09-13T11:59:00.000Z";
+  stale.players.find(p => p.id === "gsis:00-0012345").sacks = 0;
+  stale.players.find(p => p.id === "gsis:00-0012345").teams.forEach(t => t.sacks = 0);
+  for (const response of [{ status: 503, body: "Unavailable" }, { json: { season: 2024 } }, { json: stale }]) {
+    await page.route("**/contributions-2024.json", route => route.fulfill(response));
+    await page.locator("#refresh").click();
+    await expect(page.locator("#refresh-state")).toContainText("history check failed");
+    await expect(row(page, "Field Fixture Limited")).toContainText("DNP");
+    await row(page, "Field Fixture Out").click();
+    await popup(page).getByText("Player details", { exact: true }).click();
+    await popup(page).locator(".production-history summary").click();
+    await expect(popup(page).locator(".production-history")).toContainText("2.5 sacks");
+    await page.keyboard.press("Escape");
+  }
 });

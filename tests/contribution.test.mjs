@@ -5,13 +5,20 @@ import { metricPerspective } from "../web/model.mjs";
 import {
   normalizeContributions,
   collectContributions,
+  refreshContributions,
 } from "../scripts/contribution-data.mjs";
 import {
   CONTRIBUTION_SOURCE,
+  contributionSource,
   validateContributions,
   defenderContribution,
   contributionMetrics,
 } from "../web/contribution.mjs";
+
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const NOW = Date.parse("2026-09-14T12:00:00Z");
 const metadata = {
@@ -306,4 +313,47 @@ test("production leaders use separate positive measures, include ties and exclud
       interceptions: [],
     },
   );
+});
+
+test("2024 production preserves separate season/team credits and rejects cross-season or unreviewed inputs", () => {
+  const data = normalizeContributions(csv(first, second, zero).replaceAll("2025", "2024"), metadata, NOW, 2024);
+  assert.equal(data.season, 2024);
+  assert.equal(defenderContribution(data, "gsis:00-0012345", "QB").period, "2024 regular season");
+  assert.equal(data.players[0].sacks, 1.5);
+  assert.deepEqual(data.players[0].teams.map(team => [team.team, team.sacks]), [["ARI", 0.5], ["LAR", 1]]);
+  assert.equal(defenderContribution(data, "gsis:00-0012346", "QB").record.sacks, 0);
+  assert.equal(defenderContribution(data, "gsis:00-0000000", "QB"), null);
+  assert.throws(() => validateContributions(data, NOW), /reviewed period/);
+  const wrongSource = structuredClone(data); wrongSource.source.url = CONTRIBUTION_SOURCE;
+  assert.throws(() => validateContributions(wrongSource, NOW, 2024), /reviewed source/);
+  assert.throws(() => normalizeContributions(csv(first), metadata, NOW, 2024), /season/);
+  assert.throws(() => contributionSource(2023), /reviewed season/);
+});
+
+test("2024 collector requests its single fixed reviewed source and rejects unsupported years before fetching", async () => {
+  const requested = [];
+  const data = await collectContributions({ season: 2024, now: () => new Date(NOW), fetchImpl: async url => {
+    requested.push(String(url)); return reply(gzipSync(csv(first, zero).replaceAll("2025", "2024")));
+  } });
+  assert.deepEqual(requested, [contributionSource(2024)]);
+  assert.equal(data.coverage.record_count, 2);
+  await assert.rejects(collectContributions({ season: 2026, fetchImpl: async () => { throw new Error("unexpected fetch"); } }), /reviewed season/);
+});
+
+test("optional 2024 writes remain independent, retaining only valid same-season history after failure", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "sideline-production-"));
+  const output = pathToFileURL(join(dir, "contributions-2024.json"));
+  const baseline = pathToFileURL(join(dir, "contributions.json"));
+  const data = normalizeContributions(csv(first).replaceAll("2025", "2024"), metadata, NOW, 2024);
+  try {
+    await writeFile(baseline, JSON.stringify(fixture()));
+    assert.equal((await refreshContributions({ season: 2024, output, collect: async () => data })).status, "updated");
+    const fail = async () => { throw new Error("source unavailable"); };
+    assert.equal((await refreshContributions({ season: 2024, output, collect: fail })).status, "retained");
+    assert.equal(JSON.parse(await readFile(baseline)).season, 2025);
+    await writeFile(output, JSON.stringify(fixture()));
+    assert.equal((await refreshContributions({ season: 2024, output, collect: fail })).status, "unavailable");
+    await assert.rejects(readFile(output), /ENOENT/);
+    assert.equal(JSON.parse(await readFile(baseline)).season, 2025);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

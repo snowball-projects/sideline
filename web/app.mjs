@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.5";
+} from "./contribution.mjs?v=0.9.6";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.5";
+} from "./refresh.mjs?v=0.9.6";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,11 +15,11 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.5";
-import { parseFeed } from "./feed.mjs?v=0.9.5";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.5";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.5";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.5";
+} from "./field.mjs?v=0.9.6";
+import { parseFeed } from "./feed.mjs?v=0.9.6";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.6";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.6";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.6";
 import {
   searchPlayers,
   opponentRoster,
@@ -36,14 +36,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.5";
+} from "./model.mjs?v=0.9.6";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.5";
+} from "./popover.mjs?v=0.9.6";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -60,6 +60,7 @@ let contributions = null,
   contributionError = "",
   pendingClock = false,
   renderedClockKey = "";
+let productionHistory = null, productionHistoryError = "";
 let playerHistory = null, playerHistoryError = "";
 let injuryHistory = null, injuryHistoryError = "";
 let pendingFeed = null,
@@ -433,7 +434,7 @@ function sourceDetails() {
   panel.append(
     node(
       "p",
-      "Defender details include recorded 2025 regular-season events for their historical team(s), not current defensive quality or snap share. QB hits and sacks describe passing disruption; PD means passes defended and INT interceptions. Coverage events do not measure coverage efficiency. Any highest-available-total comparison is for a named measure, including ties and excluding missing records. Counts have no exposure denominator. Missing history stays unknown; there is no validated injury-advantage score.",
+      "Defender details include recorded 2025 regular-season events and optional 2024 history for their historical team(s), not current defensive quality or snap share. QB hits and sacks describe passing disruption; PD means passes defended and INT interceptions. Coverage events do not measure coverage efficiency. Any highest-available-total comparison is for a named measure, including ties and excluding missing records. Counts have no exposure denominator. Missing history stays unknown; there is no validated injury-advantage score.",
       "small",
     ),
   );
@@ -448,14 +449,15 @@ function sourceDetails() {
         "small",
       ),
     );
-  if (contributions)
+  if (contributions || productionHistory)
     panel.append(
-      link("Historical event data · CC BY 4.0", contributions.source.terms_url),
+      link("Historical event data · CC BY 4.0", (contributions || productionHistory).source.terms_url),
     );
   if (injuryHistoryError) panel.append(facts([["Injury archive", injuryHistoryError]]));
   if (injuryHistory) panel.append(link("Injury archive · CC BY 4.0", injuryHistory.source.terms_url));
   if (playerHistoryError) panel.append(facts([["Player history", playerHistoryError]]));
   if (playerHistory) panel.append(link("Player history data · CC BY 4.0", PLAYER_HISTORY_TERMS));
+  if (productionHistoryError) panel.append(facts([["2024 production", productionHistoryError]]));
   const links = node("div", undefined, "info-links");
   for (const [label, url] of [
     ["snowball", "https://snowball-projects.github.io/"],
@@ -569,6 +571,17 @@ function reportDetails(result) {
   );
   return panel;
 }
+function appendProductionCounts(block, history) {
+  block.append(node("div",
+    history.record.teams.map((team) => team.team).join(" / ") + " · " +
+    history.allMetrics.map((metric) => metric.value + " " + metric.short).join(" · "),
+    "production-counts"));
+  if (history.record.teams.length > 1)
+    for (const team of history.record.teams)
+      block.append(node("div", team.team + ": " + team.sacks + " sacks · " +
+        team.qb_hits + " QB hits · " + team.passes_defended + " PD · " +
+        team.interceptions + " INT", "small"));
+}
 function memberDetails(member, result) {
   const panel = node("div");
   panel.append(node("h2", member.name + " · " + member.position));
@@ -601,15 +614,7 @@ function memberDetails(member, result) {
   if (history) {
     const historyBlock = node("div", undefined, "source-block");
     historyBlock.append(node("h3", "2025 REG · recorded production"));
-    historyBlock.append(node("div",
-      history.record.teams.map((team) => team.team).join(" / ") + " · " +
-      history.allMetrics.map((metric) => metric.value + " " + metric.short).join(" · "),
-      "production-counts"));
-    if (history.record.teams.length > 1)
-      for (const team of history.record.teams)
-        historyBlock.append(node("div", team.team + ": " + team.sacks + " sacks · " +
-          team.qb_hits + " QB hits · " + team.passes_defended + " PD · " +
-          team.interceptions + " INT", "small"));
+    appendProductionCounts(historyBlock, history);
     panel.append(historyBlock);
   }
 
@@ -622,7 +627,9 @@ function memberDetails(member, result) {
   }
   const records = playerInjuryRecords(feed, member.id, weekKey);
   const archiveRecords = archivedInjuryRecords(injuryHistory, member.id);
-  if (bio.length || records.length || archiveRecords.length || rosterHistory?.rosters.length) {
+  const olderProduction = defenderContribution(productionHistory, member.id,
+    metricPerspective(result.player.position, member.position));
+  if (bio.length || records.length || archiveRecords.length || olderProduction || rosterHistory?.rosters.length) {
     const details = node("details", undefined, "source-block player-details");
     details.append(node("summary", "Player details"));
     let rendered = false;
@@ -631,6 +638,12 @@ function memberDetails(member, result) {
       rendered = true;
       if (bio.length) {
         details.append(node("h3", "Bio"), facts(bio));
+      }
+      if (olderProduction) {
+        const production = node("details", undefined, "production-history");
+        production.append(node("summary", "2024 REG · recorded production"));
+        appendProductionCounts(production, olderProduction);
+        details.append(production);
       }
       if (rosterHistory?.rosters.length) {
         const rosters = node("details", undefined, "roster-history");
@@ -712,6 +725,11 @@ function memberDetails(member, result) {
       ["Collected", time(contributions.source.retrieved_at)],
     ]));
   }
+  if (olderProduction) sources.append(link("nflverse 2024 stats", productionHistory.source.url), facts([
+    ["2024 stat rows", String(olderProduction.record.recorded_games)],
+    ["2024 stats file", time(productionHistory.source.source_updated_at)],
+    ["Collected", time(productionHistory.source.retrieved_at)],
+  ]));
   const rosterSource = sourceFor(feed.roster.source_id);
   sources.append(link(rosterSource.label, rosterSource.url), facts([
     ["Roster collected", time(feed.roster.retrieved_at)],
@@ -1250,6 +1268,8 @@ function applyFeed(bundle) {
   feed = next;
   contributions = bundle.contributions;
   contributionError = bundle.contributionError;
+  productionHistory = bundle.productionHistory;
+  productionHistoryError = bundle.productionHistoryError;
   playerHistory = bundle.playerHistory;
   playerHistoryError = bundle.playerHistoryError;
   injuryHistory = bundle.injuryHistory;
@@ -1276,7 +1296,7 @@ function renderRefreshState() {
           : "Check failed · data unavailable"
         : pendingFeed || pendingClock
           ? "Updates ready · finish interaction"
-          : contributionError || playerHistoryError || injuryHistoryError
+          : contributionError || productionHistoryError || playerHistoryError || injuryHistoryError
             ? "Current data checked · history check failed"
             : refreshPhase === "unchanged"
               ? "Checked · no newer shared data"
@@ -1300,8 +1320,9 @@ async function loadOptionalArtifact(url, previous, maxBytes, validate) {
     const text = await response.text();
     if (text.length > maxBytes) throw new Error("Optional data too large.");
     const candidate = validate(JSON.parse(text));
-    if (candidate.generated_at && previous?.generated_at &&
-        Date.parse(candidate.generated_at) < Date.parse(previous.generated_at))
+    const timestamp = (data) => data?.generated_at || data?.source?.retrieved_at;
+    if (timestamp(candidate) && timestamp(previous) &&
+        Date.parse(timestamp(candidate)) < Date.parse(timestamp(previous)))
       throw new Error("Older optional data returned.");
     return { data: candidate, failed: false };
   } catch { return { data: previous, failed: true }; }
@@ -1317,19 +1338,23 @@ const refresher = createRefreshController({
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    const [historical, rosterHistory, archive] = mode === "live"
+    const [historical, rosterHistory, archive, olderProduction] = mode === "live"
       ? await Promise.all([
           loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
           loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
           loadOptionalArtifact("./injury-history.json", injuryHistory, MAX_INJURY_HISTORY_BYTES, validateInjuryHistory),
+          loadOptionalArtifact("./contributions-2024.json", productionHistory, MAX_CONTRIBUTION_BYTES,
+            (data) => validateContributions(data, Date.now(), 2024)),
         ])
-      : [{ data: null, failed: false }, { data: null, failed: false }, { data: null, failed: false }];
+      : Array.from({ length: 4 }, () => ({ data: null, failed: false }));
     return {
       mode: next.mode,
       generated_at: next.generated_at,
       current: next,
       contributions: historical.data,
       contributionError: historical.failed ? "Historical production could not be refreshed." : "",
+      productionHistory: olderProduction.data,
+      productionHistoryError: olderProduction.failed ? "History check failed" + (olderProduction.data ? " · previous file kept" : "") : "",
       injuryHistory: archive.data,
       injuryHistoryError: archive.failed ? "Archive check failed" + (archive.data ? " · previous file kept" : "") : "",
       playerHistory: rosterHistory.data,

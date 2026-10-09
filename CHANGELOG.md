@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.9.5 - proposed
+## 0.9.6 - proposed
+
+- Add separately validated optional 2024 regular-season production, joined by exact GSIS identity with historical team subtotals and half-sack credits.
+- Show older production only in collapsed Player details, preserving the 2025 baseline, current badges and filters, reported zero and missing-history distinctions.
+- Retain validated optional counts after failure or an older response without blocking fresh current injuries.
+
+## 0.9.5 - 2026-10-08
 
 - Add a bounded optional 2025 injury archive for exact-ID current defenders, preserving original reported teams, weeks, body-part text and practice/game statuses.
 - Reuse collapsed injury records with a small season choice; current-season history remains the default when present. Empty archive sections are omitted.

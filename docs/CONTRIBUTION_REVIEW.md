@@ -142,3 +142,43 @@ exclusion, selected-game exclusion, equal comparison windows and honest labels.
 Prediction would require a separate prospective/out-of-time evaluation against
 simple baselines, controlling leakage and available-as-of evidence. This review
 provides neither that validation nor an individual matchup/point-boost model.
+
+## October 9, 2026 bounded 2024 production decision
+
+Add only the fixed [2024 weekly statistics gzip CSV](https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2024.csv.gz)
+to the historical release allowlist. The publisher CC BY 4.0 license was
+rechecked; its blob remains `0fb847eb09afc05734c2f1aa34bc3ebd995a072a`.
+The source supplies the same required GSIS/game/season/week/team/group fields
+and four selected credited-event measures as the existing 2025 baseline.
+No PFR, FTN, direct NFL/team source, photo or source-code rights are added.
+
+The inspected asset is **1,244,175 compressed bytes**, file updated
+**2026-08-13T16:49:10Z**. Its 18,983 all-position REG/POST rows include **10,060
+REG defensive stat rows**, **1,023 identities**, **272 games** and all **32 teams**.
+Selected measures have no blank values; there are no duplicate defensive
+player/game keys. Exact joins against the live current defender roster match
+**724 identities / 8,021 rows** in this observation, not a future guarantee.
+The first validated artifact was collected **2026-10-09T01:55:44.737Z**:
+**220,011 JSON bytes**, **13,602 bytes** under a local gzip measurement.
+The smaller derived totals support the existing static artifact model; actual
+HTTP transfer encoding is a hosting property, not asserted from this local size.
+
+The 2024 artifact reuses the strict contribution schema with an explicit season
+parameter that permits only reviewed 2024/2025 source pairs. It has its own
+fixed source URL, file/collection provenance and independent atomic/optional
+retention. Existing compressed, expanded, row and browser-size bounds remain.
+REG-only aggregation preserves half sacks and historical team subtotals; LA is
+normalized to LAR for the same 2024 franchise, as in the existing production
+collector. Exact IDs never borrow names, teams or counts from another season.
+Reported zero remains recorded zero; a missing record is omitted. Counts of
+stat rows remain source coverage, never games played or continuous tenure.
+
+The initially collapsed Player details section adds one nested 2024 production
+summary; the compact primary 2025 line remains unchanged. All four counts are
+visible on expansion, with source metadata in the existing Sources and timestamps
+section. No new explanatory paragraph, score, current-form substitution, ranking,
+injury-count benefit, status or filter inference is introduced. This is a
+second historical production season, not full career or weekly performance history.
+Dated daily practice, actual tenure and coordinator/predecessor coverage retain
+their separate source and publication-rights blockers. No schedule, account,
+credential, paid service or backend migration is required by this increment.

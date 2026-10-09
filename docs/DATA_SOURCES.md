@@ -498,3 +498,35 @@ but only one had employer statements and one had coach-of-team statements,
 with incomplete current-role coverage. Neither supports a reliable automatic
 coordinator/predecessor model. No 32-team manual registry or restricted
 official-site crawler is introduced by this increment.
+
+## October 9, 2026 optional 2024 defensive production
+
+The reviewed integration now permits the single fixed
+[2024 stats_player weekly gzip asset](https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2024.csv.gz),
+under the rechecked publisher CC BY 4.0 grant (unchanged license blob
+`0fb847eb09afc05734c2f1aa34bc3ebd995a072a`). Attribution, source links,
+modifications and warranty limits remain in THIRD-PARTY-NOTICES.md. This grants
+no additional direct team/NFL collection, advanced PFR/FTN data or media use.
+
+The asset's file update is **2026-08-13T16:49:10Z**. It contains **10,060 REG
+DL/LB/DB stat rows**, **1,023 historical identities**, all **32 teams** and
+**272 distinct games**; 724 current defenders match 8,021 of those rows in the
+review observation. The optional derived JSON is **220,011 bytes**, independently
+collected at **2026-10-09T01:55:44.737Z**. These are observed counts, not a
+participation/completeness or current-roster coverage guarantee.
+
+`web/contributions-2024.json` is ignored, bounded, independently validated and
+atomic. Its fixed season/source pair cannot be mistaken for the separate 2025
+baseline. Failed, malformed or older optional data retains only validated
+facts while fresh current injuries can still update. The build copies only
+this explicit new artifact; visitors request no provider data. Deeper facts
+stay collapsed in Player details. Missing identity/history is absent rather
+than zero, and historical counts never set current badges, filters or health.
+The detailed definitions, measured source sizes and limitations are recorded
+in [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md).
+
+Dated practice progression, actual continuous tenure and reliable current/
+historical coordinator identity remain separate evidence gaps. The earlier
+held team-source restrictions and incomplete CC0 coordinator coverage are
+unchanged. This increment starts no broad dataset pipeline or backend migration,
+and changes no refresh cadence or service cost.

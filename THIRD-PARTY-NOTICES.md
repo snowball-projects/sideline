@@ -48,11 +48,13 @@ nflverse-data release under CC BY 4.0. sideline retains the latest observation p
 team and joins by player identity and team; first string does not confirm game
 participation. See docs/DATA_SOURCES.md.
 
-Historical defensive event counts are derived from nflverse-calculated 2025
+Historical defensive event counts are derived from separately labelled nflverse-calculated 2024 and 2025
 regular-season player statistics under the publisher's CC BY 4.0 data grant:
 https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv.gz
+https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2024.csv.gz
 sideline filters REG defensive records, sums separate credited event counts by
 GSIS identity, and preserves historical team subtotals and source provenance.
+Seasons remain separate; LA is normalized to LAR for the same historical franchise.
 These are not defensive-quality, participation or fantasy-advantage scores.
 No independently verified NFL agreement or endorsement is claimed. No warranties
 are provided under the source license. See docs/CONTRIBUTION_REVIEW.md.
