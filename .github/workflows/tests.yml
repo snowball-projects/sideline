@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
 
 jobs:
   unit:
@@ -95,6 +95,7 @@ jobs:
     needs: [web, browser]
     if: ${{ !cancelled() && needs.web.result == 'success' && (needs.browser.result == 'success' || needs.browser.result == 'skipped') && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
