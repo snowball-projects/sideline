@@ -6,7 +6,7 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
-Version 0.9.5 adds optional 2025 injury records with a compact season choice inside Player details; current-season records remain the default.
+Version 0.9.6 adds optional 2024 defensive production in collapsed Player details, preserving the separate 2025 baseline and current injury statuses.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
@@ -29,7 +29,7 @@ press and leaving the preview dismiss it. Remove a selected player with ×.
 Mobile tiles stack; larger screens preserve aligned comparison fields.
 
 Selections stay in the browser; there are no accounts or league connections.
-Separate 2025 defensive-event history remains available in details where a
+Separate 2025 defensive-event history and expandable 2024 recorded production are available in details where a
 stable record exists. Missing history is unknown; no injury-benefit score,
 replacement-quality claim or invented assignment is supplied.
 See [Contribution evidence](docs/CONTRIBUTION_REVIEW.md).

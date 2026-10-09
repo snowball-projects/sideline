@@ -42,6 +42,11 @@ Missing history is not zero; previous teams and roles may differ. Details show
 compact season-labelled production and source links. No favorable effect or
 confirmed absence is inferred from an undated Out/Q report.
 
+Optional player details also supplies separate 2024 regular-season recorded
+production for exact matching identities, including historical team subtotals.
+This bounded older season does not replace the 2025 baseline or enter current
+availability, filters or coverage. Missing 2024 records remain absent, not zero.
+
 Current snap share was not approved because the obtainable PFR-derived family
 has unresolved upstream redistribution restrictions. Modern FTN participation
 is postseason-only. Recorded stat-game rows are not games played. No validated

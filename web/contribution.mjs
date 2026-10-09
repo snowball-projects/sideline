@@ -2,6 +2,10 @@
 export const CONTRIBUTION_SEASON = 2025;
 export const CONTRIBUTION_SOURCE =
   "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv.gz";
+export function contributionSource(season = CONTRIBUTION_SEASON) {
+  requireValue([2024, 2025].includes(season), "reviewed season");
+  return CONTRIBUTION_SOURCE.replace("2025.csv.gz", season + ".csv.gz");
+}
 export const CONTRIBUTION_TERMS =
   "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md";
 export const MAX_CONTRIBUTION_BYTES = 1_500_000;
@@ -16,7 +20,6 @@ const TEAMS = new Set(
     " ",
   ),
 );
-const PERIOD = "2025 regular season";
 const LIMITATION =
   "Recorded events, not defensive quality or playing time. Historical teams and roles may differ. Replacement quality and the effect on your player are unmeasured.";
 const METRICS = {
@@ -77,7 +80,8 @@ function counts(record, label) {
 }
 
 /** Strict optional artifact boundary. Callers retain their core feed on failure. */
-export function validateContributions(data, now = Date.now()) {
+export function validateContributions(data, now = Date.now(), season = CONTRIBUTION_SEASON) {
+  const sourceUrl = contributionSource(season);
   requireValue(Number.isFinite(now), "clock");
   object(
     data,
@@ -93,7 +97,7 @@ export function validateContributions(data, now = Date.now()) {
   );
   requireValue(
     data.schema_version === 1 &&
-      data.season === CONTRIBUTION_SEASON &&
+      data.season === season &&
       data.season_type === "REG",
     "reviewed period",
   );
@@ -111,7 +115,7 @@ export function validateContributions(data, now = Date.now()) {
   );
   const source = data.source;
   requireValue(
-    source.url === CONTRIBUTION_SOURCE &&
+    source.url === sourceUrl &&
       source.terms_url === CONTRIBUTION_TERMS &&
       source.permission === "verified",
     "reviewed source",
@@ -235,7 +239,7 @@ export function defenderContribution(data, defenderId, selectedPosition) {
   const record = data.players.find((player) => player.id === defenderId);
   if (!record) return null;
   return {
-    period: PERIOD,
+    period: data.season + " regular season",
     record,
     metrics: contributionMetrics(selectedPosition).map((metric) => ({
       ...metric,

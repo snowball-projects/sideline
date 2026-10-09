@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.5 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.6 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -140,12 +140,23 @@ file/retrieval times. Stat rows are not games played. Reported Out/Q does not by
 confirm current participation. [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md)
 owns the source and metric decision.
 
+Player details adds a separately collapsed **2024 REG · recorded production**
+section only for an exact matching identity. It preserves all four event counts,
+historical team subtotals and half sacks; it never replaces an absent 2025 line.
+Reported zero remains zero, and missing history produces no empty section.
+Its source link, recorded stat-row count and file/collection times appear in
+Sources and timestamps. The board's comparison window and current statuses stay unchanged.
+
 `web/contributions.json` is a separate optional browser artifact with strict
 schema/provenance/size validation in `web/contribution.mjs`. Its version 1 schema
 contains season 2025/REG, source metadata, partial-coverage team/game/stat-row/
 player counts and GSIS-keyed per-player records with historical-team subtotals.
 A missing record is unknown history. Optional history failure preserves the core
 injury view and any previously validated historical data, with a detail notice.
+`web/contributions-2024.json` uses the same bounded schema with an explicit
+2024 validator and its own fixed source URL. Validation never accepts another
+season in either artifact. Older browser collection timestamps retain previously
+validated counts while the core injury feed can still advance.
 
 ## Source collection
 
@@ -187,6 +198,11 @@ revalidation; otherwise it is removed. A fresh checkout may have no prior histor
 Live builds omit missing or invalid historical data while still requiring the
 validated core feed. Core collection/validation failure retains the prior Pages
 deployment. No upstream request is delegated to visitors.
+
+The refresh also invokes `scripts/contribution-data.mjs --optional --season=2024`
+for the single reviewed 2024 asset. It writes its independently validated,
+ignored artifact atomically with the same caps and failure retention. An
+unavailable 2024 source does not stop the 2025 or current injury collectors.
 
 `scripts/player-history-data.mjs --optional` collects the three fixed reviewed
 player-reference and 2025/2026 weekly roster gzip assets. Each compressed request

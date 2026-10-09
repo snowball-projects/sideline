@@ -5,7 +5,7 @@ import { gunzipSync } from "node:zlib";
 import { parseCsv } from "./source-adapter.mjs";
 import {
   CONTRIBUTION_SEASON,
-  CONTRIBUTION_SOURCE,
+  contributionSource,
   CONTRIBUTION_TERMS,
   CONTRIBUTION_COUNTS,
   validateContributions,
@@ -13,9 +13,9 @@ import {
 
 export const CONTRIBUTION_POLICY = Object.freeze({
   verified: true,
-  checked_on: "2026-09-14",
+  checked_on: "2026-10-09",
   reason:
-    "nflverse-data publishes its calculated player statistics under CC BY 4.0. sideline selects 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical teams. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied. See docs/CONTRIBUTION_REVIEW.md.",
+    "nflverse-data publishes its calculated player statistics under CC BY 4.0. sideline selects the explicitly labelled 2024 or 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical team subtotals. Seasons are never blended. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied. See docs/CONTRIBUTION_REVIEW.md.",
 });
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
@@ -36,7 +36,6 @@ const FIELDS = {
   interceptions: "def_interceptions",
 };
 const DEFENSE = new Set(["DL", "LB", "DB"]);
-const OUTPUT = new URL("../web/contributions.json", import.meta.url);
 function requireValue(ok, message) {
   if (!ok) throw new Error(message);
 }
@@ -63,7 +62,8 @@ function eventCount(input, key) {
   return value;
 }
 
-export function normalizeContributions(csv, metadata, now = Date.now()) {
+export function normalizeContributions(csv, metadata, now = Date.now(), season = CONTRIBUTION_SEASON) {
+  const sourceUrl = contributionSource(season);
   const rows = parseCsv(csv, { maxBytes: MAX_EXPANDED_BYTES, maxRows: 40_000 });
   requireValue(rows.length > 0, "Contribution source has no rows.");
   for (const field of [
@@ -88,7 +88,7 @@ export function normalizeContributions(csv, metadata, now = Date.now()) {
   let recordCount = 0;
   for (const row of rows) {
     requireValue(
-      row.season === String(CONTRIBUTION_SEASON) &&
+      row.season === String(season) &&
         ["REG", "POST"].includes(row.season_type),
       "Unexpected contribution source season or game type.",
     );
@@ -106,7 +106,7 @@ export function normalizeContributions(csv, metadata, now = Date.now()) {
     const parts = row.game_id.split("_");
     requireValue(
       parts.length === 4 &&
-        parts[0] === String(CONTRIBUTION_SEASON) &&
+        parts[0] === String(season) &&
         parts[1] === row.week.padStart(2, "0"),
       "Contribution game does not match season/week.",
     );
@@ -146,10 +146,10 @@ export function normalizeContributions(csv, metadata, now = Date.now()) {
   }
   const artifact = {
     schema_version: 1,
-    season: CONTRIBUTION_SEASON,
+    season,
     season_type: "REG",
     source: {
-      url: CONTRIBUTION_SOURCE,
+      url: sourceUrl,
       terms_url: CONTRIBUTION_TERMS,
       permission: CONTRIBUTION_POLICY.verified ? "verified" : "unverified",
       permission_note: CONTRIBUTION_POLICY.reason,
@@ -172,7 +172,7 @@ export function normalizeContributions(csv, metadata, now = Date.now()) {
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
   };
-  return validateContributions(artifact, now);
+  return validateContributions(artifact, now, season);
 }
 
 function safeRedirect(value) {
@@ -189,6 +189,7 @@ function safeRedirect(value) {
 }
 
 export async function collectContributions({
+  season = CONTRIBUTION_SEASON,
   fetchImpl = fetch,
   now = () => new Date(),
   timeoutMs = 30_000,
@@ -199,7 +200,7 @@ export async function collectContributions({
     "Contribution source publication is not approved.",
   );
   const signal = AbortSignal.timeout(timeoutMs);
-  let url = safeRedirect(CONTRIBUTION_SOURCE),
+  let url = safeRedirect(contributionSource(season)),
     response;
   for (let redirects = 0; redirects <= 3; redirects++) {
     response = await fetchImpl(url, {
@@ -273,16 +274,19 @@ export async function collectContributions({
         : null,
     },
     Date.parse(retrievedAt),
+    season,
   );
 }
 
 export async function refreshContributions({
-  output = OUTPUT,
-  collect = collectContributions,
+  season = CONTRIBUTION_SEASON,
+  output = new URL(season === 2025 ? "../web/contributions.json" : "../web/contributions-2024.json", import.meta.url),
+  collect = () => collectContributions({ season }),
 } = {}) {
-  const temporary = new URL("./contributions.json.pending", output);
+  contributionSource(season);
+  const temporary = new URL(output.href + ".pending");
   try {
-    const artifact = validateContributions(await collect());
+    const artifact = validateContributions(await collect(), Date.now(), season);
     await writeFile(temporary, `${JSON.stringify(artifact)}\n`, { flag: "wx" });
     await rename(temporary, output);
     return { status: "updated", artifact };
@@ -291,6 +295,7 @@ export async function refreshContributions({
     try {
       const artifact = validateContributions(
         JSON.parse(await readFile(output, "utf8")),
+        Date.now(), season,
       );
       return { status: "retained", artifact, error: error.message };
     } catch {
@@ -304,10 +309,11 @@ export async function refreshContributions({
 async function main() {
   const args = process.argv.slice(2);
   requireValue(
-    args.length <= 1 && args.every((arg) => arg === "--optional"),
-    "Usage: node scripts/contribution-data.mjs [--optional]",
+    args.length <= 2 && new Set(args).size === args.length &&
+      args.every((arg) => ["--optional", "--season=2024"].includes(arg)),
+    "Usage: node scripts/contribution-data.mjs [--optional] [--season=2024]",
   );
-  const result = await refreshContributions();
+  const result = await refreshContributions({ season: args.includes("--season=2024") ? 2024 : 2025 });
   if (result.error) {
     console.warn(`Historical refresh ${result.status}: ${result.error}`);
     if (!args.includes("--optional")) process.exitCode = 1;
