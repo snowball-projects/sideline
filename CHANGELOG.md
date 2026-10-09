@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.9.6 - proposed
+## 0.9.7 - proposed
+
+- Add an optional six-team coordinator facts pilot: one compact team line with role/start-season provenance in existing Sources.
+- Keep New England's formal 2026 appointment separate from earlier play-calling; omit Tampa Bay and other unreviewed teams.
+- Hide facts outside the reviewed season, before verification or after seven days without a manual recheck; optional failure never changes injuries or filters.
+
+## 0.9.6 - 2026-10-09
 
 - Add separately validated optional 2024 regular-season production, joined by exact GSIS identity with historical team subtotals and half-sack credits.
 - Show older production only in collapsed Player details, preserving the 2025 baseline, current badges and filters, reported zero and missing-history distinctions.

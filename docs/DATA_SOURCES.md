@@ -530,3 +530,56 @@ historical coordinator identity remain separate evidence gaps. The earlier
 held team-source restrictions and incomplete CC0 coordinator coverage are
 unchanged. This increment starts no broad dataset pipeline or backend migration,
 and changes no refresh cadence or service cost.
+
+
+## October 9, 2026 coordinator facts pilot (proposed)
+
+`web/coordinators.json` contains six independently recorded, sparse facts from
+the bounded biography research checked at 03:48:05 UTC on October 9. This pilot
+uses existing evidence only: no source requests, biographies, images, bulk
+collection, upstream API, scheduled scraper or new provider are added.
+
+| Team | Named role | Start season | Evidence |
+| --- | --- | --- | --- |
+| PHI | Vic Fangio, defensive coordinator | 2024 | [Biography](https://www.philadelphiaeagles.com/team/coaches/vic-fangio), [appointment](https://www.philadelphiaeagles.com/news/eagles-name-vic-fangio-defensive-coordinator) |
+| NYJ | Brian Duker, defensive coordinator | 2026 | [Biography](https://www.newyorkjets.com/team/coaches-roster/brian-duker), [appointment](https://www.newyorkjets.com/news/brian-duker-jets-defensive-coordinator-01-28-2026) |
+| CLE | Mike Rutenberg, defensive coordinator | 2026 | [Biography](https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg), [appointment](https://www.clevelandbrowns.com/news/browns-name-coordinators-for-the-2026-coaching-staff) |
+| WAS | Daronte Jones, defensive coordinator | 2026 | [Biography](https://www.commanders.com/team/coaches-roster/daronte-jones) |
+| NE | Zak Kuhr, defensive coordinator | 2026 | [Biography](https://www.patriots.com/team/coaches-roster/zak-kuhr), [formal promotion](https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach) |
+| MIA | Sean Duggan, defensive coordinator | 2026 | [Biography](https://www.miamidolphins.com/team/coaches-roster/sean-duggan) |
+
+PHI's 2022 consultancy is not coordinator tenure. NE's 2025 de facto/play-calling
+responsibilities are separate from the formal 2026 title. Duggan's 2023
+Boston College co-coordinator role is collegiate, not shared Miami duties.
+The previously inspected TB biography names Todd Bowles as head coach and
+limits his titled coordinator tenure to 2019–21; TB is excluded rather than
+inferred from a head-coach field or an absent staff listing. No current shared
+NFL role is asserted, though the schema preserves explicitly supported acting
+or shared roles without flattening two people into one.
+
+Only name, team, explicit title/role, start season, checked timestamp and
+provenance links are published. Effective appointment dates, prior-team
+history, predecessors and play-calling duties are omitted. A season is not an
+exact date or proof of uninterrupted tenure. The validated optional artifact
+has a 16 KiB request bound, fixed season and source URLs, strict fields and
+conflict rejection. It is committed for review, separately from generated
+nflverse files. Build omission or browser failure leaves core data usable.
+
+These factual observations do not adapt copyrighted biography prose and do
+not claim a CC BY grant for team-site content. Generic copyright wording is
+not treated as a blanket prohibition on sparse factual reporting. This decision
+does not authorize systematic retrieval or establish a league-wide source
+permission: existing NFL/team collection restrictions and injury-source holds
+remain. No all-team crawler or 32-team manual registry is introduced.
+
+Facts are visible only in live 2026 context from their checked timestamp through
+seven days afterward. The seven-day window is a conservative operating recheck
+rule, not evidence that a title cannot change inside that period. Updating the
+feed or deploying again never advances `checked_at`; a new manual review is
+required. After expiry the optional line is omitted without repetitive warning
+badges. A future review must respect the applicable source access scope.
+
+Current coverage is exactly 6/32 teams. The other 26, historical changes, exact
+effective dates, current acting/shared exceptions elsewhere and predecessor
+coverage remain unreviewed. Wikidata still lacks a reliable league-wide role/
+tenure feed. No automated coaching-data infrastructure is justified by this slice.
