@@ -1158,10 +1158,13 @@ function coachingFixture(team = 'NE') {
 }
 function coachingFacts() {
   // Metadata is synthetic so this offline test runs at the fixture clock.
-  return {...structuredClone(coordinatorPilot), checked_at: NOW};
+  const facts=structuredClone(coordinatorPilot);
+  const reset=value=>{ if (!value || typeof value !== 'object') return; for (const [key,child] of Object.entries(value)) { if(key==='checked_at') value[key]=NOW; else reset(child); } };
+  reset(facts);
+  return facts;
 }
 
-test('coordinator pilot adds one compact formal-role line with keyboard sources and unchanged practice filters', async ({page, isMobile}, testInfo) => {
+test('all-team coaching adds one compact formal-role line with keyboard sources and unchanged practice filters', async ({page, isMobile}, testInfo) => {
   const {errors, externalRequests} = await setup(page, 2, coachingFixture(), null, null, null, null, coachingFacts());
   const tile = firstTile(page);
   await expect(tile.locator('.coordinator-context')).toHaveText('DC Zak Kuhr · since 2026');
@@ -1176,7 +1179,7 @@ test('coordinator pilot adds one compact formal-role line with keyboard sources 
   await info.focus();await page.keyboard.press('Enter');
   const details=popup(page).locator('details').filter({has:page.locator('summary',{hasText:'Coordinator · Zak Kuhr'})});
   await expect(details).toBeVisible();
-  await details.locator('summary').focus();await page.keyboard.press('Enter');
+  await details.locator(':scope > summary').focus();await page.keyboard.press('Enter');
   await expect(details).toContainText(/Since season\s*2026/);
   await expect(details.getByRole('link',{name:'Team biography'})).toHaveAttribute('href','https://www.patriots.com/team/coaches-roster/zak-kuhr');
   await expect(details).toContainText('Checked');
@@ -1184,7 +1187,7 @@ test('coordinator pilot adds one compact formal-role line with keyboard sources 
   await evidence(page,testInfo,`coordinator-sources-${isMobile?'mobile':'desktop'}`);
   await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);
   await page.getByRole('button',{name:'Sources and information'}).click();
-  const scope=popup(page).getByText('Coordinator pilot · 6 / 32 teams',{exact:true});
+  const scope=popup(page).getByText('Defensive coaching · 32 / 32 teams',{exact:true});
   await expect(scope).toBeVisible();
   await page.keyboard.press('Escape');
   await tab(page,'All').click();
@@ -1194,7 +1197,8 @@ test('coordinator pilot adds one compact formal-role line with keyboard sources 
 
 test('head-coach exceptions, absent or invalid optional facts do not create a coordinator or change injury rows', async ({page}) => {
   const {errors} = await setup(page, 2, coachingFixture('TB'), null, null, null, null, coachingFacts());
-  await expect(page.locator('.coordinator-context')).toHaveCount(0);
+  await expect(firstTile(page).locator('.coordinator-context')).toHaveText('HC Todd Bowles · calls defense');
+  await expect(firstTile(page).locator('.coordinator-context')).not.toContainText('DC');
   const original=await firstTile(page).locator('.injury-row').count();
   await page.route('**/coordinators.json',route=>route.fulfill({json:{...coachingFacts(),appointments:[{...coachingFacts().appointments[0],team:'TB',name:'Synthetic Head Coach',role:'head_coach',title:'Head Coach'}]}}));
   await page.reload();
@@ -1212,7 +1216,10 @@ test('head-coach exceptions, absent or invalid optional facts do not create a co
 
 test('six comparison tiles align with mixed coordinator coverage and wrap safely on narrow screens', async ({page,isMobile},testInfo) => {
   const fixture=JSON.parse(JSON.stringify(fieldFixture({alternateDefenders:ALTERNATE_DEFENDERS})).replaceAll('"CAR"','"NE"'));
-  const {errors}=await setup(page,6,fixture,null,null,null,null,coachingFacts());
+  const coaching=coachingFacts();
+  coaching.appointments=coaching.appointments.filter(r=>r.team==='NE');
+  coaching.history=coaching.history.filter(r=>r.team==='NE');
+  const {errors}=await setup(page,6,fixture,null,null,null,null,coaching);
   if(isMobile) await page.setViewportSize({width:320,height:740});
   await expect(page.locator('.coordinator-context')).toHaveCount(3);
   const tiles=await page.locator('.player-card').all();
@@ -1236,7 +1243,10 @@ test('six comparison tiles align with mixed coordinator coverage and wrap safely
 });
 
 test('manually maintained coordinator facts remain available after thirty days with original provenance', async ({page}) => {
-  const facts={...coachingFacts(),checked_at:new Date(Date.parse(NOW)-30*86400000).toISOString()};
+  const facts=coachingFacts();
+  const old=new Date(Date.parse(NOW)-30*86400000).toISOString();
+  const age=value=>{ if (!value || typeof value!=='object') return; for(const [key,child] of Object.entries(value)){if(key==='checked_at')value[key]=old;else age(child);} };
+  age(facts);
   const {errors}=await setup(page,2,coachingFixture(),null,null,null,null,facts);
   await expect(firstTile(page).locator('.coordinator-context')).toHaveCount(1);
   await page.locator('#reports').focus();
@@ -1248,9 +1258,62 @@ test('manually maintained coordinator facts remain available after thirty days w
   const info=firstTile(page).getByRole('button',{name:'NE report source and freshness'});
   await info.click();
   const details=popup(page).locator('details').filter({has:page.locator('summary',{hasText:'Coordinator · Zak Kuhr'})});
-  await details.locator('summary').click();
+  await details.locator(':scope > summary').click();
   await expect(details).toContainText('Aug 14');
   await expect(details).toContainText(/Maintenance\s*Manual/);
   await page.keyboard.press('Escape');
   expect(errors).toEqual([]);
+});
+
+
+test('selected coaching history preserves formal predecessor and prior play-calling duties in collapsed keyboard-accessible sources',async({page,isMobile},testInfo)=>{
+ const {errors,externalRequests}=await setup(page,2,coachingFixture(),null,null,null,null,coachingFacts());
+ const info=firstTile(page).getByRole('button',{name:'NE report source and freshness'});
+ await info.focus();await page.keyboard.press('Enter');
+ const coaching=popup(page).locator('details').filter({has:page.locator('summary',{hasText:'Coordinator · Zak Kuhr'})}).first();
+ await coaching.locator('summary').first().focus();await page.keyboard.press('Enter');
+ const predecessors=coaching.locator('details').filter({has:page.locator('summary',{hasText:'Prior coordinators'})});
+ const jobs=coaching.locator('details').filter({has:page.locator('summary',{hasText:'Prior jobs · selected records'})});
+ const callers=coaching.locator('details').filter({has:page.locator('summary',{hasText:'Defensive play-calling · recorded seasons'})});
+ await expect(predecessors).not.toHaveAttribute('open','');await expect(jobs).not.toHaveAttribute('open','');
+ await predecessors.locator('summary').click();
+ await expect(predecessors).toContainText('Terrell Williams');await expect(predecessors).toContainText('2025');
+ await callers.locator('summary').click();
+ await expect(callers).toContainText('Zak Kuhr · NE · 2025');await expect(callers).toContainText('Inside Linebackers Coach');
+ await jobs.locator('summary').click();await expect(jobs).toContainText('TEN · 2021–2023');
+ await expect(jobs).toContainText('Defensive Quality Control');
+ await assertPopupFits(page);await evidence(page,testInfo,`coaching-history-${isMobile?'mobile':'desktop'}`);
+ const uncovered=marker(page,'Field Fixture Full');
+ if(isMobile){
+  const target=await uncovered.boundingBox(),panel=await popup(page).boundingBox();
+  const x=target.x+target.width/2,y=target.y+target.height/2;
+  expect(x).toBeGreaterThan(panel.x);expect(x).toBeLessThan(panel.x+panel.width);
+  expect(y).toBeGreaterThan(panel.y);expect(y).toBeLessThan(panel.y+panel.height);
+  // Closing the overlay exposes a marker beneath an unmoved mouse.
+  await page.mouse.move(x,y);await expect(popup(page)).toContainText('NE report');
+ }
+ await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);await expect(info).toBeFocused();
+ if(isMobile){
+  await page.mouse.move(1,1);await uncovered.hover();
+  await expect(popup(page)).toContainText('Field Fixture Full');
+  await page.keyboard.press('Escape');await expect(popup(page)).toHaveCount(0);
+ }
+ await expect(firstTile(page).locator('.coordinator-context')).toHaveText('DC Zak Kuhr · since 2026');
+ await tab(page,'Uncertain').click();await expect(firstTile(page).locator('.injury-row')).toHaveCount(5);
+ expect(errors).toEqual([]);expect(externalRequests).toEqual([]);
+});
+
+test('six fully covered comparison tiles retain field alignment and safe 320px coaching lines',async({page,isMobile},testInfo)=>{
+ const fixture=JSON.parse(JSON.stringify(fieldFixture({alternateDefenders:ALTERNATE_DEFENDERS})).replaceAll('"CAR"','"NE"'));
+ const {errors}=await setup(page,6,fixture,null,null,null,null,coachingFacts());
+ if(isMobile)await page.setViewportSize({width:320,height:740});
+ await expect(page.locator('.coordinator-context')).toHaveCount(6);
+ const tiles=await page.locator('.player-card').all();const tops=[];
+ for(const tile of tiles){
+  tops.push(await assertFieldGeometry(tile));
+  if(isMobile){const box=await tile.boundingBox(),line=await tile.locator('.coordinator-context').boundingBox();expect(box.width).toBeLessThanOrEqual(320);expect(line.x+line.width).toBeLessThanOrEqual(box.x+box.width);}
+ }
+ if(!isMobile)expect(Math.max(...tops)-Math.min(...tops)).toBeLessThanOrEqual(1);
+ await tiles.at(-1).scrollIntoViewIfNeeded();await evidence(page,testInfo,`all-team-coaching-${isMobile?'mobile':'desktop'}`);
+ expect(errors).toEqual([]);
 });

@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.7";
+import { TEAMS } from "./feed.mjs?v=0.9.8";
 
 export const MAX_PLAYER_HISTORY_BYTES = 1_000_000;
 export const PLAYER_HISTORY_WINDOW = [2025, 2026];

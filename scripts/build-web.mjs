@@ -1,5 +1,5 @@
 import { validateContributions } from "../web/contribution.mjs";
-import { validateCoordinators } from "../web/coordinator.mjs";
+import { validateCoordinators, MAX_COORDINATOR_BYTES } from "../web/coordinator.mjs";
 import { validateInjuryHistory } from "../web/injury-history.mjs";
 import { validatePlayerHistory } from "../web/player-history.mjs";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
@@ -104,10 +104,12 @@ try {
 }
 const html = await readFile(new URL("web/index.html", root), "utf8");
 try {
-  validateCoordinators(JSON.parse(await readFile(new URL("web/coordinators.json", root), "utf8")));
+  const coaching = await readFile(new URL("web/coordinators.json", root), "utf8");
+  if (Buffer.byteLength(coaching) > MAX_COORDINATOR_BYTES) throw new Error("Coaching facts exceed the public bound.");
+  validateCoordinators(JSON.parse(coaching));
   files.push("coordinators.json");
 } catch (error) {
-  console.warn(`Optional coordinator pilot omitted: ${error.message}`);
+  console.warn(`Optional coaching facts omitted: ${error.message}`);
 }
 try {
   validatePlayerHistory(JSON.parse(await readFile(new URL("web/player-history.json", root), "utf8")));

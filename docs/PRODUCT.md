@@ -103,12 +103,13 @@ facts and current-season weekly injury records through the selected week. It
 preserves source injury text and reported teams, counts reported weeks, labels
 practice undated, and omits unsupported facts and empty sections. Explicit
 player-reference rookie seasons and expandable 2025/2026 roster observations
-preserve teams and reported week sets. Continuous tenure, daily progression
-and coordinator history require additional source work. A bounded current-season
-coordinator pilot may show one optional team-context line for individually
-reviewed role/start-season facts, with provenance in existing Sources. It is
-not league-wide coverage, a play-calling assignment or a continuous-duration
-calculation; missing observations and unsupported seasons are omitted. The optional 2025 injury
+preserve teams and reported week sets. Continuous tenure and daily progression
+require additional source work. Manually reviewed defensive coaching facts may
+show one compact team-context line in live 2026 views. Formal coordinator
+appointments remain separate from head-coach/play-calling exceptions. Selected
+prior jobs and prior coordinators stay collapsed in Sources with individual
+verification dates and links; they are not complete careers, exact transition
+dates or a calculated continuous duration. Unsupported facts are omitted. The optional 2025 injury
 archive reuses the collapsed injury-record section with a season choice. Current
 records remain the default when present; historical statuses never supply a
 current badge, filter or coverage state.

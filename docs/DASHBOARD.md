@@ -81,18 +81,26 @@ show 2025/2026 season, REG/POST, team and source week sets, preserving gaps and
 team changes. They are latest stored observations, not a selected-week as-of
 reconstruction, games played or a continuous tenure calculation. No uninterrupted team tenure
 or coordinator history is inferred. Unavailable optional sections are omitted.
-The optional `coordinators.json` pilot adds one small opponent-context line,
-for example “DC Vic Fangio · since 2024”, only in live 2026 views. The Sources
-area identifies its six-team scope, original role, source links and checked time.
-It contains PHI, NYJ, CLE, WAS, NE and MIA; all other teams have no new placeholder
-or notice. NE uses its formal 2026 coordinator appointment, not 2025 play-calling
-duties; TB has no inferred coordinator. These are manually maintained factual
-observations for 2026. Their original
-checked date and manual maintenance status stay in Sources; they do not expire
-automatically or acquire a new checked date on refresh. Before the checked time,
-in other seasons or in the fictional example, the line is omitted. Fetch failure
-can retain a validated pilot but cannot renew its checked timestamp.
-No coordinator field enters injuries, filters, matchup resolution or production.
+The optional `coordinators.json` adds one small opponent-context line, such as
+“DC Vic Fangio · since 2024”, in live 2026 views. It contains 31 formally titled
+coordinators plus Tampa Bay’s “HC Todd Bowles · calls defense” exception. The
+existing Sources area identifies the 32-team scope and keeps selected prior
+jobs, prior coordinators and recorded play-calling seasons in separate collapsed
+sections. Interim predecessors remain interim; head-coach and play-calling
+observations do not manufacture DC titles or vacancy claims. Missing facts have
+no placeholder. See [COACHING_REVIEW.md](COACHING_REVIEW.md) for measured coverage.
+
+The schema-v2 manual artifact retains per-record verification dates, strict
+fields, team/coach history joins, season-range guards and reviewed source URL
+allowlists. Its 192 KiB bound accommodates the 128,719-byte reviewed batch. Build
+and browser validation are separate from core data. Failed, malformed or older
+optional artifacts retain only validated prior facts while current injuries can
+update. Before each record’s checked time, outside live 2026 or in the fictional
+example, its line is omitted. Facts have no automatic expiry or renewed checked
+date on refresh. No coaching field enters injuries, filters, matchup resolution
+or production. Explicit dismissal suppresses an uncovered stationary-pointer
+preview until leave/reentry, click or deliberate focus; normal hover and touch
+activation remain available. No provider, scraper, refresh schedule or paid service is added.
 
 When 2025 archive records match, the existing collapsed injury section includes
 a small Season choice. It defaults to current-season records when available;

@@ -39,9 +39,12 @@ Visible tabs check every five minutes, with failure backoff. File age remains
 separate from unknown report time. Elapsed kickoff is labelled status
 unconfirmed because the source supplies no live/final field; no scores are shown.
 
-An optional six-team coordinator pilot adds a compact role/start-season line
-with source links and checked time in Sources. Other teams and unsupported seasons
-have no placeholder; the pilot does not change injury status or comparison logic.
+Optional defensive coaching facts cover all 32 teams: 31 formal coordinators
+and Tampa Bay’s head coach/defensive playcaller, with compact role/start-season
+lines. Selected prior jobs, prior coordinators, source links and individual
+checked times stay collapsed in Sources. Unsupported facts/seasons are omitted;
+coaching never changes injury status or comparison logic. See
+[the coverage review](docs/COACHING_REVIEW.md).
 
 The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
