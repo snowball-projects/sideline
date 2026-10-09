@@ -56,8 +56,8 @@ formal coordinator title in 2026, separate from Kuhr’s 2025 duties.
   Lovie Smith’s earlier formal 2021 role separately from his 2022 head-coach
   play-calling. TB has no fabricated successor/predecessor relationship.
 - Nine recorded play-calling observations preserve PHI/NE/WAS historical
-  differences MIN’s earlier NE duty and current BAL/HOU/TEN/TB exceptions. These are bounded
-  observations, not a complete annual play-caller dataset.
+  differences, MIN’s earlier NE duty and current BAL/HOU/TEN/TB exceptions.
+  These are bounded observations, not a complete annual play-caller dataset.
 
 Interim Chris Harris (NYJ), Charlie Bullen (NYG) and Al Holcomb (CAR) are not
 flattened into a full-season permanent tenure. Multiple job records in one
