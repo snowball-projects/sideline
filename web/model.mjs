@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.8";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.9";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;

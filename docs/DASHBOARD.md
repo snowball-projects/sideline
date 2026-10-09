@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.6 (proposed) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.9 · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -99,8 +99,11 @@ update. Before each record’s checked time, outside live 2026 or in the fiction
 example, its line is omitted. Facts have no automatic expiry or renewed checked
 date on refresh. No coaching field enters injuries, filters, matchup resolution
 or production. Explicit dismissal suppresses an uncovered stationary-pointer
-preview until leave/reentry, click or deliberate focus; normal hover and touch
-activation remain available. No provider, scraper, refresh schedule or paid service is added.
+preview until leave/reentry, click or deliberate focus. Actual mouse movement
+outside the marker also clears suppression when Chromium skips boundary events
+after removing the overlay; the first deliberate reentry opens normally.
+Normal hover and touch activation remain available. No provider, scraper,
+refresh schedule or paid service is added.
 
 When 2025 archive records match, the existing collapsed injury section includes
 a small Season choice. It defaults to current-season records when available;

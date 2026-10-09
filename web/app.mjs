@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.8";
+} from "./contribution.mjs?v=0.9.9";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.8";
+} from "./refresh.mjs?v=0.9.9";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,12 +15,12 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.8";
-import { parseFeed } from "./feed.mjs?v=0.9.8";
-import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.8";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.8";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.8";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.8";
+} from "./field.mjs?v=0.9.9";
+import { parseFeed } from "./feed.mjs?v=0.9.9";
+import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.9";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.9";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.9";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.9";
 import {
   searchPlayers,
   opponentRoster,
@@ -37,14 +37,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.8";
+} from "./model.mjs?v=0.9.9";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.8";
+} from "./popover.mjs?v=0.9.9";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();

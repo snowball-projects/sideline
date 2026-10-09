@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.9.8 - proposed
+## 0.9.9 - 2026-10-09
+
+- Restore the first deliberate hover after Escape and immediate mouse movement away from an uncovered marker, including Chromium's skipped boundary-event sequence.
+- Keep stationary-pointer dismissal protection and release temporary pointer tracking after reentry, activation or cleanup.
+
+## 0.9.8 - 2026-10-09
 
 - Expand manual defensive coaching facts to all 32 teams: 31 formal coordinators and Tampa Bay’s explicitly titled head coach/defensive playcaller.
 - Add 255 selected prior jobs and source-backed prior coordinator records in collapsed Sources, preserving interim appointments, separate stints and play-calling exceptions.
