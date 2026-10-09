@@ -2,11 +2,11 @@ import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.6";
+} from "./contribution.mjs?v=0.9.7";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.6";
+} from "./refresh.mjs?v=0.9.7";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,11 +15,12 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.6";
-import { parseFeed } from "./feed.mjs?v=0.9.6";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.6";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.6";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.6";
+} from "./field.mjs?v=0.9.7";
+import { parseFeed } from "./feed.mjs?v=0.9.7";
+import { validateCoordinators, coordinatorFor, coordinatorLabel, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.7";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.7";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.7";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.7";
 import {
   searchPlayers,
   opponentRoster,
@@ -36,14 +37,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.6";
+} from "./model.mjs?v=0.9.7";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.6";
+} from "./popover.mjs?v=0.9.7";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -63,6 +64,7 @@ let contributions = null,
 let productionHistory = null, productionHistoryError = "";
 let playerHistory = null, playerHistoryError = "";
 let injuryHistory = null, injuryHistoryError = "";
+let coordinators = null;
 let pendingFeed = null,
   refreshPhase = "loading";
 let lastCheck = 0,
@@ -332,6 +334,27 @@ function renderStatus() {
   else if (activeMode === "example")
     status.append(button("Exit", () => loadFeed("live")));
 }
+function teamCoordinators(team) {
+  return coordinatorFor(coordinators, team, {
+    mode: activeMode, season: feed?.weeks.find(week => week.key === weekKey)?.season,
+  });
+}
+function appendCoordinatorSources(panel, team) {
+  const records = teamCoordinators(team);
+  if (!records) return;
+  const details = node("details", undefined, "source-block");
+  details.append(node("summary", "Coordinator · " + records.map(record => record.name).join(" / ")));
+  for (const record of records) {
+    details.append(facts([["Role", record.title], ["Since season", String(record.start_season)]]));
+    for (const [index, url] of record.sources.entries()) {
+      const source = node("p");
+      source.append(link(index ? "Appointment announcement" : "Team biography", url));
+      details.append(source);
+    }
+  }
+  details.append(facts([["Checked", time(coordinators.checked_at)], ["Maintenance", "Manual"]]));
+  panel.append(details);
+}
 function sourceDetails() {
   const panel = node("div");
   panel.append(node("h2", "Sources & information"));
@@ -457,6 +480,14 @@ function sourceDetails() {
   if (injuryHistory) panel.append(link("Injury archive · CC BY 4.0", injuryHistory.source.terms_url));
   if (playerHistoryError) panel.append(facts([["Player history", playerHistoryError]]));
   if (playerHistory) panel.append(link("Player history data · CC BY 4.0", PLAYER_HISTORY_TERMS));
+  const coveredTeams = [...new Set(coordinators?.appointments.map(record => record.team))]
+    .filter(team => teamCoordinators(team));
+  if (coveredTeams.length) {
+    const details = node("details", undefined, "source-block");
+    details.append(node("summary", "Coordinator pilot · " + coveredTeams.length + " / 32 teams"));
+    for (const team of coveredTeams) appendCoordinatorSources(details, team);
+    panel.append(details);
+  }
   if (productionHistoryError) panel.append(facts([["2024 production", productionHistoryError]]));
   const links = node("div", undefined, "info-links");
   for (const [label, url] of [
@@ -505,6 +536,7 @@ function reportDetails(result) {
   const panel = node("div"),
     report = result.report;
   panel.append(node("h2", (result.opponent || "Opponent") + " report"));
+  appendCoordinatorSources(panel, result.opponent);
   if (!report) {
     panel.append(node("p", result.message));
     return panel;
@@ -1114,6 +1146,8 @@ function renderCards() {
         opponent.append(
           node("p", result.opponent + " defense", "opponent-name"),
         );
+        const coaching = teamCoordinators(result.opponent);
+        if (coaching) opponent.append(node("p", coordinatorLabel(coaching), "coordinator-context"));
         if (result.game) {
           let kickoff = result.game.kickoff
             ? kickoffTime.format(new Date(result.game.kickoff))
@@ -1274,6 +1308,7 @@ function applyFeed(bundle) {
   playerHistoryError = bundle.playerHistoryError;
   injuryHistory = bundle.injuryHistory;
   injuryHistoryError = bundle.injuryHistoryError;
+  coordinators = bundle.coordinators;
   $("search").disabled = false;
   $("search").placeholder =
     activeMode === "example" ? "Search example players" : "Search players";
@@ -1320,7 +1355,7 @@ async function loadOptionalArtifact(url, previous, maxBytes, validate) {
     const text = await response.text();
     if (text.length > maxBytes) throw new Error("Optional data too large.");
     const candidate = validate(JSON.parse(text));
-    const timestamp = (data) => data?.generated_at || data?.source?.retrieved_at;
+    const timestamp = (data) => data?.generated_at || data?.source?.retrieved_at || data?.checked_at;
     if (timestamp(candidate) && timestamp(previous) &&
         Date.parse(timestamp(candidate)) < Date.parse(timestamp(previous)))
       throw new Error("Older optional data returned.");
@@ -1338,19 +1373,21 @@ const refresher = createRefreshController({
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    const [historical, rosterHistory, archive, olderProduction] = mode === "live"
+    const [historical, rosterHistory, archive, olderProduction, coaching] = mode === "live"
       ? await Promise.all([
           loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
           loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
           loadOptionalArtifact("./injury-history.json", injuryHistory, MAX_INJURY_HISTORY_BYTES, validateInjuryHistory),
           loadOptionalArtifact("./contributions-2024.json", productionHistory, MAX_CONTRIBUTION_BYTES,
             (data) => validateContributions(data, Date.now(), 2024)),
+          loadOptionalArtifact("./coordinators.json", coordinators, MAX_COORDINATOR_BYTES, validateCoordinators),
         ])
-      : Array.from({ length: 4 }, () => ({ data: null, failed: false }));
+      : Array.from({ length: 5 }, () => ({ data: null, failed: false }));
     return {
       mode: next.mode,
       generated_at: next.generated_at,
       current: next,
+      coordinators: coaching.data,
       contributions: historical.data,
       contributionError: historical.failed ? "Historical production could not be refreshed." : "",
       productionHistory: olderProduction.data,

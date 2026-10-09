@@ -81,6 +81,19 @@ show 2025/2026 season, REG/POST, team and source week sets, preserving gaps and
 team changes. They are latest stored observations, not a selected-week as-of
 reconstruction, games played or a continuous tenure calculation. No uninterrupted team tenure
 or coordinator history is inferred. Unavailable optional sections are omitted.
+The optional `coordinators.json` pilot adds one small opponent-context line,
+for example “DC Vic Fangio · since 2024”, only in live 2026 views. The Sources
+area identifies its six-team scope, original role, source links and checked time.
+It contains PHI, NYJ, CLE, WAS, NE and MIA; all other teams have no new placeholder
+or notice. NE uses its formal 2026 coordinator appointment, not 2025 play-calling
+duties; TB has no inferred coordinator. These are manually maintained factual
+observations for 2026. Their original
+checked date and manual maintenance status stay in Sources; they do not expire
+automatically or acquire a new checked date on refresh. Before the checked time,
+in other seasons or in the fictional example, the line is omitted. Fetch failure
+can retain a validated pilot but cannot renew its checked timestamp.
+No coordinator field enters injuries, filters, matchup resolution or production.
+
 When 2025 archive records match, the existing collapsed injury section includes
 a small Season choice. It defaults to current-season records when available;
 otherwise the matching archive is the only season shown. Source weeks, phase,

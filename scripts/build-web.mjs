@@ -1,4 +1,5 @@
 import { validateContributions } from "../web/contribution.mjs";
+import { validateCoordinators } from "../web/coordinator.mjs";
 import { validateInjuryHistory } from "../web/injury-history.mjs";
 import { validatePlayerHistory } from "../web/player-history.mjs";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
@@ -28,6 +29,7 @@ const files = [
   "popover.mjs",
   "refresh.mjs",
   "contribution.mjs",
+  "coordinator.mjs",
   "team-assets.json",
   "example.json",
   "icon.svg",
@@ -101,6 +103,12 @@ try {
   console.warn(`Optional 2024 production omitted: ${error.message}`);
 }
 const html = await readFile(new URL("web/index.html", root), "utf8");
+try {
+  validateCoordinators(JSON.parse(await readFile(new URL("web/coordinators.json", root), "utf8")));
+  files.push("coordinators.json");
+} catch (error) {
+  console.warn(`Optional coordinator pilot omitted: ${error.message}`);
+}
 try {
   validatePlayerHistory(JSON.parse(await readFile(new URL("web/player-history.json", root), "utf8")));
   files.push("player-history.json");

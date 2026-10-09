@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "season": 2026,
+  "checked_at": "2026-10-09T03:48:05.346Z",
+  "maintenance": "manual",
+  "appointments": [
+    {
+      "team": "PHI",
+      "name": "Vic Fangio",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2024,
+      "sources": [
+        "https://www.philadelphiaeagles.com/team/coaches/vic-fangio",
+        "https://www.philadelphiaeagles.com/news/eagles-name-vic-fangio-defensive-coordinator"
+      ]
+    },
+    {
+      "team": "NYJ",
+      "name": "Brian Duker",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.newyorkjets.com/team/coaches-roster/brian-duker",
+        "https://www.newyorkjets.com/news/brian-duker-jets-defensive-coordinator-01-28-2026"
+      ]
+    },
+    {
+      "team": "CLE",
+      "name": "Mike Rutenberg",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.clevelandbrowns.com/team/coaches-roster/mike-rutenberg",
+        "https://www.clevelandbrowns.com/news/browns-name-coordinators-for-the-2026-coaching-staff"
+      ]
+    },
+    {
+      "team": "WAS",
+      "name": "Daronte Jones",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.commanders.com/team/coaches-roster/daronte-jones"
+      ]
+    },
+    {
+      "team": "NE",
+      "name": "Zak Kuhr",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.patriots.com/team/coaches-roster/zak-kuhr",
+        "https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach"
+      ]
+    },
+    {
+      "team": "MIA",
+      "name": "Sean Duggan",
+      "role": "dc",
+      "title": "Defensive Coordinator",
+      "start_season": 2026,
+      "sources": [
+        "https://www.miamidolphins.com/team/coaches-roster/sean-duggan"
+      ]
+    }
+  ]
+}

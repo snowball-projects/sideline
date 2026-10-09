@@ -39,6 +39,10 @@ Visible tabs check every five minutes, with failure backoff. File age remains
 separate from unknown report time. Elapsed kickoff is labelled status
 unconfirmed because the source supplies no live/final field; no scores are shown.
 
+An optional six-team coordinator pilot adds a compact role/start-season line
+with source links and checked time in Sources. Other teams and unsupported seasons
+have no placeholder; the pilot does not change injury status or comparison logic.
+
 The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
 games and old collections have distinct states. Broad defensive-role context

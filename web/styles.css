@@ -390,6 +390,12 @@ input::placeholder {
   color: var(--muted);
   margin-top: 2px;
 }
+.coordinator-context {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin-top: 2px;
+}
 .report-info {
   font-family: Georgia, serif;
   width: 24px;

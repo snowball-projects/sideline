@@ -77,3 +77,12 @@ practice/game status. Null status and absent weeks remain unknown. Source-file
 and collection timestamps are preserved without claiming daily practice dates,
 distinct injury counts, current availability or a complete career history.
 The source warranty disclaimer and lack of endorsement above apply.
+
+
+The optional coordinator pilot contains independently recorded factual names,
+roles and start seasons for PHI, NYJ, CLE, WAS, NE and MIA, checked October 9,
+2026. `web/coordinators.json` and docs/DATA_SOURCES.md retain the exact team
+biography/appointment links. It reproduces no biography prose or coach images,
+and does not claim that nflverse's CC BY grant covers those team pages. Team
+site content remains subject to its own terms; no endorsement or systematic
+collection permission is claimed.
