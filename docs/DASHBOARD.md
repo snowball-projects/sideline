@@ -301,9 +301,13 @@ Chromium desktop/mobile behavior on source changes, then collects/validates data
 and publishes main using GitHub Pages. Source publication requires the browser
 job to succeed. Scheduled data refresh skips browser installation/tests, retaining
 the already-reviewed UI. Browser screenshot/report artifacts expire after one day. Hourly scheduled runs at minute 23 skip historical Python tests but run
-the Node suite, collector and build. All deployments share one concurrency
-group and use standard public `ubuntu-latest` runners. Pages artifact retention
-is one day. There are no data commits or scheduled private-input uploads.
+the Node suite, collector and build. Runs share a concurrency group per Git ref;
+newer main runs cancel superseded main runs, while pull-request runs retain their
+existing cancellation policy. Deployment jobs time out after ten minutes. These
+safeguards limit blocked publication but cannot guarantee scheduled trigger
+creation or fresh upstream reports. Runners remain standard public
+`ubuntu-latest`; Pages artifact retention is one day. There are no data commits
+or scheduled private-input uploads.
 
 Core collection or required build validation failure stops publication, leaving the previous deployed site
 unchanged. Its timestamps age naturally. GitHub schedules are best effort and
