@@ -1,7 +1,7 @@
 # 2026 draft decision protocol
 
-**Status:** Development draft; not frozen  
-**Prepared:** August 25, 2026  
+**Status:** Development draft; not frozen\
+**Prepared:** August 25, 2026\
 **Must be frozen:** Before the configured league draft
 
 ## Confirmed objective

@@ -57,9 +57,13 @@ class ReviewIntegrityTests(unittest.TestCase):
             )
             self.assertEqual(baseline.read_bytes(), frozen_bytes)
             self.assertEqual(hash_file(protocol), original_digest)
+            # A backslash preserves the original Markdown hard breaks without
+            # adding trailing whitespace to the separate reading copy.
+            reading_copy = protocol.read_bytes().replace(b"Optasy", b"sideline")
+            reading_copy = reading_copy.replace(b"  \n", b"\\\n")
             self.assertEqual(
                 Path("reports/2026-draft-decision-protocol-reading-copy.md").read_bytes(),
-                protocol.read_bytes().replace(b"Optasy", b"sideline"),
+                reading_copy,
             )
 
     def test_authenticated_requests_refuse_redirects(self):
