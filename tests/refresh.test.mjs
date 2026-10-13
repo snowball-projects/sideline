@@ -4,6 +4,8 @@ import { createRefreshController, canApplyRefresh } from "../web/refresh.mjs";
 import {
   gameStateLabel,
   reportFreshnessLabel,
+  collectionAgeLabel,
+  collectionFreshness,
   clockFingerprint,
 } from "../web/model.mjs";
 
@@ -114,6 +116,16 @@ test("visible report freshness distinguishes file age from unknown report public
   );
 });
 
+test("collection age uses separate two-hour and six-hour operational states", () => {
+  const generatedAt = "2026-09-14T10:00:00Z";
+  const at = (hours) => Date.parse(generatedAt) + hours * 3600000;
+  assert.equal(collectionAgeLabel(generatedAt, at(0.5)), "<1h \u00b7 current");
+  assert.equal(collectionFreshness(generatedAt, at(1.999)).state, "current");
+  assert.equal(collectionAgeLabel(generatedAt, at(2)), "2h \u00b7 delayed");
+  assert.equal(collectionFreshness(generatedAt, at(5.999)).state, "delayed");
+  assert.equal(collectionAgeLabel(generatedAt, at(6)), "6h \u00b7 old");
+});
+
 test("retained identical data changes its display fingerprint at freshness and depth expiry", () => {
   const now = Date.parse("2026-09-14T10:00:00Z");
   const metadata = {
@@ -123,6 +135,7 @@ test("retained identical data changes its display fingerprint at freshness and d
     source_updated_at: "2026-09-14T10:00:00Z",
   };
   const feed = {
+    generated_at: "2026-09-14T10:00:00Z",
     roster: metadata,
     schedule: metadata,
     reports: [metadata],
@@ -132,6 +145,7 @@ test("retained identical data changes its display fingerprint at freshness and d
   };
   const key = clockFingerprint(feed, "week", now);
   assert.equal(clockFingerprint(feed, "week", now + 60000), key);
+  assert.notEqual(clockFingerprint(feed, "week", now + 2 * 3600000), key);
   assert.notEqual(clockFingerprint(feed, "week", now + 3600001), key);
   assert.notEqual(clockFingerprint(feed, "week", now + 86400001), key);
 });
