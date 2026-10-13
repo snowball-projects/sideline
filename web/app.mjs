@@ -51,7 +51,7 @@ const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
 const depthHighlights = new Map();
 const STORAGE_KEY = "sideline.selected.v2";
-// Selections saved before the project was renamed from optasy.
+// Preserve selections saved under the former browser-storage namespace.
 const LEGACY_STORAGE_KEY = "optasy.selected.v2";
 let feed = null,
   selected = [],
