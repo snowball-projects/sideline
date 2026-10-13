@@ -82,8 +82,8 @@
 
 ## Unreleased
 
-- Rename the project from optasy to sideline. Player selections saved
-  under the previous name are still read.
+- Adopt the sideline name. Player selections saved under the previous
+  browser-storage namespace are still read.
 
 ## 0.8.0 - prepared locally, unpublished
 
@@ -154,9 +154,9 @@
 
 ## 0.2.0 - 2026-09-10
 
-- Transfer the canonical public repository to `snowball-projects/optasy` and
+- Transfer the canonical public repository to the snowball organization and
   retire the duplicate private GitHub companion after preservation and approval.
-- Record that the draft passed without useful Optasy assistance; focus active
+- Record that the draft passed without useful project assistance; focus active
   development on opposing defensive injuries for weekly lineup decisions.
 - Add a static dashboard with fictional examples, candidate comparisons,
   manual injury entry and validated local JSON import/download. Flag unknown

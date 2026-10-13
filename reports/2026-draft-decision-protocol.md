@@ -84,7 +84,7 @@ Preserve these recommendations at every material pick:
 3. Highest ESPN-projected VORP.
 4. The user's stated early RB/WR policy, with QB2 as a strong but defeasible
    later preference.
-5. Optasy's final recommendation after the human reviews the disclosed secondary
+5. sideline's final recommendation after the human reviews the disclosed secondary
    evidence.
 
 ## Prospective recording
@@ -95,8 +95,8 @@ For each configured-team pick, append rather than overwrite:
 - Recommendation timestamp and observed picks.
 - Available candidate set.
 - Every baseline's preferred player.
-- Optasy's preferred player, strongest alternative, and reversal conditions.
-- The user's final selection and any reason for overriding Optasy.
+- sideline's preferred player, strongest alternative, and reversal conditions.
+- The user's final selection and any reason for overriding sideline.
 
 Live selections may condition the next calculation. Model parameters, replacement
 rules, and baseline definitions may not be changed during the draft.
