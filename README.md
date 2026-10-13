@@ -154,7 +154,13 @@ The [frozen availability study](reports/2021-2024-defender-availability-calibrat
 measures defender participation and workload, not opposing fantasy outcomes.
 The [older research proposal](reports/2026-opponent-injury-signal-proposal.md)
 and [draft protocol](reports/2026-draft-decision-protocol.md) remain historical
-records. The previous dashboard is preserved in Git at
+records. The [original protocol evidence](https://github.com/snowball-projects/sideline/blob/6588bd1bc0506eb2a63bed93d6c13734166e9575/reports/2026-draft-decision-protocol.md)
+is preserved at that Git version with SHA-256
+`7715fa39544df0aa472addc9e9c02436cf5ccefc2c1b6d7f9c95662629fc7c24`.
+Use the matching historical source checkout and original inputs to verify an
+earlier frozen baseline; the current checkout can reject an earlier protocol
+hash. Do not rewrite the baseline to match changed evidence.
+The previous dashboard is preserved in Git at
 `ba7bdc8d97004ed1f22be6d9f97075722f6a622b`.
 
 ## License
