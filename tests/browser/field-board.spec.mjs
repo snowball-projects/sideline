@@ -784,6 +784,25 @@ test("compact popup keeps historical teams, half sacks and keyboard-accessible s
   await expect(marker(page)).toBeFocused();
 });
 
+test("collection delay stays compact and separate inside existing timestamp surfaces", async ({ page }) => {
+  const fixture = fieldFixture();
+  await setup(page, 2, fixture);
+  await page.clock.setFixedTime(new Date(Date.parse(NOW) + 4 * 3600000));
+  await expect(page.locator("#data-status")).toBeHidden();
+  await page.getByRole("button", { name: "Sources and information", exact: true }).click();
+  const collectionAge = popup(page).locator("dt").filter({ hasText: /^Collection age$/ });
+  await expect(collectionAge.locator("+ dd")).toHaveText("4h \u00b7 delayed");
+  await expect(popup(page)).toContainText("Report timestamps are not supplied");
+  await page.keyboard.press("Escape");
+  await marker(page).click();
+  await popup(page).getByText("Sources and timestamps", { exact: true }).click();
+  const siteCollectionAge = popup(page).locator("dt").filter({ hasText: /^Site collection age$/ });
+  await expect(siteCollectionAge.locator("+ dd")).toHaveText("4h \u00b7 delayed");
+  const reportTime = popup(page).locator("dt").filter({ hasText: /^Report time$/ });
+  await expect(reportTime.locator("+ dd")).toHaveText("not supplied");
+  await expect(popup(page)).not.toContainText("healthy");
+});
+
 test("optional player details lazily show bio and source weekly injury text with accessible dismissal", async ({ page, isMobile }, testInfo) => {
   const fixture = fieldFixture({ week: 5 });
   const defender = fixture.players.find((player) => player.id === "gsis:fixture-out");

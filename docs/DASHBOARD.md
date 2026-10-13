@@ -130,7 +130,11 @@ or time**. Information and injury popups explicitly leave that vintage unknown,
 even when the file was freshly updated or retrieved. Defender source details
 retain the unknown report vintage without repetitive explanatory paragraphs.
 
-The UI flags a source file or collection older than 24 hours. If a future source
+The existing Sources and timestamps surfaces label collection age separately:
+current below two hours, delayed from two hours and old from six hours. These
+compact operational labels do not change report vintage or create a board
+warning. The UI continues to flag a source file or collection older than 24
+hours. If a future source
 provides exact report timestamps, report age over 48 hours is flagged; date-only
 vintage is conservatively flagged after more than three UTC calendar days.
 Roster/schedule source vintages use a 24-hour policy when supplied. These are

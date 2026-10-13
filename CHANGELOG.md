@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.10 - 2026-10-13
+
+- Distinguish site collection age from source-file update and unknown report time in existing timestamp details.
+- Label collections current below two hours, delayed from two hours and old from six hours without adding persistent board prose or changing availability.
+
 ## 0.9.9 - 2026-10-09
 
 - Restore the first deliberate hover after Escape and immediate mouse movement away from an uncovered marker, including Chromium's skipped boundary-event sequence.

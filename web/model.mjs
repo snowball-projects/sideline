@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.9";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.10";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -38,6 +38,8 @@ const DEFENSIVE_DEPTH_POSITIONS = new Set([
 ]);
 export const REPORT_MAX_AGE_HOURS = 48;
 export const FEED_MAX_AGE_HOURS = 24;
+export const COLLECTION_DELAY_HOURS = 2;
+export const COLLECTION_OLD_HOURS = 6;
 
 const RELEVANCE = {
   QB: {
@@ -615,6 +617,21 @@ export function reportFreshnessLabel(report, now = Date.now()) {
   );
 }
 
+export function collectionFreshness(generatedAt, now = Date.now()) {
+  const ageHours = Math.max(0, (now - Date.parse(generatedAt)) / 3600000);
+  const age = ageHours < 1 ? "<1h" : Math.floor(ageHours) + "h";
+  const state = ageHours >= COLLECTION_OLD_HOURS
+    ? "old"
+    : ageHours >= COLLECTION_DELAY_HOURS
+      ? "delayed"
+      : "current";
+  return { ageHours, state, label: age + " \u00b7 " + state };
+}
+
+export function collectionAgeLabel(generatedAt, now = Date.now()) {
+  return collectionFreshness(generatedAt, now).label;
+}
+
 export function defenderRole(selectedPosition, defenderPosition) {
   return (
     RELEVANCE[selectedPosition]?.[defenderPosition] || "Role effect unmeasured"
@@ -649,6 +666,7 @@ export function clockFingerprint(feed, weekKey, now = Date.now()) {
     return [v.stale, v.retrievalStale, v.sourceFileStale, v.sourceFileUnknown];
   };
   return JSON.stringify([
+    collectionFreshness(feed.generated_at, now).state,
     currentWeek(feed, now)?.key,
     weekKey,
     age(feed.roster),

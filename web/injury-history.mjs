@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.9";
+import { TEAMS } from "./feed.mjs?v=0.9.10";
 
 export const MAX_INJURY_HISTORY_BYTES = 2_000_000;
 export const INJURY_HISTORY_SOURCE = Object.freeze({
