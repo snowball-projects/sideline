@@ -14,6 +14,54 @@ from scripts.injury_signal import verify_frozen_prediction
 
 
 class ReviewIntegrityTests(unittest.TestCase):
+    def test_pre_branding_draft_baseline_keeps_original_protocol_evidence(self):
+        protocol = Path("reports/2026-draft-decision-protocol.md")
+        original_digest = (
+            "7715fa39544df0aa472addc9e9c02436cf5ccefc2c1b6d7f9c95662629fc7c24"
+        )
+        hash_file = draft_board.file_sha256
+
+        def pre_branding_digest(path):
+            return original_digest if path == protocol else hash_file(path)
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            data_dir = root / "draft"
+            snapshot = data_dir / "snapshots" / "synthetic-protocol-check"
+            snapshot.mkdir(parents=True)
+            (snapshot / "manifest.json").write_text(
+                json.dumps({"season": 2026, "league_id": "test"})
+            )
+            for filename in (
+                "espn-players.json",
+                "espn-draft.json",
+                "dynastyprocess-rankings.csv",
+            ):
+                (snapshot / filename).write_text("synthetic\n")
+            config = root / "league.yaml"
+            config.write_text("synthetic: true\n")
+            context = SimpleNamespace(season=2026, league_id="test")
+            # Reproduce a freeze made against the original protocol bytes,
+            # without changing an existing baseline's recorded digest.
+            with patch.object(
+                draft_board, "file_sha256", side_effect=pre_branding_digest
+            ):
+                baseline = draft_board.freeze_draft_sources(
+                    context, data_dir, snapshot, config
+                )
+            frozen_bytes = baseline.read_bytes()
+
+            self.assertEqual(
+                draft_board.resolve_frozen_draft_sources(context, data_dir, config),
+                snapshot,
+            )
+            self.assertEqual(baseline.read_bytes(), frozen_bytes)
+            self.assertEqual(hash_file(protocol), original_digest)
+            self.assertEqual(
+                Path("reports/2026-draft-decision-protocol-reading-copy.md").read_bytes(),
+                protocol.read_bytes().replace(b"Optasy", b"sideline"),
+            )
+
     def test_authenticated_requests_refuse_redirects(self):
         context = SimpleNamespace(season=2026, league_id="0")
         credentials = SimpleNamespace(league_id="0", swid="test", espn_s2="test")

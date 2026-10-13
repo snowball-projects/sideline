@@ -153,8 +153,12 @@ public collection or redistribution.
 The [frozen availability study](reports/2021-2024-defender-availability-calibration.md)
 measures defender participation and workload, not opposing fantasy outcomes.
 The [older research proposal](reports/2026-opponent-injury-signal-proposal.md)
-and [draft protocol](reports/2026-draft-decision-protocol.md) remain historical
-records. The previous dashboard is preserved in Git at
+and [draft protocol reading copy](reports/2026-draft-decision-protocol-reading-copy.md)
+remain historical records. The [original draft protocol](reports/2026-draft-decision-protocol.md)
+keeps its exact bytes and path because historical source freezes record its
+SHA-256. The reading copy updates only the project name; it does not replace
+that recorded evidence. Protocol amendments belong in separate versions.
+The previous dashboard is preserved in Git at
 `ba7bdc8d97004ed1f22be6d9f97075722f6a622b`.
 
 ## License
