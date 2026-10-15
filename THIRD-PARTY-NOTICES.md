@@ -88,3 +88,15 @@ prose or coach images, and does not claim that nflverse’s CC BY grant covers t
 pages. Team content remains subject to its own terms; no endorsement, content
 reuse licence or systematic collection permission is claimed. This is a bounded
 manual research batch, not an automated team-site feed.
+
+## Current-season defensive statistics
+
+The optional defensive-stat artifact adapts nflverse-data weekly team and player
+statistics under the publisher's [CC BY 4.0](https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md)
+grant. Original releases: [team statistics](https://github.com/nflverse/nflverse-data/releases/tag/stats_team)
+and [player statistics](https://github.com/nflverse/nflverse-data/releases/tag/stats_player).
+sideline selects regular-season game records, normalizes teams/GSIS identities,
+calculates net yards and combined tackles, and derives pre-week totals and
+competition ranks. The data are supplied as-is without warranties; attribution
+does not imply nflverse, NFL, ESPN or team endorsement. Upstream data and media
+retain their own terms. See docs/DEFENSE_STATS_REVIEW.md for the source review.

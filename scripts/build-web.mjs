@@ -1,3 +1,4 @@
+import { validateDefenseStats } from "../web/defense-stats.mjs";
 import { validateContributions } from "../web/contribution.mjs";
 import { validateCoordinators, MAX_COORDINATOR_BYTES } from "../web/coordinator.mjs";
 import { validateInjuryHistory } from "../web/injury-history.mjs";
@@ -22,6 +23,7 @@ const files = [
   "app.mjs",
   "model.mjs",
   "field.mjs",
+  "defense-stats.mjs",
   "player-details.mjs",
   "player-history.mjs",
   "injury-history.mjs",
@@ -102,6 +104,10 @@ try {
 } catch (error) {
   console.warn(`Optional 2024 production omitted: ${error.message}`);
 }
+try {
+  validateDefenseStats(JSON.parse(await readFile(new URL("web/defense-stats.json", root), "utf8")));
+  files.push("defense-stats.json");
+} catch (error) { console.warn(`Optional defensive statistics omitted: ${error.message}`); }
 const html = await readFile(new URL("web/index.html", root), "utf8");
 try {
   const coaching = await readFile(new URL("web/coordinators.json", root), "utf8");

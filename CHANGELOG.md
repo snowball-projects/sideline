@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.11 - Unreleased
+
+- Add pre-week opposing-defense YPG-allowed, sack and takeaway value/rank pairs.
+- Mark league top-10 combined-tackle, sack and interception defenders with a
+  subtle accessible star; existing details show each qualifying rank and total.
+- Keep missing league coverage unavailable and exclude selected/future weeks.
+
+
 ## 0.9.10 - 2026-10-13
 
 - Distinguish site collection age from source-file update and unknown report time in existing timestamp details.

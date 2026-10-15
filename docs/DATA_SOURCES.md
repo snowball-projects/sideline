@@ -615,3 +615,13 @@ as a prohibition on independently recorded sparse factual titles/season ranges.
 All current roles/start seasons are covered, but selected historical records
 are not complete careers or league-wide succession chains. Contradictory dates
 and unsupported transitions are omitted rather than reconciled silently.
+
+## October 15, 2026 defensive statistics
+
+The reviewed current-season weekly `stats_team` and `stats_player` CSV releases
+supply pre-week net YPG allowed, total sacks, total takeaways, and individual
+combined-tackle/sack/interception league leaders under the rechecked publisher
+CC BY 4.0 grant. [DEFENSE_STATS_REVIEW.md](DEFENSE_STATS_REVIEW.md) owns exact
+URLs, observed full 32-team weeks 1–5 coverage, definitions, rank ties, historical
+cutoffs, source gaps, reconciliation, limits and operating cost. No ESPN/NFL
+scraper, paid service or schedule/support change is introduced.

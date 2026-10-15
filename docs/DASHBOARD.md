@@ -376,3 +376,24 @@ live deployment.
 Browser module and stylesheet URLs carry the release version. When releasing
 changes, bump the package version and the `v=` URLs in index/app/model together
 so cached earlier modules cannot be combined with a newer feed contract.
+
+## Defensive value/rank pairs and stars
+
+The matchup header places three compact value/rank pairs between the opposing
+team/coordinator/game identity and its information button: net YPG allowed,
+total sacks and takeaways. `T#` marks competition-rank ties. Values describe
+prior regular-season weeks of the selected season; week 1 or incomplete league
+coverage shows dashes with accessible unavailable labels. Definitions, the
+through-week window and source timestamps are in the existing report info.
+
+A subtle star marks a defender who ranks in the league's positive top 10 for
+combined tackles, sacks or interceptions in that same window. Existing hover
+previews and click/tap details list every qualifying category, rank and total,
+including all rank-10 ties, and preserve the recorded teams across trades.
+Missing individual coverage or identity creates no star. Stars are named in
+the control's accessible label and are not an injury/status signal.
+
+`web/defense-stats.json` is an optional ignored artifact collected by
+`scripts/defense-stats-data.mjs` and validated by `web/defense-stats.mjs`.
+[DEFENSE_STATS_REVIEW.md](DEFENSE_STATS_REVIEW.md) records the source decision,
+cutoff, settlement guard and reconstructed-history limits.

@@ -175,3 +175,14 @@ that history, backfill recommendations or reintroduce its scope.
 The canonical repository is `snowball-projects/sideline`. sideline remains one
 peer snowball project. Original software is MIT; third-party data and private
 inputs retain their terms. No further repository retirement is authorized here.
+
+## Defensive statistics approved October 15, 2026
+
+The founder requested compact opposing-team YPG-allowed, sack and takeaway
+value/rank pairs beside the matchup heading, plus subtle top-10 stars on
+individual defenders for combined tackles, sacks or interceptions. Each uses
+the selected season's prior regular-season weeks only. The existing player
+popup lists every qualifying category, rank and total. No new helper block,
+composite, injury advantage or start/sit advice is introduced. Missing coverage
+remains unavailable. [DEFENSE_STATS_REVIEW.md](DEFENSE_STATS_REVIEW.md) defines
+the recorded measures, provenance, ties and historical limits.
