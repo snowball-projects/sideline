@@ -113,6 +113,7 @@ function renderDefenseMetrics(result) {
     const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "—";
     const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "—";
     const metric = node("div", undefined, "defense-metric");
+    metric.setAttribute("role", "group");
     metric.setAttribute("aria-label", label + ": " + (totals ? value + ", " + (totals.ties[key] ? "tied " : "") + "rank " + totals.ranks[key] : "unavailable"));
     metric.append(node("span", value + " " + short, "metric-value"), node("span", rank, "metric-rank"));
     for (const child of metric.children) child.setAttribute("aria-hidden", "true");

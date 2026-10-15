@@ -38,6 +38,14 @@ test('defensive header pairs, accessible top-10 star and multiple leader totals 
   await expect(card.locator('.defense-metric')).toHaveCount(3);
   await expect(card.locator('.defense-metrics')).toHaveAttribute('aria-label', /through week 1, 1 recorded games/);
   await expect(card.locator('.defense-metric').nth(0)).toHaveText('205.0 YPG#6');
+  // Assert the browser's accessibility tree, not just DOM aria attributes:
+  // each metric must expose its value and rank despite hidden visual children.
+  await expect(card.locator('.defense-metrics')).toMatchAriaSnapshot(`
+    - group "CAR defensive statistics, 2026 regular season through week 1, 1 recorded games":
+      - 'group "Yards allowed per game: 205.0, rank 6"'
+      - 'group "Sacks: 14, tied rank 5"'
+      - 'group "Takeaways: 15, tied rank 5"'
+  `);
   const marker = card.locator(`.defender-marker[data-defender-id="${leaderId}"]`);
   await expect(marker.locator('.leader-star')).toHaveText('★');
   await expect(marker).toHaveAttribute('aria-label', /League top 10.*Combined tackles.*Sacks.*Interceptions/);
