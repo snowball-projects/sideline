@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.11";
+import { TEAMS } from "./feed.mjs?v=0.9.12";
 
 export const MAX_DEFENSE_STATS_BYTES = 4_000_000;
 export const DEFENSE_STATS_TERMS = "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md";

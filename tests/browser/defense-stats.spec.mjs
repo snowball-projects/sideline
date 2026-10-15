@@ -49,6 +49,15 @@ test('defensive header pairs, accessible top-10 star and multiple leader totals 
   const marker = card.locator(`.defender-marker[data-defender-id="${leaderId}"]`);
   await expect(marker.locator('.leader-star')).toHaveText('★');
   await expect(marker).toHaveAttribute('aria-label', /League top 10.*Combined tackles.*Sacks.*Interceptions/);
+  const rosterStar = card.locator(`.injury-row[data-defender-id="${leaderId}"] .leader-star`);
+  const starBounds = await rosterStar.evaluate(star => ({
+    star: star.getBoundingClientRect().toJSON(),
+    row: star.closest('.injury-row').getBoundingClientRect().toJSON(),
+  }));
+  expect(starBounds.star.left).toBeGreaterThanOrEqual(starBounds.row.left);
+  expect(starBounds.star.top).toBeGreaterThanOrEqual(starBounds.row.top);
+  expect(starBounds.star.right).toBeLessThanOrEqual(starBounds.row.right);
+  expect(starBounds.star.bottom).toBeLessThanOrEqual(starBounds.row.bottom);
   // Existing hover preview and click/tap detail use the same qualifying facts.
   if (!testInfo.project.name.includes('mobile')) {
     await marker.hover();

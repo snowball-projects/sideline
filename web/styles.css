@@ -1331,4 +1331,5 @@ body {
 .metric-rank { font-weight: 600; }
 .leader-star { color: #7b692e; font-size: 10px; line-height: 1; }
 .defender-marker .leader-star { position: absolute; left: 3px; top: -5px; background: #fcfdf9; border-radius: 50%; padding: 1px; }
+.injury-row { position: relative; }
 .injury-row .leader-star { position: absolute; right: 5px; bottom: 6px; }
