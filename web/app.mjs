@@ -1,12 +1,13 @@
+import { validateDefenseStats, defenseRankings, MAX_DEFENSE_STATS_BYTES, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.11";
 import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.10";
+} from "./contribution.mjs?v=0.9.11";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.10";
+} from "./refresh.mjs?v=0.9.11";
 import {
   fieldLayout,
   compactMarkerName,
@@ -15,12 +16,12 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.10";
-import { parseFeed } from "./feed.mjs?v=0.9.10";
-import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.10";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.10";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.10";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.10";
+} from "./field.mjs?v=0.9.11";
+import { parseFeed } from "./feed.mjs?v=0.9.11";
+import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.11";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.11";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.11";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.11";
 import {
   searchPlayers,
   opponentRoster,
@@ -38,14 +39,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.10";
+} from "./model.mjs?v=0.9.11";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.10";
+} from "./popover.mjs?v=0.9.11";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -66,6 +67,60 @@ let productionHistory = null, productionHistoryError = "";
 let playerHistory = null, playerHistoryError = "";
 let injuryHistory = null, injuryHistoryError = "";
 let coordinators = null;
+let defenseStats = null, defenseStatsError = "";
+let defenseRanks = { available: false, reason: "Defensive statistics unavailable", teams: new Map(), leaders: new Map() };
+const leaderNames = { tackles: "Combined tackles", sacks: "Sacks", interceptions: "Interceptions" };
+function leaderSummary(member) {
+  const leader = defenseRanks.leaders.get(member.id);
+  return leader?.categories.map((metric) => leaderNames[metric.key] + " " + rankLabel(metric.rank, metric.tied) + ": " + metric.value).join("; ") || "";
+}
+function appendLeaderStar(control, member) {
+  const summary = leaderSummary(member);
+  if (!summary) return;
+  const star = node("span", "★", "leader-star");
+  star.setAttribute("aria-hidden", "true");
+  star.title = summary;
+  control.append(star);
+  control.setAttribute("aria-label", (control.getAttribute("aria-label") || member.name) + ". League top 10. " + summary);
+}
+function appendDefenseSources(panel) {
+  panel.append(facts([["Defensive statistics", defenseRanks.available
+    ? defenseRanks.season + " REG · through week " + defenseRanks.throughWeek
+    : defenseRanks.reason]]));
+  if (defenseStatsError) panel.append(facts([["Statistics refresh", defenseStatsError]]));
+  if (!defenseStats) return;
+  panel.append(facts([
+    ["YPG allowed", "Opponent net passing + rushing yards / recorded games"],
+    ["Takeaways", "Interceptions + opponent fumbles recovered"],
+    ["Combined tackles", "Solo + tackles with assist + tackle assists"],
+    ["Rank", "Competition rank; T marks ties; all rank-10 ties qualify"],
+    ["Window", "Prior regular-season weeks only; 24-hour settlement guard"],
+    ["History", "Reconstructed with current source corrections"],
+    ["Player coverage", defenseRanks.available && !defenseRanks.playerCoverage ? "Incomplete · stars unavailable" : "Reconciled team-game totals required"],
+  ]));
+  for (const source of defenseStats.sources) panel.append(link(source.label, source.url), facts([
+    ["File updated", time(source.source_updated_at)], ["Collected", time(source.retrieved_at)],
+  ]));
+  panel.append(link("nflverse defensive statistics · CC BY 4.0", DEFENSE_STATS_TERMS));
+}
+function renderDefenseMetrics(result) {
+  const metrics = node("div", undefined, "defense-metrics"), totals = defenseRanks.teams.get(result.opponent);
+  metrics.setAttribute("role", "group");
+  metrics.setAttribute("aria-label", result.opponent + " defensive statistics, " + (totals
+    ? defenseRanks.season + " regular season through week " + defenseRanks.throughWeek + ", " + totals.games + " recorded games"
+    : defenseRanks.reason));
+  for (const [key, short, label] of [["ypg", "YPG", "Yards allowed per game"], ["sacks", "Sacks", "Sacks"], ["takeaways", "Takeaways", "Takeaways"]]) {
+    const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "—";
+    const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "—";
+    const metric = node("div", undefined, "defense-metric");
+    metric.setAttribute("role", "group");
+    metric.setAttribute("aria-label", label + ": " + (totals ? value + ", " + (totals.ties[key] ? "tied " : "") + "rank " + totals.ranks[key] : "unavailable"));
+    metric.append(node("span", value + " " + short, "metric-value"), node("span", rank, "metric-rank"));
+    for (const child of metric.children) child.setAttribute("aria-hidden", "true");
+    metrics.append(metric);
+  }
+  return metrics;
+}
 let pendingFeed = null,
   refreshPhase = "loading";
 let lastCheck = 0,
@@ -581,6 +636,7 @@ function reportDetails(result) {
     report = result.report;
   panel.append(node("h2", (result.opponent || "Opponent") + " report"));
   appendCoordinatorSources(panel, result.opponent);
+  if (result.opponent) appendDefenseSources(panel);
   if (!report) {
     panel.append(node("p", result.message));
     return panel;
@@ -662,6 +718,12 @@ function appendProductionCounts(block, history) {
 function memberDetails(member, result) {
   const panel = node("div");
   panel.append(node("h2", member.name + " · " + member.position));
+  const leagueLeader = defenseRanks.leaders.get(member.id);
+  if (leagueLeader) {
+    panel.append(node("h3", defenseRanks.season + " REG · through week " + defenseRanks.throughWeek));
+    panel.append(facts(leagueLeader.categories.map((metric) => [leaderNames[metric.key], rankLabel(metric.rank, metric.tied) + " · " + metric.value])));
+    panel.append(facts([["Recorded teams", leagueLeader.teams.join(" / ")]]));
+  }
   if (member.depth.length)
     panel.append(node("div", member.depth.map((entry) =>
       entry.position + " #" + entry.rank).join(" · "), "small"));
@@ -905,6 +967,7 @@ function renderMember(member, result) {
       "member-depth",
     ),
   );
+  appendLeaderStar(row, member);
   attachMemberDetails(row, member, result);
   item.append(row);
   return item;
@@ -958,6 +1021,7 @@ function renderField(members, result, showDepth) {
           marker.append(node("span", status.text, "marker-status"));
         for (const child of marker.children)
           child.setAttribute("aria-hidden", "true");
+        appendLeaderStar(marker, member);
         attachMemberDetails(marker, member, result, true);
         markers.append(marker);
       }
@@ -1125,6 +1189,7 @@ function emptySlot() {
   return slot;
 }
 function renderCards() {
+  defenseRanks = defenseRankings(defenseStats, feed, weekKey);
   if (feed) renderedClockKey = clockFingerprint(feed, weekKey);
   pendingClock = false;
   const cards = $("cards"),
@@ -1236,6 +1301,10 @@ function renderCards() {
       attachPopover(info, () => reportDetails(result), {
         label: "Report source and freshness",
       });
+      if (result.opponent) {
+        matchup.classList.add("has-defense-metrics");
+        matchup.append(renderDefenseMetrics(result));
+      }
       matchup.append(info);
       card.append(matchup);
       const reportNoticeSlot = node("div", undefined, "report-notice-slot");
@@ -1355,6 +1424,8 @@ function applyFeed(bundle) {
   injuryHistory = bundle.injuryHistory;
   injuryHistoryError = bundle.injuryHistoryError;
   coordinators = bundle.coordinators;
+  defenseStats = bundle.defenseStats;
+  defenseStatsError = bundle.defenseStatsError;
   $("search").disabled = false;
   $("search").placeholder =
     activeMode === "example" ? "Search example players" : "Search players";
@@ -1419,7 +1490,7 @@ const refresher = createRefreshController({
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    const [historical, rosterHistory, archive, olderProduction, coaching] = mode === "live"
+    const [historical, rosterHistory, archive, olderProduction, coaching, defensive] = mode === "live"
       ? await Promise.all([
           loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
           loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
@@ -1427,13 +1498,16 @@ const refresher = createRefreshController({
           loadOptionalArtifact("./contributions-2024.json", productionHistory, MAX_CONTRIBUTION_BYTES,
             (data) => validateContributions(data, Date.now(), 2024)),
           loadOptionalArtifact("./coordinators.json", coordinators, MAX_COORDINATOR_BYTES, validateCoordinators),
+          loadOptionalArtifact("./defense-stats.json", defenseStats, MAX_DEFENSE_STATS_BYTES, validateDefenseStats),
         ])
-      : Array.from({ length: 5 }, () => ({ data: null, failed: false }));
+      : Array.from({ length: 6 }, () => ({ data: null, failed: false }));
     return {
       mode: next.mode,
       generated_at: next.generated_at,
       current: next,
       coordinators: coaching.data,
+      defenseStats: defensive.data,
+      defenseStatsError: defensive.failed ? "Check failed" + (defensive.data ? " · previous file kept" : "") : "",
       contributions: historical.data,
       contributionError: historical.failed ? "Historical production could not be refreshed." : "",
       productionHistory: olderProduction.data,
