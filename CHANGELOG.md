@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.9.11 - Unreleased
+## 0.9.12 - Unreleased
+
+- Anchor each roster leader star to its own defender row, with a browser geometry regression check.
+
+## 0.9.11 - 2026-10-15
 
 - Add pre-week opposing-defense YPG-allowed, sack and takeaway value/rank pairs.
 - Mark league top-10 combined-tackle, sack and interception defenders with a
