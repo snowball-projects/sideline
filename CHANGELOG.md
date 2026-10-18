@@ -1,6 +1,19 @@
 # Changelog
 
-## 0.9.12 - Unreleased
+## 0.9.13 - Unreleased
+
+- Bound required and optional browser response streams by decoded bytes before
+  parsing, preserve split UTF-8 characters, and cancel oversized downloads.
+- Apply byte limits consistently to optional validators and the logo manifest;
+  retain validated prior data after failed core or optional refreshes.
+- Pin the complete Python dependency graph with distribution hashes and enforce
+  hashed installs in CI; retain the existing exact npm lockfile.
+- Check shared data every four hours at minute 23 UTC, preserving the existing
+  refresh, validation, retention and deployment flow.
+- Reconcile version, source counts, defensive-rank documentation and field-depth
+  wording with the implemented product. Keep the approved field/roster layout.
+
+## 0.9.12 - 2026-10-15
 
 - Anchor each roster leader star to its own defender row, with a browser geometry regression check.
 

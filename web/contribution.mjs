@@ -101,6 +101,10 @@ export function validateContributions(data, now = Date.now(), season = CONTRIBUT
       data.season_type === "REG",
     "reviewed period",
   );
+  requireValue(
+    new TextEncoder().encode(JSON.stringify(data)).byteLength <= MAX_CONTRIBUTION_BYTES,
+    "artifact size",
+  );
   object(
     data.source,
     [
@@ -213,10 +217,6 @@ export function validateContributions(data, now = Date.now(), season = CONTRIBUT
     teams.size === coverage.teams.length &&
       coverage.teams.every((team) => teams.has(team)),
     "team coverage totals",
-  );
-  requireValue(
-    JSON.stringify(data).length <= MAX_CONTRIBUTION_BYTES,
-    "artifact size",
   );
   return data;
 }

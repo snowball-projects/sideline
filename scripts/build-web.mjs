@@ -30,6 +30,7 @@ const files = [
   "feed.mjs",
   "popover.mjs",
   "refresh.mjs",
+  "response.mjs",
   "contribution.mjs",
   "coordinator.mjs",
   "team-assets.json",

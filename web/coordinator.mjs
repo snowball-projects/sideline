@@ -203,6 +203,7 @@ export function validateCoordinators(data, now = Date.now()) {
   if (!keys(data, ['schema_version','season','checked_at','maintenance','appointments','history']) || data.schema_version !== 2 || data.season !== 2026 || data.maintenance !== 'manual' ||
       !timestamp(data.checked_at) || Date.parse(data.checked_at) > now + 300000 ||
       !Array.isArray(data.appointments) || data.appointments.length > 64 || !Array.isArray(data.history) || data.history.length > 32) invalid();
+  if (new TextEncoder().encode(JSON.stringify(data)).byteLength > MAX_COORDINATOR_BYTES) invalid();
   const checked = record => timestamp(record.checked_at) && Date.parse(record.checked_at) <= Date.parse(data.checked_at);
   const sources = (record, team) => Array.isArray(record.sources) && record.sources.length > 0 && record.sources.length <= 4 && new Set(record.sources).size === record.sources.length && record.sources.every(url => SOURCE_URLS[team].includes(url));
   const scope = record => record.scope === null || text(record.scope, 140);

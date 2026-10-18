@@ -136,7 +136,7 @@ never becomes an assertion that nobody is injured.
 
 ## Operating boundary
 
-Use the existing public GitHub Pages deployment and one shared hourly collection.
+Use the existing public GitHub Pages deployment and one shared collection every four hours.
 Upstream injury and roster updates are normally daily. The Refresh button checks
 the same-origin current and historical artifacts; it cannot force an upstream
 update. Visible tabs check every five minutes with failure backoff up to an hour.

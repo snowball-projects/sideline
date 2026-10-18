@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.12";
+import { TEAMS } from "./feed.mjs?v=0.9.13";
 
 export const MAX_DEFENSE_STATS_BYTES = 4_000_000;
 export const DEFENSE_STATS_TERMS = "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md";
@@ -18,7 +18,7 @@ function timestamp(value, now) {
 export function validateDefenseStats(data, now = Date.now()) {
   fields(data, ["schema_version", "season", "generated_at", "sources", "teams", "players"]);
   assert(data.schema_version === 1 && Number.isInteger(data.season) && data.season >= 2026 && data.season <= 2100, "season/version");
-  assert(JSON.stringify(data).length <= MAX_DEFENSE_STATS_BYTES, "size");
+  assert(new TextEncoder().encode(JSON.stringify(data)).byteLength <= MAX_DEFENSE_STATS_BYTES, "size");
   timestamp(data.generated_at, now);
   assert(Array.isArray(data.sources) && data.sources.length === 2, "sources");
   for (const [index, source] of data.sources.entries()) {
