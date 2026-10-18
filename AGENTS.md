@@ -17,8 +17,8 @@ opponent with that team's available defensive roster and defensive injuries.
   before public claims or product, architecture, data and operating decisions.
 - Keep the static, dependency-free search-and-report flow. League settings,
   roster construction and imports, league accounts, ESPN Fantasy connections,
-  multi-league management, drafts, waivers, trades, rankings and a start/sit
-  engine are excluded scope, not deferred features.
+  multi-league management, drafts, waivers, trades, general player rankings and
+  a start/sit engine are excluded scope, not deferred features.
 - Never fabricate point boosts, coverage assignments, injury-count advantage
   scores, replacement quality or unvalidated composites. Missing evidence never
   means health, and missing coverage is not a healthy team.
@@ -26,7 +26,7 @@ opponent with that team's available defensive roster and defensive injuries.
 ## Development and verification
 
 Use Node 24 and Python 3.12. Set up Python with `python3 -m venv .venv` and
-`.venv/bin/pip install -r requirements.txt` when necessary.
+`.venv/bin/pip install --require-hashes -r requirements.txt` when necessary.
 
 ```sh
 npm ci
@@ -79,7 +79,7 @@ never the network.
 - Verify desktop, mobile and keyboard flows, two-to-six tile layouts,
   horizontal scrolling, popup activation and dismissal, and the final GitHub
   Pages deployment.
-- Source CI runs both suites; the hourly data refresh runs the Node suite. Keep
+- Source CI runs both suites; the four-hour data refresh runs the Node suite. Keep
   artifact retention at one day and standard public Ubuntu runners. Do not
   change repository visibility, paid capacity or history.
 

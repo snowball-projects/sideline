@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.9 · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.13 · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -132,8 +132,9 @@ retain the unknown report vintage without repetitive explanatory paragraphs.
 
 The existing Sources and timestamps surfaces label collection age separately:
 current below two hours, delayed from two hours and old from six hours. These
-compact operational labels do not change report vintage or create a board
-warning. The UI continues to flag a source file or collection older than 24
+compact operational labels describe elapsed age, not whether the scheduled
+collector failed: delayed can occur between successful four-hour runs. They do
+not change report vintage or create a board warning. The UI continues to flag a source file or collection older than 24
 hours. If a future source
 provides exact report timestamps, report age over 48 hours is flagged; date-only
 vintage is conservatively flagged after more than three UTC calendar days.
@@ -260,8 +261,9 @@ Outside the covered schedule window is explicit unknown context. Report presence
 does not certify completeness or health. No extra board paragraph is added.
 
 There is no persistent raw-source cache or database. The published Pages
-artifact is the shared cache: one hourly source collection serves every visitor.
-Browsers recheck the four same-origin JSON artifacts every five minutes while
+artifact is the shared cache: one source collection every four hours serves
+every visitor. Browsers recheck the core feed and six optional same-origin JSON
+artifacts every five minutes while
 visible, and on return after that interval. Failures back off to 10/20/40/60
 minutes; manual Refresh bypasses the cadence, never an active request. It shows
 loading, changed, unchanged or error status with browser check time. Data waits
@@ -292,7 +294,12 @@ It is separate from the historical Python snapshot schema.
 
 Only HTTPS links without embedded credentials are accepted. IDs and enums are
 validated; unknown fields, ambiguous duplicate joins, malformed timestamps,
-future live inputs and unbounded lists fail. Parsing is capped at 5 MB, 6,000
+future live inputs and unbounded lists fail. Browser reads count decoded
+response bytes before parsing, cancel at the first
+chunk over the limit, and treat Content-Length only as an early rejection hint.
+Split UTF-8 characters survive chunk boundaries. Required and optional artifacts
+use their own byte caps; failed reads preserve validated prior data. The local
+team-logo manifest is capped at 64 KiB. Parsing is capped at 5 MB, 6,000
 players, 800 games, 1,600 reports, 250 entries per team report and 12,000 depth
 assignments. Provider text
 is rendered as text, never HTML. No credentials are accepted by the schema.
@@ -328,7 +335,9 @@ inputs, league configuration or arbitrary local files.
 Chromium desktop/mobile behavior on source changes, then collects/validates data
 and publishes main using GitHub Pages. Source publication requires the browser
 job to succeed. Scheduled data refresh skips browser installation/tests, retaining
-the already-reviewed UI. Browser screenshot/report artifacts expire after one day. Hourly scheduled runs at minute 23 skip historical Python tests but run
+the already-reviewed UI. Browser screenshot/report artifacts expire after one
+day. Scheduled runs every four hours at minute 23 (UTC) skip historical Python
+tests but run
 the Node suite, collector and build. Runs share a concurrency group per Git ref;
 newer main runs cancel superseded main runs, while pull-request runs retain their
 existing cancellation policy. Deployment jobs time out after ten minutes. These

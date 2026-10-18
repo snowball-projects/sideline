@@ -4,9 +4,12 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 
 [Open sideline](https://snowball-projects.github.io/sideline/) ·
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
-[Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
+[Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md) ·
+[0.9.13 release review](docs/RELEASE_REVIEW_0_9_13.md)
 
-Version 0.9.6 adds optional 2024 defensive production in collapsed Player details, preserving the separate 2025 baseline and current injury statuses.
+Version 0.9.13 bounds browser downloads by bytes, locks Python dependencies and
+checks shared data every four hours. Pre-week defensive value/rank pairs and
+top-10 defender stars remain available alongside separate 2024/2025 history.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
@@ -15,9 +18,9 @@ stacks above an integrated roster panel. The field uses only source-backed
 identities and position labels:
 coarse DL/LB/DB roles never become invented cornerback/safety assignments or a
 confirmed eleven-player lineup. Source first-depth individuals appear only
-when that evidence exists and has
-at most eleven members; otherwise position stacks represent the available
-roster without assigning a person. Stacks highlight matching rows in All.
+when that evidence exists, retaining every published first-depth identity even
+when there are more than eleven; otherwise position stacks represent the
+available roster without assigning a person. Stacks highlight matching rows in All.
 Every available defender remains accessible, including backups, inactive/reserve players and report-only identities.
 
 All is the complete roster. Out contains explicit Out game designations;
@@ -50,7 +53,9 @@ The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
 games and old collections have distinct states. Broad defensive-role context
 is available within report entries. Injury counts do not measure advantage;
-sideline supplies no point boosts, rankings or start/sit verdicts.
+sideline shows separate pre-week defensive statistic ranks and top-10 defender
+stars, with ties and coverage limits. It supplies no point boosts, overall
+player rankings or start/sit verdicts. See [defensive statistics](docs/DEFENSE_STATS_REVIEW.md).
 
 All 32 team logos are served locally with recorded provenance and use bases. Player photos are omitted pending a practical
 licensed source. Source details, timestamps, privacy and licensing sit behind
@@ -65,8 +70,11 @@ original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
 modification and sideline collection times.
 
-The collector checks four required sources plus five optional historical
-sources in the existing hourly GitHub Actions run at minute 23.
+The collector checks four required release assets and eight optional release
+assets: 2024/2025 player statistics, a player reference, 2025/2026 weekly rosters,
+2025 injuries and current-season team/player statistics. These form five
+optional generated artifacts; manually maintained coaching facts are separate.
+GitHub Actions runs every four hours at minute 23 (`23 */4 * * *`, UTC).
 Upstream injury and roster files normally update daily, not live. Schedules
 update more often. Runs can be delayed, fail or become dormant; a failed
 core collection leaves the previous site visible with ageing timestamps. Failed
@@ -110,9 +118,22 @@ The Python research suite remains credential-free:
 
 ```sh
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install --require-hashes -r requirements.txt
 .venv/bin/python -m unittest discover -s tests -v
 ```
+
+Python direct dependency constraints live in `requirements.in`; `requirements.txt`
+pins every resolved dependency with distribution hashes for Python 3.12.
+To update deliberately, use an isolated Python 3.12 environment with
+`pip-tools==7.6.2` and run
+`pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --output-file=requirements.txt requirements.in`.
+Use `--upgrade-package PACKAGE` in place of `--upgrade` for a targeted update.
+Without either option, pip-compile reuses existing pins that still satisfy the
+constraints. Review the lock diff, run `pip-audit -r requirements.txt`, install with
+`--require-hashes` in a fresh environment, then run the suite. npm already pins
+Playwright and its transitive graph in `package-lock.json`; use `npm ci` and
+`npm audit` when reviewing dependency changes. Neither toolchain adds browser
+runtime dependencies.
 
 Both unit suites and Chromium desktop/mobile browser checks run on source
 changes. To run the browser suite locally after installing Node dependencies:

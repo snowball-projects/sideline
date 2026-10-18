@@ -36,7 +36,7 @@ also checks that delayed pre-opening scroll events preserve details, while real
 list scrolling after opening still dismisses them.
 
 The `field browser checks` CI job runs on source pushes and pull requests using
-standard public Ubuntu runners. It does not run on the hourly data-only refresh.
+standard public Ubuntu runners. It does not run on the four-hour data-only refresh.
 A source deployment waits for its successful completion. This job does not change
 repository branch-protection settings or grant merge approval.
 

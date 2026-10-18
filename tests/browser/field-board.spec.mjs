@@ -1369,3 +1369,39 @@ test('six fully covered comparison tiles retain field alignment and safe 320px c
  await tiles.at(-1).scrollIntoViewIfNeeded();await evidence(page,testInfo,`all-team-coaching-${isMobile?'mobile':'desktop'}`);
  expect(errors).toEqual([]);
 });
+
+test("oversized core refresh retains the displayed feed and selections", async ({ page }) => {
+  const { errors, externalRequests } = await setup(page);
+  const names = await page.locator('.player-name').allTextContents();
+  await page.route('**/current.json', route => route.fulfill({
+    contentType: 'application/json', body: ' '.repeat(5_000_001),
+  }));
+  await page.locator('#refresh').click();
+  await expect(page.locator('#refresh-state')).toContainText('Check failed · previous data kept');
+  expect(await page.locator('.player-name').allTextContents()).toEqual(names);
+  expect(errors).toEqual([]);
+  expect(externalRequests).toEqual([]);
+});
+
+test("oversized optional refresh retains validated history while fresh core data updates", async ({ page }) => {
+  const history = browserPlayerHistory();
+  const fixture = fieldFixture();
+  const { errors, externalRequests } = await setup(page, 2, fixture, null, history);
+  const updated = structuredClone(fixture);
+  updated.generated_at = new Date(Date.parse(fixture.generated_at) + 1000).toISOString();
+  updated.players.find(player => player.id === selectedIds(2)[0]).name = 'Updated Fixture Player';
+  await page.clock.setFixedTime(new Date(Date.parse(NOW) + 2000));
+  await page.route('**/current.json', route => route.fulfill({ json: updated }));
+  await page.route('**/player-history.json', route => route.fulfill({
+    contentType: 'application/json', body: ' '.repeat(1_000_001),
+  }));
+  await page.locator('#refresh').click();
+  await expect(page.locator('#refresh-state')).toContainText('history check failed');
+  await expect(page.locator('.player-name').first()).toHaveText('Updated Fixture Player');
+  // Retained, validated optional history is still present in defender details.
+  await row(page, 'Field Fixture Out').click();
+  await popup(page).getByText('Player details', { exact: true }).click();
+  await expect(popup(page)).toContainText('Rookie season');
+  expect(errors).toEqual([]);
+  expect(externalRequests).toEqual([]);
+});

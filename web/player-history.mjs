@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.12";
+import { TEAMS } from "./feed.mjs?v=0.9.13";
 
 export const MAX_PLAYER_HISTORY_BYTES = 1_000_000;
 export const PLAYER_HISTORY_WINDOW = [2025, 2026];
@@ -26,7 +26,7 @@ function timestamp(value, label, now) {
 
 export function validatePlayerHistory(data, now = Date.now()) {
   object(data, ["schema_version", "generated_at", "window", "sources", "players"], "artifact fields");
-  requireValue(JSON.stringify(data).length <= MAX_PLAYER_HISTORY_BYTES, "size limit");
+  requireValue(new TextEncoder().encode(JSON.stringify(data)).byteLength <= MAX_PLAYER_HISTORY_BYTES, "size limit");
   requireValue(data.schema_version === 1 && JSON.stringify(data.window) === JSON.stringify(PLAYER_HISTORY_WINDOW), "version/window");
   timestamp(data.generated_at, "generation time", now);
   requireValue(Array.isArray(data.sources) && data.sources.length === 3, "sources");

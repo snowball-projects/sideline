@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.12";
+import { TEAMS } from "./feed.mjs?v=0.9.13";
 
 export const MAX_INJURY_HISTORY_BYTES = 2_000_000;
 export const INJURY_HISTORY_SOURCE = Object.freeze({
@@ -20,7 +20,7 @@ function timestamp(value, now) {
 }
 export function validateInjuryHistory(data, now = Date.now()) {
   object(data, ["schema_version", "season", "generated_at", "source", "players"]);
-  requireValue(data.schema_version === 1 && data.season === 2025 && JSON.stringify(data).length <= MAX_INJURY_HISTORY_BYTES, "version/season/size");
+  requireValue(data.schema_version === 1 && data.season === 2025 && new TextEncoder().encode(JSON.stringify(data)).byteLength <= MAX_INJURY_HISTORY_BYTES, "version/season/size");
   timestamp(data.generated_at, now);
   const source = data.source;
   object(source, ["id", "label", "url", "terms_url", "permission", "permission_note", "source_updated_at", "retrieved_at"]);

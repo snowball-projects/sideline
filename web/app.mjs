@@ -1,13 +1,14 @@
-import { validateDefenseStats, defenseRankings, MAX_DEFENSE_STATS_BYTES, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.12";
+import { readResponseText } from "./response.mjs?v=0.9.13";
+import { validateDefenseStats, defenseRankings, MAX_DEFENSE_STATS_BYTES, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.13";
 import {
   validateContributions,
   defenderContribution,
   MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.12";
+} from "./contribution.mjs?v=0.9.13";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.12";
+} from "./refresh.mjs?v=0.9.13";
 import {
   fieldLayout,
   compactMarkerName,
@@ -16,12 +17,12 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.12";
-import { parseFeed } from "./feed.mjs?v=0.9.12";
-import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.12";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.12";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.12";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.12";
+} from "./field.mjs?v=0.9.13";
+import { parseFeed, MAX_FEED_BYTES } from "./feed.mjs?v=0.9.13";
+import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.13";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.13";
+import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.13";
+import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.13";
 import {
   searchPlayers,
   opponentRoster,
@@ -39,14 +40,14 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.12";
+} from "./model.mjs?v=0.9.13";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.12";
+} from "./popover.mjs?v=0.9.13";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
@@ -488,7 +489,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "Synthetic data for trying the interface. These are not NFL reports."
-          : "nflverse injury, roster and depth-chart files normally update daily. sideline checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
+          : "nflverse injury, roster and depth-chart files normally update daily. sideline checks every four hours; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
       ),
     );
     panel.append(
@@ -1469,8 +1470,7 @@ async function loadOptionalArtifact(url, previous, maxBytes, validate) {
   try {
     const response = await fetch(url, { cache: "no-cache", signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error("Optional data unavailable.");
-    const text = await response.text();
-    if (text.length > maxBytes) throw new Error("Optional data too large.");
+    const text = await readResponseText(response, maxBytes);
     const candidate = validate(JSON.parse(text));
     const timestamp = (data) => data?.generated_at || data?.source?.retrieved_at || data?.checked_at;
     if (timestamp(candidate) && timestamp(previous) &&
@@ -1487,7 +1487,7 @@ const refresher = createRefreshController({
     );
     if (!response.ok)
       throw new Error("The shared data file could not be retrieved.");
-    const next = parseFeed(await response.text());
+    const next = parseFeed(await readResponseText(response, MAX_FEED_BYTES));
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
     const [historical, rosterHistory, archive, olderProduction, coaching, defensive] = mode === "live"
@@ -1555,7 +1555,7 @@ async function loadTeamAssets() {
       signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) return;
-    const data = await response.json();
+    const data = JSON.parse(await readResponseText(response, 64 * 1024));
     for (const [team, asset] of Object.entries(data)) {
       if (
         /^[A-Z]{2,3}$/.test(team) &&
