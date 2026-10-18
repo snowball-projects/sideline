@@ -141,6 +141,11 @@ vintage is conservatively flagged after more than three UTC calendar days.
 Roster/schedule source vintages use a 24-hour policy when supplied. These are
 operating reminders, not calibrated confidence thresholds.
 
+The [proposed freshness contract](FRESHNESS_CONTRACT.md) separates job attempts,
+successful fetches, assembly, upstream file/report age and browser checks. Its
+six-hour maximum-age proposal is not a collection target or an enforced guarantee;
+game-window scheduling and detection/recovery decisions remain to be agreed.
+
 Elapsed kickoff reads “Start passed · status unconfirmed”, not live or final.
 The current schedule has no status field; score presence cannot prove final.
 Explicit source states remain supported by the schema but cannot be inferred

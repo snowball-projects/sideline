@@ -72,6 +72,30 @@ test("timeouts and rejected response parsing fail clearly and cap retry backoff"
   assert.equal(refresh.due(), true);
 });
 
+test("a recent failed browser check does not reset the retained collection or fetch age", async () => {
+  const collected = "2026-09-14T10:00:00Z";
+  let clock = Date.parse(collected), fail = false;
+  const data = { mode: "live", generated_at: collected,
+    roster: { retrieved_at: collected, source_updated_at: "2026-09-13T10:00:00Z", reported_at: null } };
+  const original = structuredClone(data), applied = [], states = [];
+  const refresh = createRefreshController({
+    now: () => clock,
+    request: async () => { if (fail) throw new Error("unavailable"); return data; },
+    onData: value => applied.push(value),
+    onState: value => states.push(value),
+  });
+  assert.equal(await refresh.refresh(), true);
+  clock += 7 * 3_600_000;
+  fail = true;
+  assert.equal(await refresh.refresh(), false);
+  assert.equal(states.at(-1).lastCheck, clock);
+  assert.equal(states.at(-1).phase, "error");
+  assert.equal(applied.length, 1);
+  assert.deepEqual(applied[0], original);
+  assert.equal(collectionFreshness(applied[0].generated_at, clock).ageHours, 7);
+  assert.equal(clock - Date.parse(applied[0].roster.retrieved_at), 7 * 3_600_000);
+});
+
 test("pending data waits for dialogs, searches and focused roster/week controls", () => {
   const idle = { popoverOpen: false, searchOpen: false, focusedControl: false };
   assert.equal(canApplyRefresh(idle), true);

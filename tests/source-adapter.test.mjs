@@ -346,6 +346,40 @@ test("downloader allowlists exact datasets and HTTPS release redirects", async (
   );
 });
 
+test("source retrieval time records completed body receipt rather than request start", async () => {
+  let clock = Date.parse(NOW);
+  const completedAt = new Date(clock + 30_000).toISOString();
+  const result = await fetchSource(definition, {
+    now: () => new Date(clock),
+    fetchImpl: async () => new Response(new ReadableStream({
+      pull(controller) {
+        clock += 30_000;
+        controller.enqueue(new TextEncoder().encode("a\n1"));
+        controller.close();
+      },
+    }, { highWaterMark: 0 }), { headers: { "content-type": "text/csv", "last-modified": "Sat, 12 Sep 2026 11:35:55 GMT" } }),
+  });
+  assert.equal(result.metadata.retrieved_at, completedAt);
+  assert.equal(result.metadata.source_updated_at, UPDATED);
+  assert.equal(result.metadata.reported_at, null);
+});
+
+test("a later successful fetch of unchanged bytes does not freshen file or unknown report vintage", async () => {
+  let clock = Date.parse(NOW);
+  const options = {
+    now: () => new Date(clock),
+    fetchImpl: async () => response("a\n1", { "last-modified": "Sat, 12 Sep 2026 11:35:55 GMT" }),
+  };
+  const first = await fetchSource(definition, options);
+  clock += 2 * 3_600_000;
+  const second = await fetchSource(definition, options);
+  assert.equal(first.csv, second.csv);
+  assert.equal(second.metadata.retrieved_at, new Date(clock).toISOString());
+  assert.notEqual(second.metadata.retrieved_at, first.metadata.retrieved_at);
+  assert.equal(second.metadata.source_updated_at, first.metadata.source_updated_at);
+  assert.equal(second.metadata.reported_at, null);
+});
+
 test("downloader bounds size, rejects HTML, future source clocks and rate limits without retry", async () => {
   await assert.rejects(
     fetchSource(definition, {
