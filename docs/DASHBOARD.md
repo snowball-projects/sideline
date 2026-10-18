@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.9.13 (prepared for review) · [Open sideline](https://snowball-projects.github.io/sideline/)
+Version 0.9.13 (prepared for release; unreleased) · [Open sideline](https://snowball-projects.github.io/sideline/)
 
 ## Use
 

@@ -7,9 +7,9 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md) ·
 [0.9.13 release review](docs/RELEASE_REVIEW_0_9_13.md)
 
-Version 0.9.13 (prepared for review) bounds browser downloads by bytes, locks Python dependencies and
-checks shared data every four hours. Pre-week defensive value/rank pairs and
-top-10 defender stars remain available alongside separate 2024/2025 history.
+Version 0.9.13 is prepared for release and remains unreleased. It bounds browser
+downloads by bytes, locks Python dependencies and checks shared data every four
+hours. Pre-week defensive value/rank pairs and top-10 defender stars remain available alongside separate 2024/2025 history.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
@@ -126,8 +126,10 @@ Python direct dependency constraints live in `requirements.in`; `requirements.tx
 pins every resolved dependency with distribution hashes for Python 3.12.
 To update deliberately, use an isolated Python 3.12 environment with
 `pip-tools==7.6.2` and run
-`pip-compile --generate-hashes --strip-extras --no-emit-index-url --output-file=requirements.txt requirements.in`.
-Review the lock diff, run `pip-audit -r requirements.txt`, install with
+`pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --output-file=requirements.txt requirements.in`.
+Use `--upgrade-package PACKAGE` in place of `--upgrade` for a targeted update.
+Without either option, pip-compile reuses existing pins that still satisfy the
+constraints. Review the lock diff, run `pip-audit -r requirements.txt`, install with
 `--require-hashes` in a fresh environment, then run the suite. npm already pins
 Playwright and its transitive graph in `package-lock.json`; use `npm ci` and
 `npm audit` when reviewing dependency changes. Neither toolchain adds browser

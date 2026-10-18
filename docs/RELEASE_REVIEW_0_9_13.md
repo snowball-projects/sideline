@@ -32,7 +32,11 @@ increment; no merge, tag, release or deployment is part of its preparation.
 
 These are local executions on Omarchy using Node **24.19.0**, Python
 **3.12.14** and the locked Playwright **1.63.0** Chromium. They are not claims
-about historical CI runs.
+about historical CI runs. The full local suite and first PR CI run tested
+implementation commit `096f1eadc1072eecd1dc1e7fcc1082ca50f53437`.
+The follow-up documentation edit clarifies deliberate dependency upgrades and
+unreleased status; it does not change that implementation or retroactively
+attribute these executions to another commit.
 
 | Check | Result |
 | --- | --- |
