@@ -1,9 +1,11 @@
 # Freshness contract — proposed operating design
 
 Aim for the freshest obtainable current data, especially in the hours before
-games. **Six hours is a proposed maximum tolerable successful-fetch age, not a
-desired cadence or an existing guarantee.** Cron remains `23 */4 * * *` UTC.
-This document adds no scheduler, monitor, alert or automatic recovery.
+games. **Six hours is a proposed maximum tolerable age, not a desired cadence or an
+existing guarantee.** The measurable fetch-age limit below is a proposed
+operating proxy, not a substitute for the report-freshness objective; adopting
+it still needs agreement. Cron remains `23 */4 * * *` UTC. This document adds
+no scheduler, monitor, alert or automatic recovery.
 
 ## Distinct clocks
 
