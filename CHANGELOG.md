@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.13 - Unreleased
+## 0.9.13 - 2026-10-18
 
 - Bound required and optional browser response streams by decoded bytes before
   parsing, preserve split UTF-8 characters, and cancel oversized downloads.

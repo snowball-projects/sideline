@@ -7,9 +7,9 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md) ·
 [0.9.13 release review](docs/RELEASE_REVIEW_0_9_13.md)
 
-Version 0.9.13 is prepared for release and remains unreleased. It bounds browser
-downloads by bytes, locks Python dependencies and checks shared data every four
-hours. Pre-week defensive value/rank pairs and top-10 defender stars remain available alongside separate 2024/2025 history.
+Version 0.9.13 bounds browser downloads by bytes, locks Python dependencies and
+checks shared data every four hours. Pre-week defensive value/rank pairs and
+top-10 defender stars remain available alongside separate 2024/2025 history.
 
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and information.
