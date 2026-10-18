@@ -4,6 +4,8 @@
 
 - Bound required and optional browser response streams by decoded bytes before
   parsing, preserve split UTF-8 characters, and cancel oversized downloads.
+- Reject response streams after 32 consecutive empty chunks, resetting the
+  no-progress guard when bytes arrive, without relying on timeout tasks.
 - Apply byte limits consistently to optional validators and the logo manifest;
   retain validated prior data after failed core or optional refreshes.
 - Pin the complete Python dependency graph with distribution hashes and enforce

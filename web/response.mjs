@@ -16,10 +16,18 @@ export async function readResponseText(response, maxBytes) {
   // Even a stream delivering a byte at a time has bounded bookkeeping cost.
   let buffer = new Uint8Array(Math.min(maxBytes, 64 * 1024));
   let bytes = 0;
+  let emptyChunks = 0;
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      // An injected stream can resolve empty reads forever without letting a
+      // timeout task run. Tolerate a short empty burst, then fail without timers.
+      if (value.byteLength === 0) {
+        if (++emptyChunks > 32) throw new Error("Shared data stream made no byte progress.");
+        continue;
+      }
+      emptyChunks = 0;
       const nextBytes = bytes + value.byteLength;
       if (nextBytes > maxBytes) throw tooLarge();
       if (nextBytes > buffer.byteLength) {

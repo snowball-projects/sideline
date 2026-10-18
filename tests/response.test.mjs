@@ -80,3 +80,26 @@ test("cancellation failure preserves the original size error", async () => {
   await assert.rejects(readResponseText(source, 1), /byte limit/);
   assert.equal(source.body.locked, false);
 });
+
+test("a stream making no byte progress is cancelled without relying on a timer", async () => {
+  let reads = 0, cancelled = false;
+  const source = new Response(new ReadableStream({
+    pull(controller) {
+      // Keep a broken implementation from hanging the test process itself.
+      if (++reads > 64) controller.error(new Error("test source exhausted"));
+      else controller.enqueue(new Uint8Array());
+    },
+    cancel() { cancelled = true; },
+  }, { highWaterMark: 0 }));
+  await assert.rejects(readResponseText(source, 100), /no byte progress/);
+  assert.equal(reads, 33);
+  assert.equal(cancelled, true);
+  assert.equal(source.body.locked, false);
+});
+
+test("bounded empty chunks are tolerated and byte progress resets the guard", async () => {
+  const empty = () => Array.from({ length: 32 }, () => new Uint8Array());
+  const source = streamed([...empty(), encode("a"), ...empty(), encode("b")]);
+  assert.equal(await readResponseText(source.response, 2), "ab");
+  assert.equal(source.cancelled(), false);
+});

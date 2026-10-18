@@ -10,7 +10,9 @@ increment; no merge, tag, release or deployment is part of its preparation.
   reader. It checks advertised length early, counts actual decoded bytes,
   cancels at the first oversized chunk and releases its reader on failure.
   A bounded growing byte buffer avoids per-chunk object retention and preserves
-  UTF-8 characters split across chunks. Fetch deadlines remain in force.
+  UTF-8 characters split across chunks. Fetch deadlines remain in force. A
+  follow-up rejects the 33rd consecutive empty chunk without relying on timers;
+  any byte progress resets this guard.
 - Optional schema limits use UTF-8 bytes, including local collector/build
   validation. Coaching facts also enforce their existing cap in the validator.
   The previously unbounded local logo-manifest response now has a 64 KiB cap.
@@ -34,9 +36,9 @@ These are local executions on Omarchy using Node **24.19.0**, Python
 **3.12.14** and the locked Playwright **1.63.0** Chromium. They are not claims
 about historical CI runs. The full local suite and first PR CI run tested
 implementation commit `096f1eadc1072eecd1dc1e7fcc1082ca50f53437`.
-The follow-up documentation edit clarifies deliberate dependency upgrades and
-unreleased status; it does not change that implementation or retroactively
-attribute these executions to another commit.
+Follow-up documentation clarifies deliberate dependency upgrades and unreleased
+status. The later empty-chunk guard has its own test evidence below; original
+full-suite results are not retroactively attributed to a different commit.
 
 | Check | Result |
 | --- | --- |
@@ -51,6 +53,14 @@ attribute these executions to another commit.
 | `pip-audit -r requirements.txt --disable-pip --no-deps --format json` | Seven fully pinned dependencies checked; zero known vulnerabilities |
 | `npm run refresh` then `npm run build:live` | Passed; all five generated optional artifacts collected and 57 public files built |
 | `npm run build` without generated artifacts | Passed; 51 public files with explicit fictional fallback |
+
+Follow-up empty-chunk guard verification on 2026-10-18 UTC passed the full
+**182-test Node suite**, the **106 browser checks with four deliberate skips**,
+both JavaScript syntax checks and the offline build. The no-progress regression
+was first run against the earlier implementation and failed as expected before
+the guard was added; the source limits itself so a regression cannot hang CI.
+The guard also has a positive test for empty bursts separated by byte progress.
+Python dependencies and implementation are unchanged from the 44-test run above.
 
 Browser validation covers two/six tiles, scrolling, keyboard/touch popup
 activation/dismissal, defensive ranks and leader-star geometry, interrupted
