@@ -1,0 +1,12 @@
+# Proposal only: uninstalled. This wraps the single sideline-freshness job.
+[Unit]
+Description=Hourly sideline freshness inspection
+
+[Timer]
+OnCalendar=*-*-* *:33:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=sideline-freshness.service
+
+[Install]
+WantedBy=timers.target
