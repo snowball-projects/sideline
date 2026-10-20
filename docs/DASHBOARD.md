@@ -311,6 +311,9 @@ is rendered as text, never HTML. No credentials are accepted by the schema.
 
 ## Build, deploy and revive
 
+The optional [freshness watchdog draft](FRESHNESS_WATCHDOG_STATUS.md) is unfinished,
+uninstalled and not part of the deployed application or scheduler.
+
 Use Node 24 and Python 3.12; see [README.md](../README.md) for setup.
 
 ```sh

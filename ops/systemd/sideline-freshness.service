@@ -1,0 +1,25 @@
+# Proposal only: uninstalled, dry-run. One logical job: sideline-freshness.
+# Review account, checkout and Node 24 paths before any future activation.
+# Credentials and --dispatch require separate approval; none are configured here.
+[Unit]
+Description=sideline freshness inspection and bounded recovery
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=sideline
+Group=sideline
+WorkingDirectory=/opt/sideline
+ExecStart=/usr/bin/node /opt/sideline/scripts/freshness-watchdog.mjs --dry-run --state-file /var/lib/sideline-freshness/state.json
+TimeoutStartSec=25min
+StateDirectory=sideline-freshness
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/sideline-freshness
+# Future approved token injection belongs in a protected operator-owned file
+# or provider secret store, never this versioned template.
