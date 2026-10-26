@@ -49,6 +49,5 @@ Public copy and data
 - Principles: https://snowball-projects.github.io/principles/
 
 ## Repo notes
-A static NFL player search and opponent injury dashboard.
+A static NFL team-card dashboard for comparing injuries and starters.
 Checks: `npm test`; `node --check web/app.mjs`; `npm run build`.
-Python: `.venv/bin/python -m unittest discover -s tests -v`.
