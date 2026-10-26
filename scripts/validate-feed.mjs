@@ -12,7 +12,7 @@ export const ROSTER_STATUSES = [
   "exempt",
   "unknown",
 ];
-export const MAX_FEED_BYTES = 5_000_000;
+export const MAX_FEED_BYTES = 8_000_000;
 const ALIASES = {
   ARZ: "ARI",
   BLT: "BAL",
@@ -206,7 +206,7 @@ export function validateFeed(input, now = Date.now()) {
   if (Object.hasOwn(data, "depth")) {
     object(data.depth, "Depth chart", [...META_KEYS, "entries"]);
     metadata(data.depth, "Depth chart", sourceIds, generatedAt);
-    list(data.depth.entries, "Depth entries", 12000);
+    list(data.depth.entries, "Depth entries", 24000);
     const identities = new Set();
     for (const entry of data.depth.entries) {
       object(entry, "Depth entry", [
@@ -215,8 +215,12 @@ export function validateFeed(input, now = Date.now()) {
         "rank",
         "position",
         "observed_at",
+        "name",
+        "week_key",
       ]);
       id(entry.player_id, "Depth player ID");
+      if (entry.name !== undefined) text(entry.name, "Depth player name", 100);
+      if (entry.week_key !== undefined) requireValue(data.weeks.some((week) => week.key === entry.week_key), "Depth references an unknown week.");
       entry.team = team(entry.team, "depth team");
       text(entry.position, "Depth position", 20);
       requireValue(
@@ -228,9 +232,17 @@ export function validateFeed(input, now = Date.now()) {
         Date.parse(entry.observed_at) <= Date.parse(data.depth.retrieved_at),
         "Depth observation is newer than retrieval.",
       );
+      if (entry.week_key !== undefined) {
+        const week = data.weeks.find((week) => week.key === entry.week_key);
+        const game = data.games.find((game) => game.week_key === entry.week_key && [game.home, game.away].includes(entry.team));
+        requireValue(game?.kickoff && entry.rank === 1 && entry.name &&
+          Date.parse(entry.observed_at) >= Date.parse(week.starts_at) &&
+          Date.parse(entry.observed_at) <= Date.parse(game.kickoff),
+          "Weekly depth needs a named first-depth observation within the week before kickoff.");
+      }
       unique(
         identities,
-        `${entry.team}:${entry.player_id}:${entry.position}`,
+        `${entry.week_key || "latest"}:${entry.team}:${entry.player_id}:${entry.position}`,
         "depth entry",
       );
     }
@@ -436,7 +448,7 @@ export function parseFeed(jsonText, now = Date.now()) {
   requireValue(
     typeof jsonText === "string" &&
       new TextEncoder().encode(jsonText).byteLength <= MAX_FEED_BYTES,
-    "Feed exceeds the 5 MB limit.",
+    "Feed exceeds the 8 MB limit.",
   );
   let data;
   try {

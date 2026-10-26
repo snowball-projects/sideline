@@ -22,6 +22,7 @@ const files = [
   "styles.css",
   "app.mjs",
   "model.mjs",
+  "team-cards.mjs",
   "field.mjs",
   "defense-stats.mjs",
   "player-details.mjs",

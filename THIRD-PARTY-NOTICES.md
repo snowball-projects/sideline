@@ -44,7 +44,8 @@ software license or nflverse CC BY data grant to these images.
 
 Depth-chart observations are also derived from the separately reviewed
 nflverse-data release under CC BY 4.0. sideline retains the latest observation per
-team and joins by player identity and team; first string does not confirm game
+team plus named first-depth snapshots observed within each game week before kickoff,
+joined by player identity and team; first string does not confirm game
 participation.
 
 Historical defensive event counts are derived from separately labelled nflverse-calculated 2024 and 2025

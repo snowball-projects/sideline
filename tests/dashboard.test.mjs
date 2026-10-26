@@ -287,7 +287,7 @@ test("reports after kickoff stay visible but cannot silently serve as pregame ev
 
 test("strict parsing rejects malformed JSON, impossible dates, unbounded arrays and unsupported fields", () => {
   assert.throws(() => parseFeed("{", now), /not valid JSON/);
-  assert.throws(() => parseFeed(" ".repeat(MAX_FEED_BYTES + 1), now), /5 MB/);
+  assert.throws(() => parseFeed(" ".repeat(MAX_FEED_BYTES + 1), now), /8 MB/);
   rejects((data) => {
     data.players = Array(6001).fill(data.players[0]);
   }, /6000/);

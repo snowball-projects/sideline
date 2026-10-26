@@ -2,6 +2,12 @@
 // coverage/shadow assignments or a confirmed lineup. Keep source labels intact.
 // Side means the published chart side, never an inferred viewer coordinate.
 const POSITIONS = {
+  QB: ["BACK", "quarterback"], RB: ["BACK", "running-back"], FB: ["BACK", "fullback"],
+  WR: ["RECEIVERS", "receiver"], TE: ["RECEIVERS", "tight-end"],
+  C: ["LINE", "center"], G: ["LINE", "guard"], T: ["LINE", "tackle"],
+  OG: ["LINE", "guard"], OT: ["LINE", "tackle"], OL: ["LINE", "offensive-line"],
+  LT: ["LINE", "tackle", "left"], RT: ["LINE", "tackle", "right"],
+  LG: ["LINE", "guard", "left"], RG: ["LINE", "guard", "right"],
   DB: ["DB", "defensive-back"],
   CB: ["DB", "corner"],
   LCB: ["DB", "corner", "left"],
@@ -33,6 +39,11 @@ const POSITIONS = {
   NT: ["DL", "nose"],
 };
 const FAMILIES = ["DB", "LB", "DL"];
+
+export function unitHasChartPosition(unit, position) {
+  const family = POSITIONS[position]?.[0];
+  return (unit === "offense" ? ["RECEIVERS", "LINE", "BACK"] : FAMILIES).includes(family);
+}
 
 function positionContext(position) {
   const [family, role, side = null] = Object.hasOwn(POSITIONS, position)
@@ -155,14 +166,14 @@ export function fieldStatus(
 ) {
   if (!reportAvailable)
     return {
-      text: "",
-      key: "neutral",
+      text: "?",
+      key: "unknown",
       label: "Availability unknown; injury report missing from this feed",
     };
   if (!member.injury)
     return {
-      text: "",
-      key: "neutral",
+      text: reportCoverage === "complete" && !member.reportIdentityConflict ? "" : "?",
+      key: reportCoverage === "complete" && !member.reportIdentityConflict ? "neutral" : "unknown",
       label: member.reportIdentityConflict
         ? "Report/roster IDs differ for this name; availability unknown"
         : reportCoverage === "complete"
@@ -219,7 +230,7 @@ export function depthSummary(member) {
 // and assignments [{ member, entry }] for every unchanged source depth entry.
 // Missing or cross-family-ambiguous depth uses complete anonymous stacks.
 // Chart size and Out designations never truncate or select replacement players.
-export function fieldLayout(members) {
+export function fieldLayout(members, unit = "defense") {
   const groups = new Map();
   for (const member of members) {
     const { firstDepth, source, ...placement } = chartPosition(member);
@@ -239,13 +250,12 @@ export function fieldLayout(members) {
       group.assignments.push({ member, entry });
     if (
       firstDepth &&
-      member.roster_status === "active" &&
       !group.representatives.includes(member)
     )
       group.representatives.push(member);
   }
   const positions = [...groups.values()];
-  const families = [...FAMILIES];
+  const families = unit === "offense" ? ["RECEIVERS", "LINE", "BACK"] : [...FAMILIES];
   if (positions.some((group) => group.family === "Unknown"))
     families.push("Unknown");
   return families.map((position) => ({

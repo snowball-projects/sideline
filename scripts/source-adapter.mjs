@@ -547,6 +547,7 @@ export function normalizeDepth(rows, metadata) {
       rank,
       position,
       observed_at: new Date(row.dt).toISOString(),
+      ...(clean(row.player_name) && clean(row.player_name) !== "NA" ? { name: clean(row.player_name) } : {}),
     };
     if (entries.has(key) && entries.get(key).rank !== rank)
       fail("Conflicting depth-chart ranks.");
@@ -561,26 +562,39 @@ export function normalizeDepth(rows, metadata) {
   };
 }
 
-export function normalizeDepthCsv(csv, metadata) {
-  const latest = new Map();
+export function normalizeDepthCsv(csv, metadata, games = [], weeks = []) {
+  const latest = new Map(), snapshots = new Map();
+  const windows = games.filter((game) => game.kickoff).flatMap((game) => {
+    const week = weeks.find((entry) => entry.key === game.week_key);
+    if (!week) return [];
+    return [game.home, game.away].map((club) => ({ club, key: week.key,
+      start: Date.parse(week.starts_at), end: Math.min(Date.parse(game.kickoff), Date.parse(metadata.retrieved_at)) }));
+  });
+  const windowsByTeam = new Map([...TEAMS].map((club) => [club, windows.filter((window) => window.club === club)]));
+  const retain = (map, key, instant, row) => {
+    const previous = map.get(key);
+    if (!previous || instant > previous.instant) map.set(key, { instant, rows: [row] });
+    else if (instant === previous.instant) previous.rows.push(row);
+  };
   parseCsv(csv, {
-    maxBytes: 160 * 1024 * 1024,
-    maxRows: 2000000,
+    maxBytes: 160 * 1024 * 1024, maxRows: 2000000,
     onRow(row) {
-      const club = team(row.team),
-        instant = Date.parse(row.dt);
-      if (!Number.isFinite(instant))
-        fail("Invalid depth-chart observation time.");
-      const previous = latest.get(club);
-      if (!previous || instant > previous.instant)
-        latest.set(club, { instant, rows: [row] });
-      else if (instant === previous.instant) previous.rows.push(row);
+      const club = team(row.team), instant = Date.parse(row.dt);
+      if (!Number.isFinite(instant) || instant > Date.parse(metadata.retrieved_at)) fail("Invalid depth-chart observation time.");
+      retain(latest, club, instant, row);
+      for (const window of windowsByTeam.get(club)) if (instant >= window.start && instant <= window.end)
+        retain(snapshots, `${window.key}:${club}`, instant, row);
     },
   });
-  return normalizeDepth(
-    [...latest.values()].flatMap((value) => value.rows),
-    metadata,
-  );
+  const depth = normalizeDepth([...latest.values()].flatMap((value) => value.rows), metadata);
+  // Keep named first-depth evidence for each scheduled week, rather than
+  // copying current starters into history. No observation means unknown.
+  for (const [key, snapshot] of snapshots) {
+    const week_key = key.slice(0, key.lastIndexOf(":"));
+    for (const entry of normalizeDepth(snapshot.rows, metadata).entries)
+      if (entry.rank === 1 && entry.name) depth.entries.push({ ...entry, week_key });
+  }
+  return depth;
 }
 
 export function normalizeSources({
@@ -617,7 +631,7 @@ export function normalizeSources({
       reported_at: null,
       coverage: schedule.coverage,
     },
-    ...(depthCsv ? { depth: normalizeDepthCsv(depthCsv, metadata.depth) } : {}),
+    ...(depthCsv ? { depth: normalizeDepthCsv(depthCsv, metadata.depth, schedule.games, schedule.weeks) } : {}),
     weeks: schedule.weeks,
     players,
     games: schedule.games,
