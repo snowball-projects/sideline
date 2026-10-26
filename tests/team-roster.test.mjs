@@ -9,7 +9,7 @@ import {
   comparePlayer,
   DEFENSIVE_POSITIONS,
 } from "../web/model.mjs";
-import { validateFeed } from "../web/feed.mjs";
+import { validateFeed } from "../scripts/validate-feed.mjs";
 const now = Date.parse("2026-09-13T12:00:00Z");
 function setup() {
   const feed = JSON.parse(

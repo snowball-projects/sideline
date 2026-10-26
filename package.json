@@ -12,7 +12,7 @@
     "build": "node scripts/build-web.mjs",
     "build:live": "node scripts/build-web.mjs --require-live",
     "refresh": "node scripts/refresh-data.mjs && node scripts/contribution-data.mjs --optional && node scripts/contribution-data.mjs --optional --season=2024 && node scripts/player-history-data.mjs --optional && node scripts/injury-history-data.mjs --optional && node scripts/defense-stats-data.mjs --optional",
-    "dev": "python3 -m http.server 8786 --bind 127.0.0.1 --directory web",
+    "dev": "node scripts/serve-web.mjs",
     "test:browser": "playwright test"
   },
   "devDependencies": {

@@ -2,10 +2,11 @@ import { readFile, writeFile, rename, rm } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { parseCsv } from "./source-adapter.mjs";
 import { fetchSource } from "./refresh-data.mjs";
-import { defenseStatSources, DEFENSE_STATS_TERMS, validateDefenseStats } from "../web/defense-stats.mjs";
+import { DEFENSE_STATS_TERMS } from "../web/defense-stats.mjs";
+import { defenseStatSources, validateDefenseStats } from "./validate-defense-stats.mjs";
 
 export const DEFENSE_STATS_POLICY = Object.freeze({ verified: true, checked_on: "2026-10-15",
-  reason: "nflverse-data weekly team and player statistics are published under its CC BY 4.0 grant. sideline selects regular-season game records, computes net yards and combined tackles, joins exact game/team/GSIS identities, and derives pre-week competition ranks. No direct ESPN/NFL scraping or endorsement. See docs/DEFENSE_STATS_REVIEW.md." });
+  reason: "nflverse-data weekly team and player statistics are published under its CC BY 4.0 grant. sideline selects regular-season game records, computes net yards and combined tackles, joins exact game/team/GSIS identities, and derives pre-week competition ranks. No direct ESPN/NFL scraping or endorsement." });
 const OUTPUT = new URL("../web/defense-stats.json", import.meta.url);
 const requireValue = (ok, message) => { if (!ok) throw new Error(message); };
 const team = (value) => value === "LA" ? "LAR" : value;

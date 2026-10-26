@@ -2,13 +2,14 @@ import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { parseCsv } from "./source-adapter.mjs";
 import { fetchSource } from "./refresh-data.mjs";
-import { parseFeed, TEAMS } from "../web/feed.mjs";
+import { parseFeed, TEAMS } from "./validate-feed.mjs";
 import { DEFENSIVE_POSITIONS } from "../web/model.mjs";
-import { PLAYER_HISTORY_SOURCES, PLAYER_HISTORY_WINDOW, PLAYER_HISTORY_TERMS, validatePlayerHistory } from "../web/player-history.mjs";
+import { PLAYER_HISTORY_SOURCES, PLAYER_HISTORY_WINDOW, PLAYER_HISTORY_TERMS } from "../web/player-history.mjs";
+import { validatePlayerHistory } from "./validate-player-history.mjs";
 
 export const PLAYER_HISTORY_POLICY = Object.freeze({
   verified: true, checked_on: "2026-10-08",
-  reason: "nflverse-data releases player-reference and weekly roster data under CC BY 4.0. sideline joins explicit rookie seasons and 2025/2026 roster observations by GSIS ID, excluding cut/free-agent/retired observations. Observed weeks do not establish uninterrupted tenure or games played. Only these fields are selected; photos, third-party ratings and reference draft fields are excluded. See docs/DATA_SOURCES.md.",
+  reason: "nflverse-data releases player-reference and weekly roster data under CC BY 4.0. sideline joins explicit rookie seasons and 2025/2026 roster observations by GSIS ID, excluding cut/free-agent/retired observations. Observed weeks do not establish uninterrupted tenure or games played. Only these fields are selected; photos, third-party ratings and reference draft fields are excluded.",
 });
 const OUTPUT = new URL("../web/player-history.json", import.meta.url);
 const clean = (value) => String(value ?? "").trim();

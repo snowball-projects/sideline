@@ -17,7 +17,7 @@ import {
   PUBLICATION_POLICY,
 } from "../scripts/refresh-data.mjs";
 import { gzipSync } from "node:zlib";
-import { validateFeed } from "../web/feed.mjs";
+import { validateFeed } from "../scripts/validate-feed.mjs";
 
 const read = async (name) =>
   readFile(new URL(`./fixtures/source-${name}.csv`, import.meta.url), "utf8");

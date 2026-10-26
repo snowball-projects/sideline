@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {coordinatorFor,coordinatorLabel,coachingSeasons,validateCoordinators,MAX_COORDINATOR_BYTES} from '../web/coordinator.mjs';
-import {TEAMS} from '../web/feed.mjs';
+import { coordinatorFor, coordinatorLabel, coachingSeasons } from "../web/coordinator.mjs";
+import { validateCoordinators, MAX_COORDINATOR_BYTES } from "../scripts/validate-coordinator.mjs";
+import { TEAMS } from "../scripts/validate-feed.mjs";
 const facts=JSON.parse(await readFile(new URL('../web/coordinators.json',import.meta.url),'utf8'));
 const now=Date.parse(facts.checked_at);
 const context={mode:'live',season:2026,now};
