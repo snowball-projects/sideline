@@ -1,14 +1,9 @@
-import { readResponseText } from "./response.mjs?v=0.9.13";
-import { validateDefenseStats, defenseRankings, MAX_DEFENSE_STATS_BYTES, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.13";
-import {
-  validateContributions,
-  defenderContribution,
-  MAX_CONTRIBUTION_BYTES,
-} from "./contribution.mjs?v=0.9.13";
+import { defenseRankings, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.14";
+import { defenderContribution } from "./contribution.mjs?v=0.9.14";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.13";
+} from "./refresh.mjs?v=0.9.14";
 import {
   fieldLayout,
   compactMarkerName,
@@ -17,12 +12,11 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.13";
-import { parseFeed, MAX_FEED_BYTES } from "./feed.mjs?v=0.9.13";
-import { validateCoordinators, coordinatorFor, coordinatorLabel, coachingSeasons, MAX_COORDINATOR_BYTES } from "./coordinator.mjs?v=0.9.13";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.13";
-import { validateInjuryHistory, archivedInjuryRecords, MAX_INJURY_HISTORY_BYTES } from "./injury-history.mjs?v=0.9.13";
-import { validatePlayerHistory, playerHistoryFor, observedWeeksLabel, MAX_PLAYER_HISTORY_BYTES, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.13";
+} from "./field.mjs?v=0.9.14";
+import { coordinatorFor, coordinatorLabel, coachingSeasons } from "./coordinator.mjs?v=0.9.14";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.14";
+import { archivedInjuryRecords } from "./injury-history.mjs?v=0.9.14";
+import { playerHistoryFor, observedWeeksLabel, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.14";
 import {
   searchPlayers,
   opponentRoster,
@@ -40,21 +34,19 @@ import {
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.13";
+} from "./model.mjs?v=0.9.14";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.13";
+} from "./popover.mjs?v=0.9.14";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
 const depthHighlights = new Map();
 const STORAGE_KEY = "sideline.selected.v2";
-// Preserve selections saved under the former browser-storage namespace.
-const LEGACY_STORAGE_KEY = "optasy.selected.v2";
 let feed = null,
   selected = [],
   weekKey = "",
@@ -191,9 +183,7 @@ function announce(text) {
 }
 function readSelection() {
   try {
-    const stored =
-      localStorage.getItem(STORAGE_KEY) ??
-      localStorage.getItem(LEGACY_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY);
     const value = JSON.parse(stored);
     return Array.isArray(value)
       ? [
@@ -593,14 +583,7 @@ function sourceDetails() {
   for (const [label, url] of [
     ["snowball", "https://snowball-projects.github.io/"],
     ["Source", "https://github.com/snowball-projects/sideline"],
-    [
-      "Data review",
-      "https://github.com/snowball-projects/sideline/blob/main/docs/DATA_SOURCES.md",
-    ],
-    [
-      "Image credits",
-      "https://github.com/snowball-projects/sideline/blob/main/docs/MEDIA.md",
-    ],
+    ["Data and image credits", "https://snowball-projects.github.io/sideline/THIRD-PARTY-NOTICES.md"],
     ["Operations", "https://snowball-projects.github.io/operations/#sideline"],
     ["MIT", "https://snowball-projects.github.io/sideline/LICENSE"],
   ])
@@ -1466,12 +1449,11 @@ function renderRefreshState() {
   $("refresh").setAttribute("aria-disabled", String(loading));
   $("refresh").setAttribute("aria-busy", String(loading));
 }
-async function loadOptionalArtifact(url, previous, maxBytes, validate) {
+async function loadOptionalArtifact(url, previous) {
   try {
     const response = await fetch(url, { cache: "no-cache", signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error("Optional data unavailable.");
-    const text = await readResponseText(response, maxBytes);
-    const candidate = validate(JSON.parse(text));
+    const candidate = await response.json();
     const timestamp = (data) => data?.generated_at || data?.source?.retrieved_at || data?.checked_at;
     if (timestamp(candidate) && timestamp(previous) &&
         Date.parse(timestamp(candidate)) < Date.parse(timestamp(previous)))
@@ -1487,18 +1469,15 @@ const refresher = createRefreshController({
     );
     if (!response.ok)
       throw new Error("The shared data file could not be retrieved.");
-    const next = parseFeed(await readResponseText(response, MAX_FEED_BYTES));
-    if (next.mode !== mode)
-      throw new Error("The data file has an unexpected mode.");
+    const next = await response.json();
     const [historical, rosterHistory, archive, olderProduction, coaching, defensive] = mode === "live"
       ? await Promise.all([
-          loadOptionalArtifact("./contributions.json", contributions, MAX_CONTRIBUTION_BYTES, validateContributions),
-          loadOptionalArtifact("./player-history.json", playerHistory, MAX_PLAYER_HISTORY_BYTES, validatePlayerHistory),
-          loadOptionalArtifact("./injury-history.json", injuryHistory, MAX_INJURY_HISTORY_BYTES, validateInjuryHistory),
-          loadOptionalArtifact("./contributions-2024.json", productionHistory, MAX_CONTRIBUTION_BYTES,
-            (data) => validateContributions(data, Date.now(), 2024)),
-          loadOptionalArtifact("./coordinators.json", coordinators, MAX_COORDINATOR_BYTES, validateCoordinators),
-          loadOptionalArtifact("./defense-stats.json", defenseStats, MAX_DEFENSE_STATS_BYTES, validateDefenseStats),
+          loadOptionalArtifact("./contributions.json", contributions),
+          loadOptionalArtifact("./player-history.json", playerHistory),
+          loadOptionalArtifact("./injury-history.json", injuryHistory),
+          loadOptionalArtifact("./contributions-2024.json", productionHistory),
+          loadOptionalArtifact("./coordinators.json", coordinators),
+          loadOptionalArtifact("./defense-stats.json", defenseStats),
         ])
       : Array.from({ length: 6 }, () => ({ data: null, failed: false }));
     return {
@@ -1555,17 +1534,7 @@ async function loadTeamAssets() {
       signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) return;
-    const data = JSON.parse(await readResponseText(response, 64 * 1024));
-    for (const [team, asset] of Object.entries(data)) {
-      if (
-        /^[A-Z]{2,3}$/.test(team) &&
-        asset &&
-        ["svg", "png"].some(
-          (extension) => asset.url === "team-logos/" + team + "." + extension,
-        )
-      )
-        teamAssets[team] = asset;
-    }
+    Object.assign(teamAssets, await response.json());
     if (feed && !isPopoverOpen()) renderCards();
   } catch {
     /* Team abbreviations remain usable without images. */

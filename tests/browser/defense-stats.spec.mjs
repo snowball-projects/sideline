@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 import { fieldFixture, selectedIds } from "./field-fixture.mjs";
 import { defenseFixture, leaderId, STATS_NOW } from "../fixtures/defense-stats.mjs";
-import { validateFeed } from "../../web/feed.mjs";
+import { validateFeed } from "../../scripts/validate-feed.mjs";
 
 async function setup(page, count = 2, missing = false) {
   const errors = [], external = [], { data, feed: window } = defenseFixture();

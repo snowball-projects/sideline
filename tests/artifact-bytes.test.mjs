@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateContributions, MAX_CONTRIBUTION_BYTES } from "../web/contribution.mjs";
-import { validateDefenseStats, MAX_DEFENSE_STATS_BYTES } from "../web/defense-stats.mjs";
-import { validatePlayerHistory, MAX_PLAYER_HISTORY_BYTES } from "../web/player-history.mjs";
-import { validateInjuryHistory, MAX_INJURY_HISTORY_BYTES } from "../web/injury-history.mjs";
+import { validateContributions, MAX_CONTRIBUTION_BYTES } from "../scripts/validate-contribution.mjs";
+import { validateDefenseStats, MAX_DEFENSE_STATS_BYTES } from "../scripts/validate-defense-stats.mjs";
+import { validatePlayerHistory, MAX_PLAYER_HISTORY_BYTES } from "../scripts/validate-player-history.mjs";
+import { validateInjuryHistory, MAX_INJURY_HISTORY_BYTES } from "../scripts/validate-injury-history.mjs";
 
 // Each envelope passes the shape/version gates. Oversized multibyte content
 // must hit the byte guard before deeper source or row validation.

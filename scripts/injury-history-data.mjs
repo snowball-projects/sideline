@@ -2,13 +2,14 @@ import { readFile, writeFile, rename, rm } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { parseCsv } from "./source-adapter.mjs";
 import { fetchSource } from "./refresh-data.mjs";
-import { parseFeed } from "../web/feed.mjs";
+import { parseFeed } from "./validate-feed.mjs";
 import { DEFENSIVE_POSITIONS } from "../web/model.mjs";
-import { INJURY_HISTORY_SOURCE, INJURY_FIELDS, validateInjuryHistory, validArchiveWeek } from "../web/injury-history.mjs";
+import { INJURY_HISTORY_SOURCE, INJURY_FIELDS } from "../web/injury-history.mjs";
+import { validateInjuryHistory, validArchiveWeek } from "./validate-injury-history.mjs";
 
 export const INJURY_HISTORY_POLICY = Object.freeze({
   verified: true, checked_on: "2026-10-08",
-  reason: "nflverse-data releases the 2025 injury archive under CC BY 4.0. sideline selects current defenders by exact GSIS ID and preserves reported season/week/team, body-part text and practice/game statuses. These are stored weekly observations, not daily practice dates, distinct injury counts or proof of health in omitted weeks. See docs/DATA_SOURCES.md.",
+  reason: "nflverse-data releases the 2025 injury archive under CC BY 4.0. sideline selects current defenders by exact GSIS ID and preserves reported season/week/team, body-part text and practice/game statuses. These are stored weekly observations, not daily practice dates, distinct injury counts or proof of health in omitted weeks.",
 });
 const OUTPUT = new URL("../web/injury-history.json", import.meta.url);
 const clean = (value) => String(value ?? "").trim();

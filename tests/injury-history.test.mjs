@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { normalizeInjuryHistory, collectInjuryHistory, refreshInjuryHistory } from "../scripts/injury-history-data.mjs";
-import { archivedInjuryRecords, validateInjuryHistory, INJURY_HISTORY_SOURCE } from "../web/injury-history.mjs";
+import { archivedInjuryRecords, INJURY_HISTORY_SOURCE } from "../web/injury-history.mjs";
+import { validateInjuryHistory } from "../scripts/validate-injury-history.mjs";
 import { ARCHIVE_NOW, archiveCsv, archivePlayers, archiveSource, archiveFixture } from "./fixtures/injury-history.mjs";
 
 test("2025 archive exact-ID joins preserve reported teams, source weeks/body parts/statuses and postseason phase", () => {

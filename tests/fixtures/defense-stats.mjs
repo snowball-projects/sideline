@@ -1,5 +1,6 @@
-import { TEAMS } from "../../web/feed.mjs";
-import { defenseStatSources, DEFENSE_STATS_TERMS, validateDefenseStats } from "../../web/defense-stats.mjs";
+import { TEAMS } from "../../scripts/validate-feed.mjs";
+import { DEFENSE_STATS_TERMS } from "../../web/defense-stats.mjs";
+import { defenseStatSources, validateDefenseStats } from "../../scripts/validate-defense-stats.mjs";
 export const STATS_NOW = "2026-09-13T12:00:00.000Z";
 export const leaderId = "gsis:00-0099000";
 export function defenseFixture() {

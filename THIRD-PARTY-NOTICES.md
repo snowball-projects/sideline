@@ -1,7 +1,7 @@
 sideline
 Copyright 2026 snowball
 
-Published calibration results were derived from nflverse data licensed under
+Published data are derived from nflverse data licensed under
 Creative Commons Attribution 4.0 International:
 https://github.com/nflverse/nflverse-data
 https://creativecommons.org/licenses/by/4.0/
@@ -26,27 +26,26 @@ weekly opponents and reports, and adds qualified positional context. Every
 available matching injury entry is retained. No endorsement by nflverse or the
 NFL is implied. Data are provided without warranties under the source license;
 underlying report timestamps and independent completeness are not established.
-See docs/DATA_SOURCES.md for the source review and provenance limits.
 
 The dashboard also includes twelve individually reviewed team logos from
 Wikimedia Commons, identified as public domain on their source file pages.
 Team trademarks remain with their owners; their use identifies the teams and
 does not imply endorsement. These marks are not original snowball software.
 web/team-assets.json records individual source URLs, license statements,
-revisions, checksums and sanitization. See docs/MEDIA.md for details and limits.
+revisions, checksums and sanitization.
 
 Twenty additional team-logo PNG thumbnails retain their owners' copyrights and
 trademarks. They are used solely for small editorial team identification in
 roster, matchup and injury reporting; no open-source image license, NFL license
 or endorsement is claimed. Wikipedia source-file rationales are not licenses for
-sideline. Exact sources, notices, dimensions and hashes are in web/team-assets.json;
-docs/MEDIA.md records the limited use and its boundaries. Do not apply the MIT
+sideline. Exact sources, notices, dimensions and hashes are in web/team-assets.json.
+Do not apply the MIT
 software license or nflverse CC BY data grant to these images.
 
 Depth-chart observations are also derived from the separately reviewed
 nflverse-data release under CC BY 4.0. sideline retains the latest observation per
 team and joins by player identity and team; first string does not confirm game
-participation. See docs/DATA_SOURCES.md.
+participation.
 
 Historical defensive event counts are derived from separately labelled nflverse-calculated 2024 and 2025
 regular-season player statistics under the publisher's CC BY 4.0 data grant:
@@ -57,7 +56,7 @@ GSIS identity, and preserves historical team subtotals and source provenance.
 Seasons remain separate; LA is normalized to LAR for the same historical franchise.
 These are not defensive-quality, participation or fantasy-advantage scores.
 No independently verified NFL agreement or endorsement is claimed. No warranties
-are provided under the source license. See docs/CONTRIBUTION_REVIEW.md.
+are provided under the source license.
 
 Explicit rookie seasons and observed 2025/2026 roster team/week records are
 derived from the reviewed nflverse-data player-reference and weekly-roster
@@ -66,7 +65,7 @@ current defenders by GSIS identity, filters departed roster statuses, and
 aggregates source week observations without asserting tenure or games played.
 Player-reference photos, third-party ratings and draft-reference fields are
 excluded. Source and collection timestamps remain attached to the optional
-artifact. See docs/DATA_SOURCES.md for fixed asset URLs and review limits.
+artifact.
 
 The optional 2025 injury-history archive also derives from nflverse-data
 under the publisher CC BY 4.0 license:
@@ -78,12 +77,11 @@ and collection timestamps are preserved without claiming daily practice dates,
 distinct injury counts, current availability or a complete career history.
 The source warranty disclaimer and lack of endorsement above apply.
 
-
 The optional defensive coaching artifact contains independently recorded factual
 names, titles, season ranges and checked dates for all 32 teams: 31 formal
 coordinators and one separately titled head coach/defensive playcaller. Selected
 prior-job/predecessor facts retain exact primary-source links in
-`web/coordinators.json` and docs/COACHING_REVIEW.md. It reproduces no biography
+`web/coordinators.json`. It reproduces no biography
 prose or coach images, and does not claim that nflverse’s CC BY grant covers team
 pages. Team content remains subject to its own terms; no endorsement, content
 reuse licence or systematic collection permission is claimed. This is a bounded
@@ -99,4 +97,4 @@ sideline selects regular-season game records, normalizes teams/GSIS identities,
 calculates net yards and combined tackles, and derives pre-week totals and
 competition ranks. The data are supplied as-is without warranties; attribution
 does not imply nflverse, NFL, ESPN or team endorsement. Upstream data and media
-retain their own terms. See docs/DEFENSE_STATS_REVIEW.md for the source review.
+retain their own terms.

@@ -1,6 +1,6 @@
 import { normalizeSources } from "../../scripts/source-adapter.mjs";
 import { sourceDefinitions } from "../../scripts/refresh-data.mjs";
-import { validateFeed } from "../../web/feed.mjs";
+import { validateFeed } from "../../scripts/validate-feed.mjs";
 
 // Entirely synthetic, source-shaped input. This module only runs in the test
 // process: current.json is intercepted in memory, never written or published.

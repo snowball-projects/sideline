@@ -1,6 +1,6 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.9.13";
+import { TEAMS, POSITIONS, safeUrl } from "./feed.mjs?v=0.9.14";
 
-export { TEAMS, POSITIONS, validateFeed, safeUrl };
+export { TEAMS, POSITIONS, safeUrl };
 export const MAX_SELECTIONS = 6;
 export const DEFENSIVE_POSITIONS = new Set([
   "DE",

@@ -215,9 +215,8 @@ export async function collectFeed({
     mode: PUBLICATION_POLICY.verified ? "live" : "example",
   });
   if (!inspect) {
-    // Imported lazily so source inspection remains possible while schema work
-    // evolves. Publication always passes the browser's actual feed validator.
-    const { validateFeed } = await import("../web/feed.mjs");
+    // Validate the generated feed before publication.
+    const { validateFeed } = await import("./validate-feed.mjs");
     validateFeed(feed, Date.parse(generatedAt));
   }
   return {

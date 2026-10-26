@@ -1,11 +1,11 @@
-import { validateDefenseStats } from "../web/defense-stats.mjs";
-import { validateContributions } from "../web/contribution.mjs";
-import { validateCoordinators, MAX_COORDINATOR_BYTES } from "../web/coordinator.mjs";
-import { validateInjuryHistory } from "../web/injury-history.mjs";
-import { validatePlayerHistory } from "../web/player-history.mjs";
+import { validateDefenseStats } from "./validate-defense-stats.mjs";
+import { validateContributions } from "./validate-contribution.mjs";
+import { validateCoordinators, MAX_COORDINATOR_BYTES } from "./validate-coordinator.mjs";
+import { validateInjuryHistory } from "./validate-injury-history.mjs";
+import { validatePlayerHistory } from "./validate-player-history.mjs";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { parseFeed, TEAMS, safeUrl } from "../web/feed.mjs";
+import { parseFeed, TEAMS, safeUrl } from "./validate-feed.mjs";
 import { sourceDefinitions, PUBLICATION_POLICY } from "./refresh-data.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -30,7 +30,6 @@ const files = [
   "feed.mjs",
   "popover.mjs",
   "refresh.mjs",
-  "response.mjs",
   "contribution.mjs",
   "coordinator.mjs",
   "team-assets.json",

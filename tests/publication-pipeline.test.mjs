@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { validateFeed } from "../web/feed.mjs";
+import { validateFeed } from "../scripts/validate-feed.mjs";
 import {
   normalizeContributions,
   refreshContributions,

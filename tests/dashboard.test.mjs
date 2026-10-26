@@ -1,12 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import {
-  validateFeed,
-  parseFeed,
-  safeUrl,
-  MAX_FEED_BYTES,
-} from "../web/feed.mjs";
+import { validateFeed, parseFeed, safeUrl, MAX_FEED_BYTES } from "../scripts/validate-feed.mjs";
 import {
   searchPlayers,
   currentWeek,

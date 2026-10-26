@@ -3,19 +3,14 @@ import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { parseCsv } from "./source-adapter.mjs";
-import {
-  CONTRIBUTION_SEASON,
-  contributionSource,
-  CONTRIBUTION_TERMS,
-  CONTRIBUTION_COUNTS,
-  validateContributions,
-} from "../web/contribution.mjs";
+import { CONTRIBUTION_SEASON, CONTRIBUTION_TERMS, CONTRIBUTION_COUNTS } from "../web/contribution.mjs";
+import { contributionSource, validateContributions } from "./validate-contribution.mjs";
 
 export const CONTRIBUTION_POLICY = Object.freeze({
   verified: true,
   checked_on: "2026-10-09",
   reason:
-    "nflverse-data publishes its calculated player statistics under CC BY 4.0. sideline selects the explicitly labelled 2024 or 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical team subtotals. Seasons are never blended. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied. See docs/CONTRIBUTION_REVIEW.md.",
+    "nflverse-data publishes its calculated player statistics under CC BY 4.0. sideline selects the explicitly labelled 2024 or 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical team subtotals. Seasons are never blended. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied.",
 });
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;

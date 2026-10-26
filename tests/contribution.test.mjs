@@ -7,13 +7,8 @@ import {
   collectContributions,
   refreshContributions,
 } from "../scripts/contribution-data.mjs";
-import {
-  CONTRIBUTION_SOURCE,
-  contributionSource,
-  validateContributions,
-  defenderContribution,
-  contributionMetrics,
-} from "../web/contribution.mjs";
+import { CONTRIBUTION_SOURCE, defenderContribution, contributionMetrics } from "../web/contribution.mjs";
+import { contributionSource, validateContributions } from "../scripts/validate-contribution.mjs";
 
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
