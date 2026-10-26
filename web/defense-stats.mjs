@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.13";
+import { TEAMS } from "./feed.mjs?v=0.9.14";
 
 export const DEFENSE_STATS_TERMS = "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md";
 export function competitionRank(records, key, value, lower = false) {

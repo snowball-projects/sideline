@@ -950,7 +950,7 @@ test("failed or older optional history retains validated facts while fresh injur
   next.generated_at = "2026-09-13T12:00:01.000Z";
   next.reports.find((report) => report.team === "CAR").entries.find((entry) => entry.id === "gsis:fixture-limited").practice_status = "Did not practice";
   await page.route("**/current.json", (route) => route.fulfill({ json: next }));
-  await page.route("**/player-history.json", (route) => route.fulfill({ json: { schema_version: 1 } }));
+  await page.route("**/player-history.json", (route) => route.fulfill({ status: 503, body: "History unavailable" }));
   await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
   await expect(marker(page, "Field Fixture Limited").locator(".marker-status")).toHaveText("DNP");
   const retainedRookie = async () => {
@@ -1063,7 +1063,7 @@ test("failed or older archive retains validated history while fresh current inju
   await page.route("**/injury-history.json", route => route.fulfill({ json: older }));
   await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
   await checkRetained();
-  await page.route("**/injury-history.json", route => route.fulfill({ json: { season: 2025 } }));
+  await page.route("**/injury-history.json", route => route.fulfill({ contentType: "application/json", body: "{" }));
   await page.getByRole("button", { name: "Refresh shared data", exact: true }).click();
   await checkRetained();
 });
