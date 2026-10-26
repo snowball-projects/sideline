@@ -1,4 +1,4 @@
-import { cardContext, cardRoster, restoreCards } from "./team-cards.mjs?v=0.9.15";
+import { cardContext, cardRoster, restoreCards, OFFENSIVE_POSITIONS } from "./team-cards.mjs?v=0.9.15";
 import { defenseRankings, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.15";
 import { defenderContribution } from "./contribution.mjs?v=0.9.15";
 import {
@@ -25,7 +25,6 @@ import {
   DEFENSIVE_POSITIONS,
   currentWeek,
   gameStateLabel,
-  reportFreshnessLabel,
   collectionAgeLabel,
   metricPerspective,
   clockFingerprint,
@@ -102,8 +101,8 @@ function renderDefenseMetrics(result) {
     ? defenseRanks.season + " regular season through week " + defenseRanks.throughWeek + ", " + totals.games + " recorded games"
     : defenseRanks.reason));
   for (const [key, short, label] of [["ypg", "YPG", "Yards allowed per game"], ["sacks", "Sacks", "Sacks"], ["takeaways", "Takeaways", "Takeaways"]]) {
-    const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "—";
-    const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "—";
+    const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "?";
+    const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "?";
     const metric = node("div", undefined, "defense-metric");
     metric.setAttribute("role", "group");
     metric.setAttribute("aria-label", label + ": " + (totals ? value + ", " + (totals.ties[key] ? "tied " : "") + "rank " + totals.ranks[key] : "unavailable"));
@@ -486,7 +485,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "The example is a static fictional fixture and does not update."
-          : "nflverse data are filtered, normalized and joined by sideline. Source-file updates and collection times are not report publication times. Defensive roster and injury entries are shown; independent completeness and current availability are not established.",
+          : "nflverse data are filtered, normalized and joined by sideline. Source-file updates and collection times are not report publication times. Team roster, first-depth observations and injury entries are shown; independent completeness and current availability are not established.",
         "small",
       ),
     );
@@ -568,8 +567,10 @@ function reportDetails(result) {
   const panel = node("div"),
     report = result.report;
   panel.append(node("h2", (result.opponent || "Opponent") + " report"));
-  appendCoordinatorSources(panel, result.opponent);
-  if (result.opponent) appendDefenseSources(panel);
+  if (result.unit === "defense") {
+    appendCoordinatorSources(panel, result.team);
+    if (result.team) appendDefenseSources(panel);
+  }
   if (!report) {
     panel.append(node("p", result.message));
     return panel;
@@ -579,10 +580,10 @@ function reportDetails(result) {
     link(source.label, source.url),
     facts([
       [
-        "Defensive injury entries",
+        result.unit === "offense" ? "Offensive injury entries" : "Defensive injury entries",
         String(
           report.entries.filter((entry) =>
-            DEFENSIVE_POSITIONS.has(entry.position),
+            (result.unit === "offense" ? OFFENSIVE_POSITIONS : DEFENSIVE_POSITIONS).has(entry.position),
           ).length,
         ),
       ],
@@ -1071,7 +1072,7 @@ function renderDepth(members, result) {
           "p",
           result.report
             ? "No reported " +
-                (key === "out" ? "Out" : "Questionable or Doubtful") +
+                (key === "out" ? "Out" : "uncertain") +
                 " players."
             : "Injury status unknown",
           "depth-empty",
@@ -1230,7 +1231,7 @@ function interactionActive({ allowFocusedRow = false } = {}) {
       document.activeElement.closest(
         allowFocusedRow
           ? "#week, .search-area"
-          : ".injury-row, .defender-marker, .defender-stack, .position-stack, .depth-reset, .status-tabs, #week, .search-area",
+          : ".injury-row, .defender-marker, .defender-stack, .position-stack, .depth-reset, .status-tabs, .player-focus, .card-switch, #week, .search-area",
       ),
     ),
   });

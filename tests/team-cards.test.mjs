@@ -74,3 +74,41 @@ test('special-teams first depth never becomes an offensive starting role',()=>{
  const member=cardRoster(feed,result,week,now).find(player=>player.id===id);
  assert.equal(member.starter,false);assert.deepEqual(member.depth,[]);
 });
+
+test('exact report coverage cannot borrow a fresh report for another game, week or team',()=>{
+ for(const key of ['game_id','week_key','team']){
+  const feed=fieldFixture(),week=feed.weeks[0].key;
+  feed.reports=feed.reports.map(report=>report.team==='CAR'?{...report,[key]:'different'}:report);
+  const context=cardContext(feed,state,week,now);
+  assert.equal(context.state,'missing-report');assert.equal(context.report,undefined);assert.deepEqual(context.entries,[]);
+  assert(cardRoster(feed,context,week,now).every(member=>member.injury===null));
+ }
+});
+
+test('week rollover never carries earlier Out status, and a bye does not manufacture an opponent',()=>{
+ const feed=fieldFixture(),week=feed.weeks[1];feed.reports=feed.reports.filter(report=>report.week_key!==week.key);
+ const context=cardContext(feed,state,week.key,Date.parse(week.starts_at)+1000);
+ assert.equal(context.state,'missing-report');assert.equal(context.team,'CHI');assert.equal(context.entries.length,0);
+ feed.games=feed.games.filter(game=>game.week_key!==week.key);week.byes=['BUF'];
+ assert.equal(cardContext(feed,state,week.key,now).state,'bye');
+ assert.equal(cardContext(feed,state,week.key,now).team,undefined);
+ assert.equal(cardContext(feed,{...state,side:'own'},week.key,now).team,'BUF');
+});
+
+test('stale and unknown original report dates remain separate from file updates and collection',()=>{
+ const feed=fieldFixture(),week=feed.weeks[0].key;
+ const report=feed.reports.find(report=>report.team==='CAR');
+ const fresh=cardContext(feed,state,week,now);assert.equal(fresh.vintagePrecision,'unknown');assert.equal(fresh.stale,false);
+ report.reported_at='2026-09-01T00:00:00Z';const old=cardContext(feed,state,week,now);
+ assert(old.stale);assert.equal(old.retrievalStale,false);assert.equal(old.vintagePrecision,'time');
+ report.reported_at=null;report.source_updated_at='2026-09-01T00:00:00Z';
+ assert(cardContext(feed,state,week,now).sourceFileStale);
+});
+
+test('optional focus uses observed chart roles as well as coarse roster positions',()=>{
+ const feed=fieldFixture(),week=feed.weeks[0].key,id='gsis:fixture-out';
+ feed.players.find(player=>player.id===id).position='LB';
+ for(const entry of feed.depth.entries.filter(entry=>entry.player_id===id))entry.position='LDE';
+ const result=cardContext(feed,state,week,now),member=cardRoster(feed,result,week,now).find(player=>player.id===id);
+ assert(member.relevant);assert.match(member.relevance,/Pass rush/);assert(member.starter);
+});

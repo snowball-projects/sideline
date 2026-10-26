@@ -52,8 +52,8 @@ function positionContext(position) {
   return { family, role, side };
 }
 
-// opponentRoster already checks freshness, team and player identity before
-// supplying depth. Never reconstruct expired chart context from the roster.
+// cardRoster supplies observed depth for the exact team and selected week.
+// Roster position alone never establishes a first-depth identity.
 function chartPosition(member) {
   const assignments = (member.depth || []).filter(
     (entry) =>

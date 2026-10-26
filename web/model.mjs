@@ -19,23 +19,6 @@ export const DEFENSIVE_POSITIONS = new Set([
   "SS",
   "DB",
 ]);
-const DEFENSIVE_DEPTH_POSITIONS = new Set([
-  ...DEFENSIVE_POSITIONS,
-  "LDE",
-  "RDE",
-  "LDT",
-  "RDT",
-  "WLB",
-  "SLB",
-  "LOLB",
-  "ROLB",
-  "LILB",
-  "RILB",
-  "LCB",
-  "RCB",
-  "NB",
-  "NCB",
-]);
 export const REPORT_MAX_AGE_HOURS = 48;
 export const FEED_MAX_AGE_HOURS = 24;
 export const COLLECTION_DELAY_HOURS = 2;
@@ -108,15 +91,13 @@ const normalizeSearch = (value) =>
 
 // Current roster membership includes injured and reserve players. Game
 // participation never determines eligibility for search.
-export function searchPlayers(feed, query, selectedIds = []) {
+export function searchPlayers(feed, query) {
   const words = normalizeSearch(String(query ?? ""))
     .split(/\s+/)
     .filter(Boolean);
   if (!words.length) return [];
-  const selected = new Set(selectedIds);
   return feed.players
     .filter((player) => {
-      if (selected.has(player.id)) return false;
       const haystack = normalizeSearch(
         `${player.name} ${player.team} ${player.position}`,
       );
@@ -128,14 +109,6 @@ export function searchPlayers(feed, query, selectedIds = []) {
         a.team.localeCompare(b.team) ||
         a.id.localeCompare(b.id),
     );
-}
-
-export function restoreSelections(value, feed) {
-  if (!Array.isArray(value)) return [];
-  const current = new Set(feed.players.map((player) => player.id));
-  return [
-    ...new Set(value.filter((id) => typeof id === "string" && current.has(id))),
-  ].slice(0, MAX_SELECTIONS);
 }
 
 export function currentWeek(feed, now = Date.now()) {
@@ -184,140 +157,6 @@ export function vintage(
   };
 }
 
-function availability(entry, freshness) {
-  if (entry.status_source !== "official")
-    return "Official availability unknown";
-  if (entry.game_status === "Out")
-    return freshness.vintagePrecision === "unknown" ||
-      freshness.stale ||
-      freshness.retrievalStale ||
-      freshness.sourceFileStale
-      ? "Reported Out; current availability needs confirmation"
-      : "Official report designates Out for this game";
-  if (["Doubtful", "Questionable"].includes(entry.game_status))
-    return "Availability uncertain";
-  if (entry.game_status === "Not listed")
-    return "No game designation in this source; availability is not guaranteed";
-  return "Official game availability unknown";
-}
-
-export function comparePlayer(feed, player, weekKey, now = Date.now()) {
-  // A saved selection follows a transfer using its stable ID and current team.
-  const currentPlayer = feed.players.find(
-    (candidate) => candidate.id === player.id,
-  );
-  const rosterFreshness = vintage(feed.roster, now, FEED_MAX_AGE_HOURS),
-    scheduleFreshness = vintage(feed.schedule, now, FEED_MAX_AGE_HOURS);
-  const base = {
-    entries: [],
-    started: false,
-    stale: false,
-    retrievalStale: false,
-    ageHours: null,
-    ageDays: null,
-    vintagePrecision: "unknown",
-    sourceFileAgeHours: null,
-    sourceFileStale: false,
-    sourceFileUnknown: true,
-    rosterStale:
-      rosterFreshness.stale ||
-      rosterFreshness.retrievalStale ||
-      rosterFreshness.sourceFileStale,
-    scheduleStale:
-      scheduleFreshness.stale ||
-      scheduleFreshness.retrievalStale ||
-      scheduleFreshness.sourceFileStale,
-  };
-  if (!currentPlayer)
-    return {
-      ...base,
-      state: "not-rostered",
-      message: "This player is no longer in the current roster feed.",
-    };
-  const week = feed.weeks.find((candidate) => candidate.key === weekKey);
-  if (!week)
-    return {
-      ...base,
-      state: "no-week",
-      message: "No current NFL week is established by this feed.",
-    };
-  const game = feed.games.find(
-    (candidate) =>
-      candidate.week_key === weekKey &&
-      [candidate.home, candidate.away].includes(currentPlayer.team),
-  );
-  if (!game) {
-    if (week.byes.includes(currentPlayer.team))
-      return {
-        ...base,
-        state: "bye",
-        message: "Confirmed bye in this schedule.",
-      };
-    return {
-      ...base,
-      state: "missing-schedule",
-      message: "No matchup is available. This does not establish a bye.",
-    };
-  }
-  const opponent = game.home === currentPlayer.team ? game.away : game.home;
-  const started = ["in-progress", "final"].includes(game.status);
-  const kickoffPassed =
-    game.kickoff !== null && Date.parse(game.kickoff) <= now;
-  const result = {
-    ...base,
-    player: currentPlayer,
-    game,
-    opponent,
-    started,
-    kickoffPassed,
-  };
-  if (game.status === "canceled")
-    return {
-      ...result,
-      state: "canceled",
-      message: "This game is canceled in the schedule.",
-    };
-  const report = feed.reports.find(
-    (candidate) =>
-      candidate.game_id === game.id &&
-      candidate.week_key === weekKey &&
-      candidate.team === opponent,
-  );
-  if (!report)
-    return {
-      ...result,
-      state: "missing-report",
-      message:
-        missingReportLabel(week, game, now) + ". Coverage and individual availability are unknown.",
-      reportNotice: missingReportLabel(week, game, now),
-    };
-  const freshness = vintage(report, now);
-  const entries = report.entries.map((entry) => ({
-    ...entry,
-    relevance: RELEVANCE[currentPlayer.position]?.[entry.position] ?? null,
-    availability: availability(entry, freshness),
-  }));
-  return {
-    ...result,
-    ...freshness,
-    state: "report",
-    report,
-    entries,
-    reportedAfterKickoff:
-      report.reported_at !== null &&
-      game.kickoff !== null &&
-      Date.parse(report.reported_at) >= Date.parse(game.kickoff),
-    message:
-      "All available opponent entries are shown. Role context is a possibility, not an individual assignment or demonstrated fantasy effect.",
-  };
-}
-
-// Exact matchup coverage is established by comparePlayer above, never a file's
-// recency or another team's/week's rows. No release-day promise is inferred.
-export function missingReportLabel(week) {
-  return (week?.label || "Matchup") + " injury report missing from this feed";
-}
-
 export const STATUS_LEGEND = [
   ["starter", "1st", "First string on the current depth chart"],
   ["active", "ACT", "Active roster; starting role unconfirmed"],
@@ -333,40 +172,6 @@ export const STATUS_LEGEND = [
 const STATUS = Object.fromEntries(
   STATUS_LEGEND.map(([key, short, label]) => [key, { key, short, label }]),
 );
-
-export function groupDefenders(members) {
-  const groups = new Map();
-  for (const member of members) {
-    let key, label, order;
-    if (member.roster_status === "practice-squad") {
-      [key, label, order] = ["squad", "Practice squad", 102];
-    } else if (
-      ["inactive", "suspended", "exempt"].includes(member.roster_status)
-    ) {
-      [key, label, order] = ["unavailable", "Inactive / suspended", 101];
-    } else if (
-      ["reserve", "injured-reserve", "pup", "nfi"].includes(
-        member.roster_status,
-      )
-    ) {
-      [key, label, order] = ["reserve", "Reserves", 100];
-    } else if (member.roster_status !== "active") {
-      [key, label, order] = ["unknown", "Roster unknown", 103];
-    } else if (member.depth.length) {
-      const rank = Math.min(...member.depth.map((entry) => entry.rank));
-      key = "depth-" + rank;
-      label =
-        ["First string", "Second string", "Third string"][rank - 1] ||
-        "Depth " + rank;
-      order = rank;
-    } else {
-      [key, label, order] = ["unranked", "Depth unknown", 99];
-    }
-    if (!groups.has(key)) groups.set(key, { key, label, order, members: [] });
-    groups.get(key).members.push(member);
-  }
-  return [...groups.values()].sort((a, b) => a.order - b.order);
-}
 
 const INJURY_PILLS = {
   ankle: "Ankle",
@@ -433,156 +238,6 @@ export function memberPills(member) {
     key: key || "reported",
   };
 }
-const POSITION_ORDER = [
-  "QB",
-  "RB",
-  "FB",
-  "WR",
-  "TE",
-  "T",
-  "OT",
-  "G",
-  "OG",
-  "C",
-  "OL",
-  "DE",
-  "EDGE",
-  "DT",
-  "NT",
-  "DI",
-  "DL",
-  "LB",
-  "MLB",
-  "ILB",
-  "OLB",
-  "CB",
-  "S",
-  "FS",
-  "SS",
-  "DB",
-  "K",
-  "P",
-  "LS",
-  "ATH",
-  "UNK",
-];
-
-export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
-  if (!comparison.opponent) return [];
-  const injuries = new Map(
-    comparison.entries.map((entry) => [entry.id, entry]),
-  );
-  const members = new Map(
-    feed.players
-      .filter((player) => player.team === comparison.opponent)
-      .map((player) => [player.id, player]),
-  );
-  const rosterIds = new Set(members.keys());
-  // Keep report-only identities instead of dropping rows or guessing name joins.
-  for (const entry of injuries.values())
-    if (!members.has(entry.id))
-      members.set(entry.id, { ...entry, roster_status: "unknown" });
-  const depthFreshness = feed.depth
-    ? vintage(feed.depth, now, FEED_MAX_AGE_HOURS)
-    : null;
-  const useDepth =
-    feed.depth &&
-    currentWeek(feed, now)?.key === weekKey &&
-    !comparison.rosterStale &&
-    !depthFreshness.retrievalStale &&
-    !depthFreshness.sourceFileStale &&
-    !depthFreshness.sourceFileUnknown;
-  return [...members.values()]
-    .filter((member) => DEFENSIVE_POSITIONS.has(member.position))
-    .map((member) => {
-      const injury = injuries.get(member.id) || null;
-      // A same-name report row with another ID is diagnostic evidence only.
-      // Preserve both identities; never repair the join by guessing a name.
-      const reportIdentityConflict = !injury && [...injuries.values()].some(
-        (entry) => entry.id !== member.id && entry.name === member.name,
-      );
-      const depth = useDepth
-        ? feed.depth.entries.filter(
-            (entry) =>
-              entry.player_id === member.id &&
-              entry.team === comparison.opponent &&
-              DEFENSIVE_DEPTH_POSITIONS.has(entry.position) &&
-              now >= Date.parse(entry.observed_at) &&
-              now - Date.parse(entry.observed_at) <= 86400000,
-          )
-        : [];
-      const starter =
-        member.roster_status === "active" &&
-        depth.some((entry) => entry.rank === 1);
-      let key;
-      if (
-        injury &&
-        ["Out", "Doubtful", "Questionable"].includes(injury.game_status)
-      )
-        key = injury.game_status.toLowerCase();
-      else if (
-        [
-          "reserve",
-          "injured-reserve",
-          "pup",
-          "nfi",
-          "suspended",
-          "inactive",
-          "exempt",
-        ].includes(member.roster_status)
-      )
-        key = "reserve";
-      else if (member.roster_status === "practice-squad") key = "squad";
-      else if (injury?.practice_status === "Did not practice") key = "dnp";
-      else if (injury?.practice_status === "Limited") key = "limited";
-      else if (
-        !comparison.report ||
-        comparison.rosterStale ||
-        comparison.stale ||
-        comparison.sourceFileStale ||
-        comparison.retrievalStale ||
-        (!injury && comparison.report.coverage !== "complete") ||
-        reportIdentityConflict ||
-        injury?.game_status === "Unknown"
-      )
-        key = "unknown";
-      else if (starter) key = "starter";
-      else key = member.roster_status === "active" ? "active" : "unknown";
-      const status = { ...STATUS[key] };
-      const reserve = {
-        "injured-reserve": "IR",
-        pup: "PUP",
-        nfi: "NFI",
-        suspended: "SUSP",
-        inactive: "INA",
-        exempt: "EX",
-      };
-      if (reserve[member.roster_status] && key === "reserve")
-        status.short = reserve[member.roster_status];
-      return {
-        ...member,
-        injury,
-        depth,
-        starter,
-        status,
-        reportOnly: !rosterIds.has(member.id),
-        reportIdentityConflict,
-      };
-    })
-    .sort(
-      (a, b) =>
-        POSITION_ORDER.indexOf(a.position) -
-          POSITION_ORDER.indexOf(b.position) ||
-        Number(b.starter) - Number(a.starter) ||
-        Number(a.roster_status !== "active") -
-          Number(b.roster_status !== "active") ||
-        Math.min(...a.depth.map((entry) => entry.rank), 99) -
-          Math.min(...b.depth.map((entry) => entry.rank), 99) ||
-        a.name.localeCompare(b.name) ||
-        a.id.localeCompare(b.id),
-    );
-}
-
 export function gameStateLabel(game, now = Date.now()) {
   if (game.status === "final") return "Finished";
   if (game.status === "in-progress") return "In progress";
@@ -592,29 +247,6 @@ export function gameStateLabel(game, now = Date.now()) {
   return Date.parse(game.kickoff) <= now
     ? "Start passed · status unconfirmed"
     : "Upcoming";
-}
-
-export function reportFreshnessLabel(report, now = Date.now()) {
-  if (!report) return "Injury report unavailable";
-  const age = report.source_updated_at
-    ? Math.max(
-        0,
-        Math.floor((now - Date.parse(report.source_updated_at)) / 3600000),
-      )
-    : null;
-  const file =
-    age === null
-      ? "File age unknown"
-      : "File " + (age < 1 ? "<1h" : age + "h") + " old";
-  return (
-    file +
-    " · " +
-    (report.reported_at
-      ? "report time supplied"
-      : report.reported_date
-        ? "report date only"
-        : "report time unknown")
-  );
 }
 
 export function collectionFreshness(generatedAt, now = Date.now()) {
@@ -646,20 +278,6 @@ export function metricPerspective(selectedPosition, defenderPosition) {
   return "MIXED";
 }
 
-export function resolveDefender(
-  feed,
-  playerId,
-  memberId,
-  weekKey,
-  now = Date.now(),
-) {
-  const player = feed.players.find((value) => value.id === playerId);
-  if (!player) return null;
-  const result = comparePlayer(feed, player, weekKey, now);
-  const members = opponentRoster(feed, result, weekKey, now);
-  const member = members.find((value) => value.id === memberId);
-  return member ? { result, member, members } : null;
-}
 export function clockFingerprint(feed, weekKey, now = Date.now()) {
   const age = (item) => {
     const v = vintage(item, now);
@@ -673,11 +291,6 @@ export function clockFingerprint(feed, weekKey, now = Date.now()) {
     age(feed.schedule),
     feed.reports.map(age),
     feed.depth ? age(feed.depth) : null,
-    feed.depth?.entries.map(
-      (entry) =>
-        now >= Date.parse(entry.observed_at) &&
-        now - Date.parse(entry.observed_at) <= 86400000,
-    ),
     feed.games.map((game) => gameStateLabel(game, now)),
   ]);
 }

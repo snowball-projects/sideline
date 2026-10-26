@@ -139,12 +139,12 @@ test('last settled week keeps defense ranks and stars through settlement; absent
  await page.locator('#week').selectOption('2026-REG-3');
  await expect(tile(page).locator('.stats-window')).toContainText('Last settled');
  await expect(tile(page).locator('.stats-window')).toContainText('through week 1');
- await expect(tile(page).locator('.metric-rank').first()).not.toHaveText('—');
+ await expect(tile(page).locator('.metric-rank').first()).toHaveText(/^T?#\d+$/);
  // The rank window is preserved even when selected-week roster/depth coverage is absent.
  await page.locator('#week').selectOption('2026-REG-2');
  await expect(tile(page).locator('.leader-star')).not.toHaveCount(0);
  await page.route('**/defense-stats.json',route=>route.fulfill({status:503}));await page.locator('#refresh').click();
- await expect(tile(page).locator('.metric-rank').first()).not.toHaveText('—');
+ await expect(tile(page).locator('.metric-rank').first()).toHaveText(/^T?#\d+$/);
  expect(errors).toEqual([]);
 });
 

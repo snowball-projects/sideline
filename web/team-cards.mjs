@@ -1,5 +1,5 @@
 import { unitHasChartPosition } from "./field.mjs?v=0.9.15";
-import { TEAMS, DEFENSIVE_POSITIONS, vintage, defenderRole } from "./model.mjs?v=0.9.15";
+import { TEAMS, MAX_SELECTIONS, DEFENSIVE_POSITIONS, vintage, defenderRole } from "./model.mjs?v=0.9.15";
 export const OFFENSIVE_POSITIONS = new Set(["QB", "RB", "FB", "WR", "TE", "C", "G", "T", "OL", "OT", "OG"]);
 const rosterPosition = (position) => ({ LDE:"DE", RDE:"DE", LDT:"DT", RDT:"DT", WLB:"LB", SLB:"LB", MLB:"LB", LOLB:"OLB", ROLB:"OLB", LILB:"ILB", RILB:"ILB", LCB:"CB", RCB:"CB", NB:"CB", NCB:"CB", LT:"T", RT:"T", LG:"G", RG:"G" })[position] || position;
 
@@ -9,7 +9,7 @@ export function restoreCards(value) {
   return value.filter((card) => {
     if (!card || !TEAMS.includes(card.team) || teams.has(card.team)) return false;
     teams.add(card.team); return true;
-  }).slice(0, 6).map(({team, side, unit, focusId}) => ({team,
+  }).slice(0, MAX_SELECTIONS).map(({team, side, unit, focusId}) => ({team,
     side: side === "opponent" ? "opponent" : "own",
     unit: unit === "offense" ? "offense" : "defense",
     focusId: typeof focusId === "string" ? focusId : "" }));
@@ -60,11 +60,13 @@ export function cardRoster(feed, result, weekKey, now = Date.now()) {
   return [...members.values()].filter((member) => positions.has(member.position)).map((member) => {
     const injury = result.entries.find((entry) => entry.id === member.id) || null;
     const chart = depth.filter((entry) => entry.player_id === member.id);
-    const role = result.focus && result.focus.team !== result.team && result.unit === "defense" ? defenderRole(result.focus.position, member.position) : "Role effect unmeasured";
+    const roles = result.focus && result.focus.team !== result.team && result.unit === "defense"
+      ? [...new Set([member.position, ...chart.map((entry) => rosterPosition(entry.position))]
+        .map((position) => defenderRole(result.focus.position, position)).filter((role) => role !== "Role effect unmeasured"))] : [];
+    const role = roles.join(" / ") || "Role effect unmeasured";
     const starter = chart.some((entry) => entry.rank === 1);
     return { ...member, injury, depth:chart, starter, historical,
-      status:{ key:injury?.game_status === "Out" ? "out" : starter ? "starter" : "unknown" },
-      reportOnly:!rosterIds.has(member.id), reportIdentityConflict:false,
+      reportOnly:!rosterIds.has(member.id),
       focused:member.id === result.focus?.id, relevant:role !== "Role effect unmeasured", relevance:role };
   }).sort((a,b) => Number(b.starter)-Number(a.starter) || a.position.localeCompare(b.position) || a.name.localeCompare(b.name));
 }
