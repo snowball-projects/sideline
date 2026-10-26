@@ -58,4 +58,3 @@ export function validatePlayerHistory(data, now = Date.now()) {
   }
   return data;
 }
-

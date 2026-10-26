@@ -197,4 +197,3 @@ export function validateContributions(data, now = Date.now(), season = CONTRIBUT
   );
   return data;
 }
-
