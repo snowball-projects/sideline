@@ -1,6 +1,6 @@
 # sideline
 
-A snowball project. NFL player search, weekly opponents and injury reports.
+A snowball project. NFL team cards, weekly opponents, starters and injury reports.
 [Open sideline](https://snowball-projects.github.io/sideline/).
 
 Node 24:

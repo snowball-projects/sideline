@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#173e39" />
     <meta
       name="description"
-      content="NFL players, opponent defenses and injury reports. A snowball project."
+      content="NFL teams, weekly starters and injury reports. A snowball project."
     />
     <meta name="referrer" content="no-referrer" />
     <meta
@@ -18,12 +18,12 @@
       href="https://snowball-projects.github.io/sideline/"
     />
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=0.9.14" />
+    <link rel="stylesheet" href="styles.css?v=0.9.15" />
     <title>sideline · snowball</title>
   </head>
   <body>
-    <a class="skip-link" href="#reports">Skip to player tiles</a>
-    <header class="toolbar" aria-label="Player search">
+    <a class="skip-link" href="#reports">Skip to team cards</a>
+    <header class="toolbar" aria-label="Team and player search">
       <div class="toolbar-brand">
         <a class="brand" href="./" aria-label="sideline"
           ><img src="icon.svg" width="34" height="34" alt="" /><span
@@ -33,11 +33,11 @@
       </div>
       <div class="toolbar-controls">
         <div class="search-area">
-          <label class="sr-only" for="search">Find an NFL player</label>
+          <label class="sr-only" for="search">NFL teams or players</label>
           <input
             id="search"
             type="search"
-            placeholder="Search players"
+            placeholder="Search teams or players"
             autocomplete="off"
             spellcheck="false"
             aria-describedby="search-help"
@@ -45,7 +45,7 @@
             disabled
           />
           <p id="search-help" class="sr-only">
-            Choose up to six players. Injured rostered players are included.
+            Current roster, including injured players.
           </p>
           <div id="search-results" class="search-results" hidden></div>
           <p id="search-status" class="sr-only" role="status"></p>
@@ -82,14 +82,14 @@
       id="reports"
       class="board"
       tabindex="-1"
-      aria-label="Selected players and opponent defenses"
+      aria-label="Team cards"
     >
-      <h1 class="sr-only">Opponent defenses and injuries</h1>
+      <h1 class="sr-only">Teams, starters and injuries</h1>
       <p id="message" class="sr-only" role="status"></p>
-      <p id="selection-count" class="sr-only">0 of 6 players selected</p>
+      <p id="selection-count" class="sr-only">0 of 6 teams open</p>
       <div id="cards" class="tiles"></div>
       <noscript><p>JavaScript is required to display the reports.</p></noscript>
     </main>
-    <script type="module" src="app.mjs?v=0.9.14"></script>
+    <script type="module" src="app.mjs?v=0.9.15"></script>
   </body>
 </html>

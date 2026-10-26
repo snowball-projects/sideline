@@ -1,9 +1,10 @@
-import { defenseRankings, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.14";
-import { defenderContribution } from "./contribution.mjs?v=0.9.14";
+import { cardContext, cardRoster, restoreCards, OFFENSIVE_POSITIONS } from "./team-cards.mjs?v=0.9.15";
+import { defenseRankings, rankLabel, DEFENSE_STATS_TERMS } from "./defense-stats.mjs?v=0.9.15";
+import { defenderContribution } from "./contribution.mjs?v=0.9.15";
 import {
   createRefreshController,
   canApplyRefresh,
-} from "./refresh.mjs?v=0.9.14";
+} from "./refresh.mjs?v=0.9.15";
 import {
   fieldLayout,
   compactMarkerName,
@@ -12,41 +13,38 @@ import {
   fieldStatus,
   depthSummary,
   STATUS_FILTERS,
-} from "./field.mjs?v=0.9.14";
-import { coordinatorFor, coordinatorLabel, coachingSeasons } from "./coordinator.mjs?v=0.9.14";
-import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.14";
-import { archivedInjuryRecords } from "./injury-history.mjs?v=0.9.14";
-import { playerHistoryFor, observedWeeksLabel, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.14";
+} from "./field.mjs?v=0.9.15";
+import { coordinatorFor, coordinatorLabel, coachingSeasons } from "./coordinator.mjs?v=0.9.15";
+import { bioFacts, playerInjuryRecords } from "./player-details.mjs?v=0.9.15";
+import { archivedInjuryRecords } from "./injury-history.mjs?v=0.9.15";
+import { playerHistoryFor, observedWeeksLabel, PLAYER_HISTORY_TERMS } from "./player-history.mjs?v=0.9.15";
 import {
   searchPlayers,
-  opponentRoster,
-  resolveDefender,
-  groupDefenders,
   memberPills,
   STATUS_LEGEND,
   DEFENSIVE_POSITIONS,
   currentWeek,
-  comparePlayer,
   gameStateLabel,
-  reportFreshnessLabel,
   collectionAgeLabel,
   metricPerspective,
   clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.9.14";
+  TEAMS,
+} from "./model.mjs?v=0.9.15";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
   focusPopoverTrigger,
-} from "./popover.mjs?v=0.9.14";
+} from "./popover.mjs?v=0.9.15";
 
 const $ = (id) => document.getElementById(id);
 const depthFilters = new Map();
 const depthHighlights = new Map();
-const STORAGE_KEY = "sideline.selected.v2";
+const STORAGE_KEY = "sideline.teams.v1";
+const cardViews = new Map();
 let feed = null,
   selected = [],
   weekKey = "",
@@ -103,8 +101,8 @@ function renderDefenseMetrics(result) {
     ? defenseRanks.season + " regular season through week " + defenseRanks.throughWeek + ", " + totals.games + " recorded games"
     : defenseRanks.reason));
   for (const [key, short, label] of [["ypg", "YPG", "Yards allowed per game"], ["sacks", "Sacks", "Sacks"], ["takeaways", "Takeaways", "Takeaways"]]) {
-    const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "—";
-    const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "—";
+    const value = totals ? (key === "ypg" ? totals[key].toFixed(1) : String(totals[key])) : "?";
+    const rank = totals ? rankLabel(totals.ranks[key], totals.ties[key]) : "?";
     const metric = node("div", undefined, "defense-metric");
     metric.setAttribute("role", "group");
     metric.setAttribute("aria-label", label + ": " + (totals ? value + ", " + (totals.ties[key] ? "tied " : "") + "rank " + totals.ranks[key] : "unavailable"));
@@ -183,27 +181,26 @@ function announce(text) {
 }
 function readSelection() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const value = JSON.parse(stored);
-    return Array.isArray(value)
-      ? [
-          ...new Set(
-            value.filter((id) => typeof id === "string" && id.length <= 120),
-          ),
-        ].slice(0, MAX_SELECTIONS)
-      : [];
-  } catch {
-    return [];
-  }
+    const cards = restoreCards(JSON.parse(localStorage.getItem(STORAGE_KEY)));
+    for (const card of cards) cardViews.set(card.team, card);
+    return cards.map((card) => card.team);
+  } catch { return []; }
 }
 function saveSelection() {
   if (activeMode !== "live") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
-  } catch {
-    /* Optional storage. */
-  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(selected.map((team) => cardViews.get(team)))); }
+  catch { /* Optional browser storage. */ }
 }
+function teamName(team) { return teamAssets[team]?.name || team; }
+function asOf(meta, label = "") {
+  const observed = meta?.observed_at || meta?.reported_at || meta?.reported_date;
+  const updated = observed || meta?.source_updated_at || meta?.checked_at;
+  return (label ? label + " · " : "") + "as of " + (updated ? day.format(new Date(updated)) : "unknown") +
+    (!observed && !meta?.checked_at ? " · file update" : "") +
+    (meta?.retrieved_at ? " · collected " + day.format(new Date(meta.retrieved_at)) : "") +
+    (label === "Injuries" && meta && !meta.reported_at && !meta.reported_date ? " · report date unknown" : "");
+}
+function stamp(meta, label) { return node("p", asOf(meta, label), "as-of"); }
 function sourceFor(id) {
   return feed.sources.find((source) => source.id === id);
 }
@@ -241,83 +238,46 @@ function closeSearch() {
   $("search-results").hidden = true;
 }
 function renderSearch() {
-  const list = $("search-results"),
-    focusId = document.activeElement.dataset.playerId;
+  const list = $("search-results"), query = $("search").value.trim().toLowerCase();
   list.replaceChildren();
-  if (!feed || !$("search").value.trim()) {
-    closeSearch();
-    return;
-  }
-  const matches = searchPlayers(feed, $("search").value, selected).slice(0, 30);
+  if (!feed || !query) { closeSearch(); return; }
   list.hidden = false;
-  if (!matches.length) list.append(node("p", "No matches", "search-empty"));
-  if (selected.length >= MAX_SELECTIONS)
-    list.append(
-      node("p", "Six selected. Remove one to add another.", "search-empty"),
-    );
-  for (const player of matches) {
-    const choice = button("", () => addPlayer(player), "search-choice");
-    choice.dataset.playerId = player.id;
-    choice.disabled = selected.length >= MAX_SELECTIONS;
-    choice.setAttribute(
-      "aria-label",
-      "Add " + player.name + ", " + player.team + ", " + player.position,
-    );
-    const info = node("span", undefined, "player-info");
-    info.append(
-      node("strong", player.name),
-      node(
-        "small",
-        player.team +
-          " · " +
-          player.position +
-          (player.roster_status !== "active"
-            ? " · " + player.roster_status.replaceAll("-", " ")
-            : ""),
-      ),
-    );
-    choice.append(info, node("span", "+", "add"));
+  const teams = TEAMS.filter((team) => (team + " " + teamName(team)).toLowerCase().includes(query))
+    .sort((a, b) => Number(b === query.toUpperCase()) - Number(a === query.toUpperCase()));
+  for (const team of teams) {
+    const choice = button("", () => addTeam(team), "search-choice");
+    choice.disabled = selected.length >= MAX_SELECTIONS && !selected.includes(team);
+    choice.setAttribute("aria-label", "Open " + teamName(team) + " team");
+    choice.append(teamMark(team), node("strong", teamName(team)), node("small", team));
     list.append(choice);
-    if (focusId === player.id) choice.focus({ preventScroll: true });
   }
-  $("search-status").textContent =
-    matches.length +
-    " matching players. Use Tab or Down Arrow to reach results.";
-}
-function addPlayer(player) {
-  player = feed.players.find((candidate) => candidate.id === player.id);
-  if (!player) {
-    renderSearch();
-    announce("That player is no longer in the current roster source.");
-    return;
+  const matches = searchPlayers(feed, query).slice(0, 24);
+  for (const player of matches) {
+    const choice = button("", () => addTeam(player.team, player.id), "search-choice");
+    choice.disabled = selected.length >= MAX_SELECTIONS && !selected.includes(player.team);
+    choice.setAttribute("aria-label", "Focus " + player.name + ", " + player.team + ", " + player.position);
+    const info = node("span", undefined, "player-info");
+    info.append(node("strong", player.name), node("small", player.team + " · " + player.position));
+    choice.append(info, node("span", "+", "add")); list.append(choice);
   }
-  if (selected.includes(player.id) || selected.length >= MAX_SELECTIONS) return;
-  selected.push(player.id);
-  saveSelection();
-  $("search").value = "";
-  closeSearch();
-  dismissPopover();
-  renderCards();
-  announce(player.name + " added.");
-  if (mobile()) {
-    const card = [...$("cards").children].find(
-      (el) => el.dataset.playerId === player.id,
-    );
-    card.scrollIntoView({ block: "nearest", inline: "nearest" });
-    card.querySelector(".remove").focus({ preventScroll: true });
-  } else $("search").focus();
+  if (!teams.length && !matches.length) list.append(node("p", "No matches", "search-empty"));
+  $("search-status").textContent = teams.length + " teams and " + matches.length + " players";
 }
-function removePlayer(id, name) {
-  const index = selected.indexOf(id);
-  selected = selected.filter((value) => value !== id);
-  saveSelection();
-  dismissPopover();
-  renderCards();
-  announce(name + " removed.");
-  const removes = [...document.querySelectorAll(".remove")];
-  const target = removes[Math.min(index, removes.length - 1)];
-  if (target) target.focus();
-  else openSearch();
+function addTeam(team, focusId = "") {
+  if (!selected.includes(team)) {
+    if (selected.length >= MAX_SELECTIONS) return;
+    selected.push(team);
+    cardViews.set(team, { team, side:focusId ? "opponent" : "own", unit:"defense", focusId });
+  } else if (focusId) cardViews.get(team).focusId = focusId;
+  saveSelection(); $("search").value = ""; closeSearch(); dismissPopover(); renderCards();
+  announce(teamName(team) + " open");
+  if (mobile()) document.querySelector('[data-team="' + team + '"]')?.scrollIntoView({block:"nearest"});
+  else $("search").focus();
+}
+function removePlayer(team) {
+  selected = selected.filter((value) => value !== team); cardViews.delete(team);
+  saveSelection(); dismissPopover(); renderCards(); announce(teamName(team) + " removed");
+  document.querySelector(".remove")?.focus();
 }
 function renderWeeks() {
   const select = $("week"),
@@ -392,7 +352,7 @@ function appendCoachingEvidence(panel, record) {
     if (index) source.append(document.createTextNode(" · "));
     source.append(link("Source " + (index + 1), url));
   }
-  panel.append(source, facts([["Checked", time(record.checked_at)]]));
+  panel.append(source, stamp({checked_at:record.checked_at}, "Coaching"), facts([["Checked", time(record.checked_at)]]));
 }
 function appendCoordinatorSources(panel, team) {
   const records = teamCoordinators(team);
@@ -478,7 +438,7 @@ function sourceDetails() {
       node(
         "p",
         activeMode === "example"
-          ? "Synthetic data for trying the interface. These are not NFL reports."
+          ? "Fictional source data. These are not NFL reports."
           : "nflverse injury, roster and depth-chart files normally update daily. sideline checks every four hours; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
       ),
     );
@@ -525,18 +485,11 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "The example is a static fictional fixture and does not update."
-          : "nflverse data are filtered, normalized and joined by sideline. Source-file updates and collection times are not report publication times. Defensive roster and injury entries are shown; independent completeness and current availability are not established.",
+          : "nflverse data are filtered, normalized and joined by sideline. Source-file updates and collection times are not report publication times. Team roster, first-depth observations and injury entries are shown; independent completeness and current availability are not established.",
         "small",
       ),
     );
   }
-  panel.append(
-    node(
-      "p",
-      "Hover or focus a field marker to preview a defender; click or tap to keep details open. Roster rows open with click, tap, Enter or Space. Game and practice designations are separate. The field uses source-backed first-depth context when available. Position stacks retain the whole roster, including reported Out defenders. Missing depth never creates an individual assignment or a starting lineup.",
-      "small",
-    ),
-  );
   panel.append(
     node(
       "p",
@@ -600,11 +553,6 @@ function sourceDetails() {
     );
   panel.append(
     legend,
-    node(
-      "p",
-      "Position belongs beside the name. Secondary row text shows source depth and roster context. First depth is not a confirmed game starter. All retains every defender, including backups, reserves and report-only entries. Out includes only reported Out game designations; Uncertain includes Questionable, Doubtful, LP and DNP, excluding Out. Missing status remains in All. Inactive roster context does not imply Out. Highlighted pills show reported injury or limited availability; Multi means multiple injury descriptions. No pill does not confirm health. Roster and depth context describe the current team, not historical game rosters.",
-      "small",
-    ),
   );
   if (!feed)
     panel.append(
@@ -619,8 +567,10 @@ function reportDetails(result) {
   const panel = node("div"),
     report = result.report;
   panel.append(node("h2", (result.opponent || "Opponent") + " report"));
-  appendCoordinatorSources(panel, result.opponent);
-  if (result.opponent) appendDefenseSources(panel);
+  if (result.unit === "defense") {
+    appendCoordinatorSources(panel, result.team);
+    if (result.team) appendDefenseSources(panel);
+  }
   if (!report) {
     panel.append(node("p", result.message));
     return panel;
@@ -630,10 +580,10 @@ function reportDetails(result) {
     link(source.label, source.url),
     facts([
       [
-        "Defensive injury entries",
+        result.unit === "offense" ? "Offensive injury entries" : "Defensive injury entries",
         String(
           report.entries.filter((entry) =>
-            DEFENSIVE_POSITIONS.has(entry.position),
+            (result.unit === "offense" ? OFFENSIVE_POSITIONS : DEFENSIVE_POSITIONS).has(entry.position),
           ).length,
         ),
       ],
@@ -682,7 +632,7 @@ function reportDetails(result) {
   panel.append(
     node(
       "p",
-      "Defensive roster members and defensive injury entries are shown. Offense and special teams are excluded. Missing or partial coverage does not establish a healthy defense.",
+      "Roster and injury coverage may be partial. First depth does not confirm game participation. Missing reports never establish health.",
       "small",
     ),
   );
@@ -701,10 +651,11 @@ function appendProductionCounts(block, history) {
 }
 function memberDetails(member, result) {
   const panel = node("div");
-  panel.append(node("h2", member.name + " · " + member.position));
+  panel.append(node("h2", member.name + " · " + member.position), stamp(result.report, "Injuries"));
+  if (member.relevant) panel.append(node("p", member.relevance + " · broad position context; individual assignment unknown", "small"));
   const leagueLeader = defenseRanks.leaders.get(member.id);
   if (leagueLeader) {
-    panel.append(node("h3", defenseRanks.season + " REG · through week " + defenseRanks.throughWeek));
+    panel.append(node("h3", defenseRanks.season + " REG · through week " + defenseRanks.throughWeek), stamp({source_updated_at:defenseStats?.sources[0]?.source_updated_at, retrieved_at:defenseStats?.generated_at}, "Statistics"));
     panel.append(facts(leagueLeader.categories.map((metric) => [leaderNames[metric.key], rankLabel(metric.rank, metric.tied) + " · " + metric.value])));
     panel.append(facts([["Recorded teams", leagueLeader.teams.join(" / ")]]));
   }
@@ -730,13 +681,13 @@ function memberDetails(member, result) {
       result.report?.coverage).label]]));
   }
   if (member.reportOnly)
-    panel.append(facts([["Identity", "Report only · absent from current team roster"]]));
+    panel.append(facts([["Identity", member.historical ? "Report identity · historical roster membership unknown" : "Report only · absent from current team roster"]]));
 
   const history = defenderContribution(contributions, member.id,
     metricPerspective(result.player.position, member.position));
   if (history) {
     const historyBlock = node("div", undefined, "source-block");
-    historyBlock.append(node("h3", "2025 REG · recorded production"));
+    historyBlock.append(node("h3", "2025 REG · recorded production"), stamp(contributions.source, "Production"));
     appendProductionCounts(historyBlock, history);
     panel.append(historyBlock);
   }
@@ -760,17 +711,18 @@ function memberDetails(member, result) {
       if (!details.open || rendered) return;
       rendered = true;
       if (bio.length) {
-        details.append(node("h3", "Bio"), facts(bio));
+        details.append(node("h3", "Bio"), stamp(feed.roster, "Bio"), facts(bio));
       }
       if (olderProduction) {
         const production = node("details", undefined, "production-history");
-        production.append(node("summary", "2024 REG · recorded production"));
+        production.append(node("summary", "2024 REG · recorded production"), stamp(productionHistory.source, "Production"));
         appendProductionCounts(production, olderProduction);
         details.append(production);
       }
       if (rosterHistory?.rosters.length) {
         const rosters = node("details", undefined, "roster-history");
         rosters.append(node("summary", "Observed rosters · 2025–2026"));
+        for (const source of playerHistory.sources) rosters.append(stamp(source, source.label));
         for (const record of rosterHistory.rosters)
           rosters.append(node("div", record.season + " " + record.game_type + " · " +
             record.team + " · " + observedWeeksLabel(record.weeks), "roster-observation"));
@@ -792,7 +744,7 @@ function memberDetails(member, result) {
           contents.replaceChildren();
           for (const { week, report, entry } of chosen) {
             const record = node("div", undefined, "injury-record");
-            record.append(node("h3", week.label + " · " + report.team), facts([
+            record.append(node("h3", week.label + " · " + report.team), stamp(report.source_updated_at ? report : week.season === 2025 ? injuryHistory?.source : report, "Injuries"), facts([
               ["Injury", entry.injury],
               ["Practice · undated", entry.practice_status === "Not listed" ? "Not reported" : entry.practice_status],
               ["Game", entry.game_status === "Not listed" ? "No designation" : entry.game_status],
@@ -881,18 +833,10 @@ function attachMemberDetails(control, member, result, preview = false) {
     () => {
       // Re-resolve on every activation so a deferred clock/feed update cannot
       // revive stale source depth or a previous opponent's defender.
-      const current = resolveDefender(
-        feed,
-        result.player.id,
-        member.id,
-        weekKey,
-      );
-      return current
-        ? memberDetails(current.member, current.result)
-        : node(
-            "p",
-            "Defender details are no longer available for this opponent.",
-          );
+      const card = cardViews.get(result.cardTeam);
+      const current = card && cardContext(feed, card, weekKey);
+      const memberNow = current && cardRoster(feed, current, weekKey).find((entry) => entry.id === member.id);
+      return memberNow ? memberDetails(memberNow, current) : node("p", "Player details unavailable");
     },
     { label: member.name + " roster and injury details", preview },
   );
@@ -905,6 +849,8 @@ function renderMember(member, result) {
     row = button("", null, "injury-row state-" + key);
   row.dataset.focusKey = "injury:" + member.id;
   row.dataset.defenderId = member.id;
+  row.classList.toggle("player-focused", member.focused);
+  row.classList.toggle("player-relevant", member.relevant);
   row.setAttribute(
     "aria-label",
     member.name +
@@ -921,7 +867,7 @@ function renderMember(member, result) {
           ". Practice: " +
           member.injury.practice_status
         : status.label) +
-      ". Activate for details.",
+      ".",
   );
   const identity = node("span", undefined, "member-identity");
   identity.append(
@@ -929,6 +875,7 @@ function renderMember(member, result) {
     node("span", member.position, "member-position"),
   );
   row.append(identity);
+  if (member.starter) identity.append(node("span", "1st", "starter-label"));
   if (pills.injury || status.text) {
     const badges = node("span", undefined, "member-pills");
     badges.setAttribute("aria-hidden", "true");
@@ -951,6 +898,7 @@ function renderMember(member, result) {
       "member-depth",
     ),
   );
+  if (member.relevant) row.append(node("span", member.relevance, "member-relevance"));
   appendLeaderStar(row, member);
   attachMemberDetails(row, member, result);
   item.append(row);
@@ -960,15 +908,17 @@ function renderField(members, result, showDepth) {
   const field = node("section", undefined, "defense-field");
   field.setAttribute(
     "aria-label",
-    result.opponent + " defensive position schematic, source depth only",
+    result.team + " " + result.unit + " position schematic, source depth only",
   );
   const caption = node(
     "p",
-    "Depth chart · not a confirmed lineup",
+    "First depth · game lineup unconfirmed",
     "field-caption",
   );
+  const observed = members.flatMap((member) => member.depth).map((entry) => entry.observed_at).sort().at(-1);
+  const dated = stamp({observed_at:observed}, "Depth chart");
   const pitch = node("div", undefined, "defender-grid");
-  for (const family of fieldLayout(members)) {
+  for (const family of fieldLayout(members, result.unit)) {
     const band = node(
       "div",
       undefined,
@@ -987,6 +937,8 @@ function renderField(members, result, showDepth) {
         const marker = button("", null, "defender-marker state-" + status.key);
         marker.dataset.focusKey = "defender:" + member.id;
         marker.dataset.defenderId = member.id;
+        marker.classList.toggle("player-focused", member.focused);
+        marker.classList.toggle("player-relevant", member.relevant);
         marker.setAttribute(
           "aria-label",
           member.name +
@@ -1021,7 +973,7 @@ function renderField(members, result, showDepth) {
           group.position +
             " position group, " +
             group.members.length +
-            " defenders. No individual first-depth assignment shown. Highlight all in roster.",
+            " players. First-depth identities unavailable.",
         );
         stack.append(
           node("span", String(group.members.length), "defender-x"),
@@ -1047,7 +999,7 @@ function renderField(members, result, showDepth) {
           group.members.length +
           " defenders" +
           (group.outCount ? ", " + group.outCount + " reported Out" : "") +
-          ". Highlight all in roster.",
+          ".",
       );
       cluster.append(markers, count);
       band.append(cluster);
@@ -1056,40 +1008,33 @@ function renderField(members, result, showDepth) {
   }
   const line = node("div", "Line of scrimmage", "line-of-scrimmage");
   line.setAttribute("aria-hidden", "true");
-  const offense = node("div", result.player.position, "offense-marker");
-  offense.setAttribute(
-    "aria-label",
-    result.player.name +
-      ", selected " +
-      result.player.position +
-      ". Schematic reference only.",
-  );
-  field.append(caption, pitch, line, offense);
+  const reference = node("p", result.focus ? "Focus · " + result.focus.name + " · " + result.focus.position : "No player focus", "field-reference" + (result.focus ? " player-focused" : ""));
+  field.append(caption, dated, pitch, line, reference);
   return field;
 }
 function renderDepth(members, result) {
   const panel = node("section", undefined, "depth-panel");
   panel.setAttribute(
     "aria-label",
-    result.opponent + " defenders and availability",
+    result.team + " starters and injuries",
   );
   const header = node("div", undefined, "depth-heading");
   header.append(
-    node("h3", "Defenders"),
+    node("h3", "Starters & injuries"),
     node("span", members.length + " in source", "defender-count"),
   );
   const tabs = node("div", undefined, "status-tabs");
   tabs.setAttribute("role", "group");
-  tabs.setAttribute("aria-label", "Defender availability filters");
+  tabs.setAttribute("aria-label", "Availability filters");
   const entries = node("div", undefined, "injury-list depth-rows");
   entries.id = "depth-" + result.player.id;
-  const filterKey = result.player.id + ":" + result.opponent + ":" + weekKey;
+  const filterKey = result.cardTeam + ":" + result.team + ":" + result.unit + ":" + weekKey;
   const highlightNotice = node("div", undefined, "depth-highlight");
   const applyFilter = (key) => {
     depthFilters.set(filterKey, key);
     for (const tab of tabs.children)
       tab.setAttribute("aria-pressed", String(tab.dataset.filter === key));
-    const ordered = groupDefenders(members).flatMap((group) => group.members);
+    const ordered = members;
     const shown = filterDefenders(ordered, key);
     entries.replaceChildren();
     const list = node("ul", undefined, "roster-rows");
@@ -1127,9 +1072,9 @@ function renderDepth(members, result) {
           "p",
           result.report
             ? "No reported " +
-                (key === "out" ? "Out" : "Questionable or Doubtful") +
-                " defenders. Other statuses remain in All."
-            : "Report unavailable. Availability is unknown; every defender remains in All.",
+                (key === "out" ? "Out" : "uncertain") +
+                " players."
+            : "Injury status unknown",
           "depth-empty",
         ),
       );
@@ -1147,7 +1092,7 @@ function renderDepth(members, result) {
     tabs.append(tab);
   }
   applyFilter(depthFilters.get(filterKey) || "all");
-  panel.append(header, tabs);
+  panel.append(header, stamp(result.report, "Injuries"), stamp(result.historical ? null : feed.roster, "Roster"), tabs);
   panel.append(highlightNotice, entries);
   const showDepth = (position) => {
     dismissPopover();
@@ -1172,185 +1117,94 @@ function emptySlot() {
   slot.append(add);
   return slot;
 }
+function cardSwitch(card, key, choices, label) {
+  const group = node("div", undefined, "card-switch"); group.setAttribute("role", "group");
+  group.setAttribute("aria-label", label + " for " + card.team);
+  for (const [value, text] of choices) {
+    const control = button(text, () => { card[key] = value; saveSelection(); renderCards(); });
+    control.setAttribute("aria-pressed", String(card[key] === value)); control.dataset.focusKey = key + ":" + value;
+    group.append(control);
+  }
+  return group;
+}
 function renderCards() {
   defenseRanks = defenseRankings(defenseStats, feed, weekKey);
   if (feed) renderedClockKey = clockFingerprint(feed, weekKey);
   pendingClock = false;
-  const cards = $("cards"),
-    focused = document.activeElement;
-  const focusPlayer = focused.closest("article")?.dataset.playerId,
-    focusKey = focused.dataset.focusKey;
-  const scrolls = new Map(
-    [...cards.querySelectorAll("article")].map((card) => [
-      card.dataset.playerId,
-      card.querySelector(".injury-list")?.scrollTop || 0,
-    ]),
-  );
-  dismissPopover();
-  cards.replaceChildren();
-  cards.style.setProperty("--tile-count", Math.max(2, selected.length));
-  // Align source-depth schematics across comparison tiles. Missing first-depth
-  // evidence remains complete in labelled position stacks.
-  const fieldCounts = { DB: 0, LB: 0, DL: 0 };
-  for (const id of selected) {
-    const player = feed.players.find((candidate) => candidate.id === id);
-    if (!player) continue;
-    const result = comparePlayer(feed, player, weekKey);
-    for (const family of fieldLayout(opponentRoster(feed, result, weekKey))) {
-      const count = family.groups.reduce(
-        (total, group) => total + Math.max(1, group.representatives.length),
-        0,
-      );
-      fieldCounts[family.position] = Math.max(
-        fieldCounts[family.position] || 0,
-        count,
-      );
-    }
-  }
-  for (const [position, count] of Object.entries(fieldCounts))
-    for (const columns of [3, 4, 5, 7])
-      cards.style.setProperty(
-        "--" + position.toLowerCase() + "-rows-" + columns,
-        Math.max(1, Math.ceil(count / columns)),
-      );
-  $("selection-count").textContent =
-    selected.length + " of " + MAX_SELECTIONS + " players selected";
-  for (const id of selected) {
-    const player = feed.players.find((value) => value.id === id);
-    const name = player?.name || "Player unavailable",
-      card = node("article", undefined, "player-card");
-    card.dataset.playerId = id;
-    card.setAttribute("aria-label", name);
-    const remove = button("×", () => removePlayer(id, name), "remove");
-    remove.dataset.focusKey = "remove";
-    remove.setAttribute("aria-label", "Remove " + name);
+  const cards = $("cards"), focused = document.activeElement;
+  const focusTeam = focused.closest("article")?.dataset.team, focusKey = focused.dataset.focusKey;
+  const scrolls = new Map([...cards.querySelectorAll("article")].map((card) => [card.dataset.team, card.querySelector(".injury-list")?.scrollTop || 0]));
+  dismissPopover(); cards.replaceChildren(); cards.style.setProperty("--tile-count", Math.max(2, selected.length));
+  $("selection-count").textContent = selected.length + " of " + MAX_SELECTIONS + " teams open";
+  if (!feed) { cards.append(emptySlot(), emptySlot()); return; }
+  for (const team of selected) {
+    const state = cardViews.get(team), result = cardContext(feed, state, weekKey), members = cardRoster(feed, result, weekKey);
+    result.historical = Boolean(result.week && Date.parse(result.week.ends_at) <= Date.now());
+    const card = node("article", undefined, "player-card team-card"); card.dataset.team = team; card.dataset.playerId = team;
+    card.setAttribute("aria-label", team + " team card");
+    const remove = button("×", () => removePlayer(team), "remove"); remove.dataset.focusKey = "remove"; remove.setAttribute("aria-label", "Remove " + team);
     const header = node("div", undefined, "player-header");
-    if (player) header.append(teamMark(player.team));
-    header.append(node("h2", name, "player-name"));
-    if (player)
-      header.append(
-        node("p", player.team + " · " + player.position, "player-team"),
-      );
-    card.append(remove, header);
-    if (player) {
-      const result = comparePlayer(feed, player, weekKey),
-        matchup = node("div", undefined, "matchup");
-      if (result.opponent) {
-        matchup.append(node("span", "vs", "versus"), teamMark(result.opponent));
-        const opponent = node("div", undefined, "opponent-info");
-        opponent.append(
-          node("p", result.opponent + " defense", "opponent-name"),
-        );
-        const coaching = teamCoordinators(result.opponent);
-        if (coaching) opponent.append(node("p", coordinatorLabel(coaching), "coordinator-context"));
-        if (result.game) {
-          let kickoff = result.game.kickoff
-            ? kickoffTime.format(new Date(result.game.kickoff))
-            : "Time TBD";
-          kickoff =
-            gameStateLabel(result.game) +
-            (result.game.kickoff ? " · " + kickoff : "");
-          opponent.append(node("p", kickoff, "kickoff"));
-        }
-        if (result.report)
-          opponent.append(
-            node("p", reportFreshnessLabel(result.report), "report-freshness"),
-          );
-        matchup.append(opponent);
-      } else
-        matchup.append(
-          node(
-            "p",
-            result.state === "bye" ? "Bye" : "Matchup unavailable",
-            "opponent-name",
-          ),
-        );
-      const info = button(
-        "i",
-        null,
-        "report-info" +
-          (result.stale ||
-          result.sourceFileStale ||
-          result.retrievalStale ||
-          result.rosterStale ||
-          result.scheduleStale
-            ? " stale"
-            : ""),
-      );
-      info.dataset.focusKey = "report-info";
-      info.setAttribute(
-        "aria-label",
-        (result.opponent || "Opponent") + " report source and freshness",
-      );
-      attachPopover(info, () => reportDetails(result), {
-        label: "Report source and freshness",
-      });
-      if (result.opponent) {
-        matchup.classList.add("has-defense-metrics");
-        matchup.append(renderDefenseMetrics(result));
-      }
-      matchup.append(info);
-      card.append(matchup);
-      const reportNoticeSlot = node("div", undefined, "report-notice-slot");
-      if (result.state === "missing-report")
-        reportNoticeSlot.append(node("p", result.reportNotice, "report-notice"));
-      card.append(reportNoticeSlot);
-      const members = opponentRoster(feed, result, weekKey);
-      if (members.length) {
-        const fieldWrap = node("div", undefined, "field-wrap");
-        const depth = renderDepth(members, result);
-        fieldWrap.append(
-          renderField(members, result, depth.showDepth),
-          depth.panel,
-        );
-        card.append(fieldWrap);
-        const footer = result.report && node(
-          "p",
-          "Source injury file updated: " + time(result.report.source_updated_at),
-          "card-source",
-        );
-        if (footer) card.append(footer);
-      } else
-        card.append(
-          node(
-            "p",
-            result.state === "bye"
-              ? "Bye week"
-              : result.report
-                ? "No defensive entries · coverage unknown"
-                : result.state === "canceled"
-                  ? "Canceled"
-                  : result.state === "no-week"
-                    ? "Week unavailable"
-                    : result.state === "missing-report"
-                      ? "Defensive roster unavailable"
-                      : "Report unavailable",
-            "report-empty",
-          ),
-        );
-    } else
-      card.append(
-        node("p", "Absent from the current roster source.", "report-empty"),
-      );
-    cards.append(card);
-    const list = card.querySelector(".injury-list");
-    if (list) list.scrollTop = scrolls.get(id) || 0;
-    if (focusPlayer === id && focusKey) {
-      const target = [...card.querySelectorAll("[data-focus-key]")].find(
-        (el) => el.dataset.focusKey === focusKey,
-      );
-      focusPopoverTrigger(target || remove);
+    if (result.team) header.append(teamMark(result.team));
+    header.append(node("h2", result.team ? teamName(result.team) : "Opponent unknown", "player-name"),
+      node("p", team + " · " + (state.side === "own" ? "Own team" : "Opponent") + " · " + state.unit, "player-team"));
+    const controls = node("div", undefined, "card-controls");
+    controls.append(cardSwitch(state, "unit", [["offense","Offense"],["defense","Defense"]], "Unit"),
+      cardSwitch(state, "side", [["own","Own team"],["opponent","Opponent"]], "View"));
+    const focusLabel = node("label", "Player focus", "player-focus");
+    const focus = node("select"); focus.setAttribute("aria-label", "Player focus for " + team); focus.dataset.focusKey = "player-focus";
+    const empty = node("option", "No player focus"); empty.value = ""; focus.append(empty);
+    for (const player of feed.players.filter((player) => player.team === team).sort((a,b) => a.name.localeCompare(b.name))) {
+      const option = node("option", player.name + " · " + player.position); option.value = player.id; focus.append(option);
     }
+    focus.value = result.focus?.id || "";
+    focus.addEventListener("change", () => { state.focusId = focus.value; saveSelection(); renderCards(); }); focusLabel.append(focus);
+    card.append(remove, header, controls, focusLabel, stamp(feed.roster, "Focus roster"));
+    const matchup = node("section", undefined, "matchup team-matchup");
+    const schedule = node("div", undefined, "opponent-info");
+    schedule.append(node("p", result.game ? result.game.away + " at " + result.game.home : result.message, "opponent-name"));
+    if (result.game) schedule.append(node("p", gameStateLabel(result.game) + (result.game.kickoff ? " · " + kickoffTime.format(new Date(result.game.kickoff)) : ""), "kickoff"));
+    schedule.append(stamp(feed.schedule, "Schedule"));
+    if (state.unit === "defense") {
+      const coaching = teamCoordinators(result.team);
+      if (coaching) schedule.append(node("p", coordinatorLabel(coaching), "coordinator-context"), stamp({checked_at:coaching[0].checked_at}, "Coaching"));
+    }
+    const info = button("i", null, "report-info"); info.dataset.focusKey = "report-info"; info.setAttribute("aria-label", (result.team || team) + " report source and freshness");
+    attachPopover(info, () => reportDetails(result), {label:"Report source and freshness"});
+    matchup.append(schedule, info); card.append(matchup);
+    const statisticsSlot = node("div", undefined, "statistics-slot");
+    if (state.unit === "defense" && result.team) {
+      const statistics = node("section", undefined, "card-statistics"); statistics.setAttribute("aria-label", "Defense statistics");
+      statistics.append(renderDefenseMetrics(result), node("p", defenseRanks.available ?
+        (defenseRanks.fallback ? "Last settled · " : "") + defenseRanks.season + " · through week " + defenseRanks.throughWeek : defenseRanks.reason, "stats-window"));
+      const updated = defenseStats?.sources.map((source) => source.source_updated_at).filter(Boolean).sort().at(0);
+      statistics.append(stamp({source_updated_at:updated, retrieved_at:defenseStats?.generated_at}, "Statistics")); statisticsSlot.append(statistics);
+    }
+    card.append(statisticsSlot);
+    const notice = node("div", undefined, "report-notice-slot");
+    if (!result.report) {
+      notice.append(node("p", result.state === "bye" ? "Bye week · no game injury report" : "Injury status unknown", "report-notice"));
+      const unknown = button("i", null, "report-info injury-unknown-info"); unknown.setAttribute("aria-label", "Injury report timing");
+      if (result.game && result.state !== "canceled") {
+        attachPopover(unknown, () => node("p", "Injury reports usually arrive Wednesday."), {label:"Injury report timing"}); notice.append(unknown);
+      }
+    }
+    card.append(notice);
+    if (members.length) {
+      const wrap = node("div", undefined, "field-wrap"), depth = renderDepth(members, result);
+      wrap.append(renderField(members, result, depth.showDepth), depth.panel); card.append(wrap);
+    } else card.append(node("p", result.historical ? "Historical roster and starters unknown" : "Roster and starters unavailable", "report-empty"), stamp(null, "Roster"));
+    cards.append(card);
+    const list = card.querySelector(".injury-list"); if (list) list.scrollTop = scrolls.get(team) || 0;
+    if (focusTeam === team && focusKey) [...card.querySelectorAll("[data-focus-key]")].find((element) => element.dataset.focusKey === focusKey)?.focus({preventScroll:true});
   }
   for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
-  alignComparisonFields();
-  renderRefreshState();
+  alignComparisonFields(); renderRefreshState();
 }
 // Different opponents can have different source roles, long names, missing
 // reports and wrapping. Align actual rendered bands rather than assuming a
 // marker count always predicts their height. Mobile tiles keep natural height.
 function alignComparisonFields() {
-  const selectors = [".player-header", ".matchup", ".report-notice-slot",
+  const selectors = [".player-header", ".matchup", ".statistics-slot", ".report-notice-slot", ".defender-grid",
     ".field-caption", ".band-db", ".band-lb", ".band-dl", ".band-unknown"];
   const groups = selectors.map((selector) =>
     [...document.querySelectorAll(".player-card " + selector)]);
@@ -1377,7 +1231,7 @@ function interactionActive({ allowFocusedRow = false } = {}) {
       document.activeElement.closest(
         allowFocusedRow
           ? "#week, .search-area"
-          : ".injury-row, .defender-marker, .defender-stack, .position-stack, .depth-reset, .status-tabs, #week, .search-area",
+          : ".injury-row, .defender-marker, .defender-stack, .position-stack, .depth-reset, .status-tabs, .player-focus, .card-switch, #week, .search-area",
       ),
     ),
   });
@@ -1391,6 +1245,7 @@ function applyFeed(bundle) {
   }
   pendingFeed = null;
   if (initial) {
+    cardViews.clear();
     selected = next.mode === "live" ? readSelection() : [];
     weekKey = "";
     autoWeek = true;
@@ -1412,13 +1267,13 @@ function applyFeed(bundle) {
   defenseStatsError = bundle.defenseStatsError;
   $("search").disabled = false;
   $("search").placeholder =
-    activeMode === "example" ? "Search example players" : "Search players";
+    activeMode === "example" ? "Search fictional teams or players" : "Search teams or players";
   document.querySelector('label[for="search"]').textContent =
-    activeMode === "example" ? "Find a fictional player" : "Find an NFL player";
+    activeMode === "example" ? "Fictional teams or players" : "NFL teams or players";
   $("search-help").textContent =
     activeMode === "example"
-      ? "Fictional players only. Choose up to six."
-      : "Choose up to six. Injured rostered players are included.";
+      ? "Fictional source data."
+      : "Current roster, including injured players.";
   renderWeeks();
   renderCards();
 }
@@ -1431,7 +1286,7 @@ function renderRefreshState() {
           ? "Check failed · previous data kept"
           : "Check failed · data unavailable"
         : pendingFeed || pendingClock
-          ? "Updates ready · finish interaction"
+          ? "Update pending"
           : contributionError || productionHistoryError || playerHistoryError || injuryHistoryError
             ? "Current data checked · history check failed"
             : refreshPhase === "unchanged"
@@ -1536,6 +1391,7 @@ async function loadTeamAssets() {
     if (!response.ok) return;
     Object.assign(teamAssets, await response.json());
     if (feed && !isPopoverOpen()) renderCards();
+    if ($("search").value.trim()) renderSearch();
   } catch {
     /* Team abbreviations remain usable without images. */
   }
@@ -1592,30 +1448,12 @@ function updateClock() {
     renderWeeks();
     if (
       previousWeek !== weekKey ||
-      renderedClockKey !== clockFingerprint(feed, weekKey)
+      renderedClockKey !== clockFingerprint(feed, weekKey) || defenseRankings(defenseStats, feed, weekKey).throughWeek !== defenseRanks.throughWeek
     )
       renderCards();
-  } else if (renderedClockKey !== clockFingerprint(feed, weekKey)) {
+  } else if (renderedClockKey !== clockFingerprint(feed, weekKey) || defenseRankings(defenseStats, feed, weekKey).throughWeek !== defenseRanks.throughWeek) {
     pendingClock = true;
     renderRefreshState();
-  }
-  for (const card of document.querySelectorAll(".player-card")) {
-    const player = feed.players.find(
-      (player) => player.id === card.dataset.playerId,
-    );
-    if (!player) continue;
-    const result = comparePlayer(feed, player, weekKey);
-    const kickoff = card.querySelector(".kickoff");
-    if (kickoff && result.game)
-      kickoff.textContent =
-        gameStateLabel(result.game) +
-        (result.game.kickoff
-          ? " · " + kickoffTime.format(new Date(result.game.kickoff))
-          : "");
-    const freshness = card.querySelector(".report-freshness");
-    if (freshness) freshness.textContent = reportFreshnessLabel(result.report);
-    const notice = card.querySelector(".report-notice");
-    if (notice && result.reportNotice) notice.textContent = result.reportNotice;
   }
 }
 document.addEventListener("visibilitychange", () => {

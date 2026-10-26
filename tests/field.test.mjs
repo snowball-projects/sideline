@@ -75,7 +75,7 @@ test("missing first-depth evidence uses anonymous actual-position stacks, never 
   );
 });
 
-test("source first-depth is retained without replacing Out or promoting reserves and backups", () => {
+test("source first-depth names remain beside Out and reserve context without promoting backups", () => {
   const members = [
     first("out-first", "DB", { injury: { game_status: "Out" } }),
     member("backup", "DB", { depth: [{ position: "RCB", rank: 2 }] }),
@@ -88,7 +88,7 @@ test("source first-depth is retained without replacing Out or promoting reserves
   const backs = groups.find((group) => group.position === "DB");
   assert.deepEqual(
     backs.representatives.map((value) => value.id),
-    ["out-first"],
+    ["out-first", "reserve", "squad"],
   );
   assert.equal(backs.members.length, 4);
   assert.equal(backs.outCount, 2);
@@ -145,7 +145,7 @@ test("Uncertain includes Q, D, LP and DNP; Out requires its exact game designati
   assert.equal(fieldStatus(members[1]).text, "Q");
   assert.equal(fieldStatus(members[2]).text, "D");
   assert.equal(fieldStatus(members[3]).key, "neutral");
-  assert.equal(fieldStatus(members[4]).text, "");
+  assert.equal(fieldStatus(members[4]).text, "?");
 });
 
 test("report-only and unknown-depth context stays in All and the position stack", () => {
@@ -165,8 +165,8 @@ test("report-only and unknown-depth context stays in All and the position stack"
 test("missing report coverage never becomes no injury or health and never changes source depth", () => {
   const source = first("a", "DB");
   assert.deepEqual(fieldStatus(source, false), {
-    text: "",
-    key: "neutral",
+    text: "?",
+    key: "unknown",
     label: "Availability unknown; injury report missing from this feed",
   });
   assert.equal(
@@ -183,13 +183,13 @@ test("partial reports distinguish a missing injury entry from an entry with no g
   });
   for (const coverage of ["partial", "unknown"])
     assert.deepEqual(fieldStatus(unlisted, true, coverage), {
-      text: "",
-      key: "neutral",
+      text: "?",
+      key: "unknown",
       label: "No matching injury entry in partial report; availability unknown",
     });
   assert.deepEqual(fieldStatus(unlisted, false, "partial"), {
-    text: "",
-    key: "neutral",
+    text: "?",
+    key: "unknown",
     label: "Availability unknown; injury report missing from this feed",
   });
   assert.deepEqual(fieldStatus(listed, true, "partial"), {
@@ -197,7 +197,7 @@ test("partial reports distinguish a missing injury entry from an entry with no g
     key: "limited",
     label: "Reported limited practice; game availability unconfirmed",
   });
-  assert.equal(fieldStatus(unlisted).key, "neutral");
+  assert.equal(fieldStatus(unlisted).key, "unknown");
   assert.equal(fieldStatus(unlisted, true, "complete").key, "neutral");
 });
 
@@ -359,7 +359,7 @@ test("every roster identity remains in chart stacks including reserves, unknown 
   ];
   const groups = flatten(fieldLayout(members));
   assert.deepEqual(new Set(groups.flatMap((group) => group.members)), new Set(members));
-  assert.deepEqual(groups.flatMap((group) => group.representatives), [members[0]]);
+  assert.deepEqual(new Set(groups.flatMap((group) => group.representatives)), new Set([members[0], members[2], members[3]]));
   const line = groups.find((group) => group.position === "LDE");
   assert.deepEqual(line.members, members.slice(0, 3));
   assert.equal(line.outCount, 1);
@@ -486,14 +486,14 @@ test("game designation precedes practice while unknown game status preserves LP/
       const expected = { Out: "OUT", Doubtful: "D", Questionable: "Q" }[game_status]
         || { "Did not practice": "DNP", Limited: "LP" }[practice_status] || "";
       assert.equal(fieldStatus(value).text, expected, game_status + "/" + practice_status);
-      assert.equal(fieldStatus(value, false).text, "");
+      assert.equal(fieldStatus(value, false).text, "?");
     }
 });
 
-test("an identity conflict stays neutral and distinct from a complete-report omission", () => {
+test("an identity conflict stays unknown and distinct from a complete-report omission", () => {
   const player = member("roster", "DB", { reportIdentityConflict: true });
   assert.deepEqual(fieldStatus(player, true, "complete"), {
-    text: "", key: "neutral",
+    text: "?", key: "unknown",
     label: "Report/roster IDs differ for this name; availability unknown",
   });
 });

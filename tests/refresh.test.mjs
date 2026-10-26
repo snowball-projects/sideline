@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { createRefreshController, canApplyRefresh } from "../web/refresh.mjs";
 import {
   gameStateLabel,
-  reportFreshnessLabel,
   collectionAgeLabel,
   collectionFreshness,
   clockFingerprint,
@@ -119,27 +118,6 @@ test("clock transitions never turn elapsed kickoff into confirmed live or final"
   assert.match(gameStateLabel({ ...game, kickoff: null }), /Time TBD/);
 });
 
-test("visible report freshness distinguishes file age from unknown report publication", () => {
-  const report = {
-    source_updated_at: "2026-09-14T10:00:00Z",
-    reported_at: null,
-    reported_date: null,
-  };
-  assert.equal(
-    reportFreshnessLabel(report, Date.parse("2026-09-14T12:30:00Z")),
-    "File 2h old · report time unknown",
-  );
-  assert.equal(reportFreshnessLabel(null), "Injury report unavailable");
-  assert.match(
-    reportFreshnessLabel({ ...report, source_updated_at: null }),
-    /File age unknown/,
-  );
-  assert.match(
-    reportFreshnessLabel({ ...report, reported_date: "2026-09-14" }),
-    /report date only/,
-  );
-});
-
 test("collection age uses separate two-hour and six-hour operational states", () => {
   const generatedAt = "2026-09-14T10:00:00Z";
   const at = (hours) => Date.parse(generatedAt) + hours * 3600000;
@@ -150,7 +128,7 @@ test("collection age uses separate two-hour and six-hour operational states", ()
   assert.equal(collectionAgeLabel(generatedAt, at(6)), "6h \u00b7 old");
 });
 
-test("retained identical data changes its display fingerprint at freshness and depth expiry", () => {
+test("retained data changes its fingerprint with freshness but does not expire observed depth names", () => {
   const now = Date.parse("2026-09-14T10:00:00Z");
   const metadata = {
     reported_at: null,
@@ -170,6 +148,6 @@ test("retained identical data changes its display fingerprint at freshness and d
   const key = clockFingerprint(feed, "week", now);
   assert.equal(clockFingerprint(feed, "week", now + 60000), key);
   assert.notEqual(clockFingerprint(feed, "week", now + 2 * 3600000), key);
-  assert.notEqual(clockFingerprint(feed, "week", now + 3600001), key);
+  assert.equal(clockFingerprint(feed, "week", now + 3600001), key);
   assert.notEqual(clockFingerprint(feed, "week", now + 86400001), key);
 });

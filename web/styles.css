@@ -1333,3 +1333,42 @@ body {
 .defender-marker .leader-star { position: absolute; left: 3px; top: -5px; background: #fcfdf9; border-radius: 50%; padding: 1px; }
 .injury-row { position: relative; }
 .injury-row .leader-star { position: absolute; right: 5px; bottom: 6px; }
+
+/* Compact per-team controls retain the field and combined roster layout. */
+.card-controls { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 12px 10px; }
+.card-switch { display:flex; border:1px solid #ccd7c5; border-radius:7px; overflow:hidden; min-width:0; }
+.card-switch button { flex:1; min-height:34px; padding:5px 6px; font-size:11px; white-space:nowrap; }
+.card-switch button[aria-pressed="true"] { background:#173e39; color:#fff; font-weight:650; }
+.player-focus { display:flex; align-items:center; gap:8px; padding:0 12px; font-size:11px; color:var(--muted); }
+.player-focus select { flex:1; min-width:0; width:0; min-height:34px; border:1px solid #d9e1d3; border-radius:6px; padding:4px; background:#fff; font-size:11px; }
+.as-of { font-size:10px; line-height:1.45; color:#617168; padding:4px 12px 6px; overflow-wrap:anywhere; }
+.field-caption { margin-bottom:0; }
+.defense-field > .as-of { text-align:center; margin-bottom:12px; padding:3px 0; }
+.team-matchup { display:flex; align-items:flex-start; gap:10px; min-height:64px; }
+.team-matchup > .opponent-info { flex:1; }
+.team-matchup .as-of { padding:4px 0 0; }
+.card-statistics { padding:8px 12px; border-bottom:1px solid var(--line); }
+.card-statistics .defense-metrics { width:100%; }
+.card-statistics .as-of { padding:3px 0 0; }
+.stats-window { font-size:10px; color:#617168; margin-top:5px; }
+.report-notice-slot { display:flex; align-items:center; gap:6px; padding:4px 12px; }
+.report-notice-slot .report-notice { margin:0; padding:4px 0; background:transparent; }
+.injury-unknown-info { margin-left:0; flex-shrink:0; }
+.field-reference { text-align:center; font-size:10px; color:#52694a; padding-top:8px; }
+.starter-label { font-size:9px; border:1px solid #a8bd9c; border-radius:4px; padding:1px 4px; white-space:nowrap; color:#46633d; }
+.member-relevance { grid-column:1/-1; font-size:10px; color:#78601e; }
+.player-focused { outline:2px solid #b18b32; outline-offset:1px; background:#fff9df; }
+.player-relevant { box-shadow:inset 0 0 0 2px #c3ad64; background:#fffbed; }
+.position-markers .player-relevant { box-shadow:0 0 0 2px #c3ad64; }
+.band-line, .band-back, .band-receivers { min-height:65px; }
+.depth-panel > .as-of { padding:0 0 4px; }
+.team-card > .player-header { min-height:78px; }
+@media(max-width:720px) {
+ .card-controls { gap:6px; padding:0 10px 8px; }
+ .card-switch button { font-size:10px; padding:5px 3px; min-height:36px; }
+ .player-focus { padding:0 10px; }
+}
+.card-statistics .defense-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.card-statistics .defense-metric { flex-direction:column; gap:3px; align-items:center; }
+.card-statistics .metric-value { font-size:11px; }
+.card-statistics .metric-rank { font-size:12px; }

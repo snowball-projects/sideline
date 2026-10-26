@@ -1,4 +1,4 @@
-import { TEAMS } from "./feed.mjs?v=0.9.14";
+import { TEAMS } from "./feed.mjs?v=0.9.15";
 
 export const DEFENSE_STATS_TERMS = "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md";
 export function competitionRank(records, key, value, lower = false) {
@@ -7,7 +7,7 @@ export function competitionRank(records, key, value, lower = false) {
 
 // Reconstruct the pre-week window, never the selected week's later results.
 // A 24h settlement guard avoids using a newly started game's partial totals.
-export function defenseRankings(data, feed, weekKey, now = Date.now()) {
+function rankWindow(data, feed, weekKey, now = Date.now()) {
   const unavailable = (reason) => ({ available: false, reason, teams: new Map(), leaders: new Map() });
   const week = feed?.weeks.find((entry) => entry.key === weekKey);
   if (!data || feed.mode !== "live" || !week || !week.key.includes("-REG-") || week.season !== data.season)
@@ -70,3 +70,23 @@ export function defenseRankings(data, feed, weekKey, now = Date.now()) {
   return { available: true, throughWeek: week.week - 1, season: week.season, teams: new Map(rows.map((row) => [row.team, row])), leaders, playerCoverage };
 }
 export const rankLabel = (rank, tied) => (tied ? "T" : "") + "#" + rank;
+
+// During settlement (or incomplete new data), retain the last complete earlier
+// pre-week window. Never use selected-week results or manufacture missing rows.
+export function defenseRankings(data, feed, weekKey, now = Date.now()) {
+  const requested = feed?.weeks.find((week) => week.key === weekKey);
+  const first = rankWindow(data, feed, weekKey, now);
+  if (!requested || feed.mode !== "live" || requested.season !== data?.season || !weekKey.includes("-REG-")) return first;
+  const candidates = feed.weeks.filter((week) => week.season === requested.season && week.key.includes("-REG-") && week.week < requested.week)
+    .sort((a, b) => b.week - a.week);
+  let result = first;
+  for (const candidate of candidates) {
+    if (result.available) break;
+    result = rankWindow(data, feed, candidate.key, now);
+  }
+  if (!result.available) return first;
+  const keys = new Set(feed.weeks.filter((week) => week.season === requested.season && week.key.includes("-REG-") && week.week <= result.throughWeek).map((week) => week.key));
+  const settledAt = Math.max(...feed.games.filter((game) => keys.has(game.week_key)).map((game) => Date.parse(game.kickoff) + 86400000));
+  return { ...result, requestedWeek: requested.week, fallback: result.throughWeek < requested.week - 1,
+    settled_at: new Date(settledAt).toISOString() };
+}
