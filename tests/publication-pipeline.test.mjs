@@ -78,6 +78,13 @@ test("offline publication pipeline keeps fresh core data through failed history 
     await exec(process.execPath, ["scripts/build-web.mjs", "--require-live"], {
       cwd: directory,
     });
+    for (const asset of ["manifest.json", "apple-touch-icon.png", "icon-192.png", "icon-512.png"]) {
+      assert.deepEqual(
+        await readFile(join(directory, "dist", asset)),
+        await readFile(join(directory, "web", asset)),
+        `${asset} must survive the public build`,
+      );
+    }
     assert.equal(
       await readFile(join(directory, "dist/current.json"), "utf8"),
       core,

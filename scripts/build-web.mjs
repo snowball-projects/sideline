@@ -36,6 +36,10 @@ const files = [
   "team-assets.json",
   "example.json",
   "icon.svg",
+  "apple-touch-icon.png",
+  "icon-192.png",
+  "icon-512.png",
+  "manifest.json",
 ];
 const teamAssets = JSON.parse(
   await readFile(new URL("web/team-assets.json", root), "utf8"),
