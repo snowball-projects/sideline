@@ -78,11 +78,19 @@ p {
   letter-spacing: -0.055em;
 }
 .toolbar-controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 300px) auto;
+  justify-content: start;
   align-items: center;
-  gap: 10px;
+  gap: 3px 10px;
   flex: 1;
   min-width: 0;
+}
+.injury-updated {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
 }
 .toolbar-info {
   display: flex;
@@ -1224,6 +1232,7 @@ body {
   .toolbar-controls {
     flex: 1 0 100%;
     order: 3;
+    grid-template-columns: minmax(0, 1fr) 126px;
   }
   .search-area {
     flex: 1;
