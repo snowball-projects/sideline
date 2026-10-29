@@ -304,6 +304,12 @@ function renderWeeks() {
   }
   select.value = weekKey;
   select.disabled = !feed.weeks.length;
+  const injuryUpdated = $("injury-updated");
+  const injurySource = feed.reports.find(
+    (report) => report.source_id === "nflverse-injuries",
+  );
+  injuryUpdated.hidden = activeMode !== "live";
+  injuryUpdated.textContent = "Injury data updated " + time(injurySource?.source_updated_at);
 }
 function renderStatus() {
   const status = $("data-status");
