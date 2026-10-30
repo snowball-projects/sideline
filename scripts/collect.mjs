@@ -827,10 +827,13 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
   };
 }
 export async function collect({
-  season = new Date().getUTCFullYear(),
+  season,
   fetchImpl = fetch,
   now = () => new Date(),
 } = {}) {
+  const startedAt = now();
+  // Keep January through March attached to the NFL season that began last year.
+  season ??= startedAt.getUTCFullYear() - (startedAt.getUTCMonth() < 3 ? 1 : 0);
   const sources = sourceDefinitions(season);
   const outcomes = await Promise.allSettled(
     sources.map((source) => fetchSource(source, { fetchImpl, now })),

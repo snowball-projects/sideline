@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import {
+  collect,
   normalize,
   parseCsv,
   sourceDefinitions,
@@ -243,4 +244,49 @@ test("an unknown kickoff cannot establish a historical pre-kickoff chart", () =>
   const first = normalize(inputs, { season: 2026, now }).weeks[0];
   assert.equal(first.teams.ARI.offense.length, 0);
   assert.equal(first.teams.ATL.defense.length, 0);
+});
+for (const [date, season] of [
+  ["2026-12-31T23:59:59Z", 2026],
+  ["2027-01-01T00:00:00Z", 2026],
+  ["2027-01-31T23:59:59Z", 2026],
+  ["2027-02-01T00:00:00Z", 2026],
+  ["2027-02-28T23:59:59Z", 2026],
+  ["2027-03-31T23:59:59Z", 2026],
+  ["2027-04-01T00:00:00Z", 2027],
+]) {
+  test(`scheduled collection at ${date} requests NFL season ${season}`, async () => {
+    const requested = [];
+    await assert.rejects(
+      collect({
+        now: () => new Date(date),
+        fetchImpl: async (url) => {
+          requested.push(url);
+          return new Response("", { status: 503 });
+        },
+      }),
+      /HTTP 503/,
+    );
+    assert.deepEqual(
+      requested,
+      sourceDefinitions(season).map((source) => source.url),
+    );
+  });
+}
+test("an explicit season remains authoritative during the January rollover window", async () => {
+  const requested = [];
+  await assert.rejects(
+    collect({
+      season: 2028,
+      now: () => new Date("2027-01-01T00:00:00Z"),
+      fetchImpl: async (url) => {
+        requested.push(url);
+        return new Response("", { status: 503 });
+      },
+    }),
+    /HTTP 503/,
+  );
+  assert.deepEqual(
+    requested,
+    sourceDefinitions(2028).map((source) => source.url),
+  );
 });
