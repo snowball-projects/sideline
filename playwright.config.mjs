@@ -4,10 +4,10 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/browser",
   testMatch: "**/*.spec.mjs",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   timeout: 30_000,
   expect: { timeout: 5_000 },
   outputDir: "test-results",
@@ -27,6 +27,15 @@ export default defineConfig({
     {
       name: "desktop-chromium",
       use: { browserName: "chromium", viewport: { width: 1440, height: 1000 } },
+    },
+    {
+      name: "narrow-chromium",
+      use: {
+        browserName: "chromium",
+        viewport: { width: 320, height: 760 },
+        isMobile: true,
+        hasTouch: true,
+      },
     },
     {
       name: "mobile-chromium",

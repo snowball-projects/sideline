@@ -11,7 +11,7 @@
     "test": "node --test tests/*.test.mjs",
     "build": "node scripts/build-web.mjs",
     "build:live": "node scripts/build-web.mjs --require-live",
-    "refresh": "node scripts/refresh-data.mjs && node scripts/contribution-data.mjs --optional && node scripts/contribution-data.mjs --optional --season=2024 && node scripts/player-history-data.mjs --optional && node scripts/injury-history-data.mjs --optional && node scripts/defense-stats-data.mjs --optional",
+    "refresh": "node scripts/collect.mjs",
     "dev": "node scripts/serve-web.mjs",
     "test:browser": "playwright test"
   },
