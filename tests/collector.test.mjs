@@ -234,3 +234,13 @@ test("scheduled postseason rounds retain labels and do not create byes for elimi
   assert.equal(postseason.teams.BAL.bye, false);
   assert.equal(postseason.teams.BAL.opponent, null);
 });
+test("an unknown kickoff cannot establish a historical pre-kickoff chart", () => {
+  const inputs = fixtureInputs();
+  inputs.schedule.csv = inputs.schedule.csv.replace(
+    '"20:00","ARI","ATL"',
+    '"","ARI","ATL"',
+  );
+  const first = normalize(inputs, { season: 2026, now }).weeks[0];
+  assert.equal(first.teams.ARI.offense.length, 0);
+  assert.equal(first.teams.ATL.defense.length, 0);
+});

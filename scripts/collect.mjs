@@ -652,7 +652,11 @@ function depthSnapshots(csv, weeks, games, now) {
           end: Math.min(
             now,
             Date.parse(week.ends_at) - 1,
-            game?.kickoff ? Date.parse(game.kickoff) - 1 : Infinity,
+            game
+              ? game.kickoff
+                ? Date.parse(game.kickoff) - 1
+                : -Infinity
+              : Infinity,
           ),
         };
       }),
