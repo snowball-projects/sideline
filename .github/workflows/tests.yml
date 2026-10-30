@@ -48,7 +48,7 @@ jobs:
       - name: Collect reviewed public data
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: npm run refresh
-      - name: Validate publication artifact
+      - name: Assemble publication artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: npm run build:live
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
@@ -72,9 +72,9 @@ jobs:
       - run: npm ci
       - name: Install Chromium and its system dependencies
         run: npx playwright install --with-deps chromium
-      - name: Verify desktop, mobile, keyboard and interrupted field flows
+      - name: Verify desktop, mobile and keyboard card flows
         run: npm run test:browser
-      - name: Retain synthetic-fixture screenshots and browser report for review
+      - name: Retain fixture screenshots and browser report for review
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

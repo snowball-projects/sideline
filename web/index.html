@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="sideline" />
     <meta
       name="description"
-      content="NFL teams, weekly starters and injury reports. A snowball project."
+      content="NFL offenses, opposing defenses and weekly injuries. A snowball project."
     />
     <meta name="referrer" content="no-referrer" />
     <meta
@@ -20,22 +20,22 @@
       href="https://snowball-projects.github.io/sideline/"
     />
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./apple-touch-icon.png"
+    />
     <link rel="manifest" href="./manifest.json" />
-    <link rel="stylesheet" href="styles.css?v=0.9.15" />
+    <link rel="stylesheet" href="styles.css" />
     <title>sideline · snowball</title>
   </head>
   <body>
-    <a class="skip-link" href="#reports">Skip to team cards</a>
-    <header class="toolbar" aria-label="Team and player search">
-      <div class="toolbar-brand">
-        <a class="brand" href="./" aria-label="sideline"
-          ><img src="icon.svg" width="34" height="34" alt="" /><span
-            >sideline</span
-          ></a
-        >
-      </div>
-      <div class="toolbar-controls">
+    <a class="skip-link" href="#cards">Skip to team cards</a>
+    <header>
+      <a class="brand" href="./"
+        ><img src="icon.svg" width="34" height="34" alt="" />sideline</a
+      >
+      <div class="controls">
         <div class="search-area">
           <label class="sr-only" for="search">NFL teams or players</label>
           <input
@@ -44,57 +44,30 @@
             placeholder="Search teams or players"
             autocomplete="off"
             spellcheck="false"
-            aria-describedby="search-help"
-            aria-controls="search-results"
+            aria-controls="results"
+            aria-expanded="false"
             disabled
           />
-          <p id="search-help" class="sr-only">
-            Current roster, including injured players.
-          </p>
-          <div id="search-results" class="search-results" hidden></div>
-          <p id="search-status" class="sr-only" role="status"></p>
+          <div id="results" hidden></div>
         </div>
         <label class="sr-only" for="week">NFL week</label>
         <select id="week" disabled>
           <option>Week unavailable</option>
         </select>
-        <p id="injury-updated" class="injury-updated" hidden></p>
+        <p id="injury-updated"></p>
       </div>
-      <div class="toolbar-info">
-        <div id="data-status" class="data-status" hidden></div>
-        <button
-          id="info"
-          class="icon-button info-button"
-          aria-label="Sources and information"
-        >
-          i
-        </button>
-      </div>
+      <button id="info" aria-label="Sources and licenses">i</button>
     </header>
-    <div class="refresh-bar">
-      <button
-        id="refresh"
-        data-preserve-popover
-        type="button"
-        aria-label="Refresh shared data"
-      >
-        ↻ Refresh</button
-      ><span id="refresh-state" role="status" aria-live="polite"
-        >Checking shared data…</span
-      >
-    </div>
-    <main
-      id="reports"
-      class="board"
-      tabindex="-1"
-      aria-label="Team cards"
-    >
-      <h1 class="sr-only">Teams, starters and injuries</h1>
-      <p id="message" class="sr-only" role="status"></p>
-      <p id="selection-count" class="sr-only">0 of 6 teams open</p>
-      <div id="cards" class="tiles"></div>
-      <noscript><p>JavaScript is required to display the reports.</p></noscript>
+    <main>
+      <h1 class="sr-only">Offenses against their weekly opponents</h1>
+      <p id="message" role="status">Loading weekly matchups…</p>
+      <div id="cards" tabindex="-1"></div>
+      <noscript><p>JavaScript is required to display the cards.</p></noscript>
     </main>
-    <script type="module" src="app.mjs?v=0.9.15"></script>
+    <dialog id="popup" aria-labelledby="popup-title">
+      <button id="close-popup" aria-label="Close popup">×</button>
+      <div id="popup-content"></div>
+    </dialog>
+    <script type="module" src="app.mjs"></script>
   </body>
 </html>

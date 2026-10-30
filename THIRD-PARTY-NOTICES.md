@@ -22,8 +22,7 @@ These data are licensed by their publisher under Creative Commons Attribution
 https://creativecommons.org/licenses/by/4.0/
 
 sideline filters roster membership, normalizes identity/team/status fields, joins
-weekly opponents and reports, and adds qualified positional context. Every
-available matching injury entry is retained. No endorsement by nflverse or the
+weekly opponents and reports, and adds qualified positional context. Matching injury entries are joined to depth-chart players. No endorsement by nflverse or the
 NFL is implied. Data are provided without warranties under the source license;
 underlying report timestamps and independent completeness are not established.
 
@@ -42,60 +41,24 @@ sideline. Exact sources, notices, dimensions and hashes are in web/team-assets.j
 Do not apply the MIT
 software license or nflverse CC BY data grant to these images.
 
-Depth-chart observations are also derived from the separately reviewed
-nflverse-data release under CC BY 4.0. sideline retains the latest observation per
-team plus named first-depth snapshots observed within each game week before kickoff,
-joined by player identity and team; first string does not confirm game
-participation.
+Depth-chart observations and weekly team/player statistics also derive from
+nflverse-data under its publisher's CC BY 4.0 grant. sideline chooses the latest
+depth observation inside each selected week before kickoff (or week end for a
+bye), groups formation slots, and preserves every backup behind each starter.
+First depth does not confirm game participation. Missing observations remain
+unavailable. Injury rows establish team/week report availability; absent rows
+cannot distinguish an unpublished report from a report with no listed injuries.
+The source supplies no report publication dates.
 
-Historical defensive event counts are derived from separately labelled nflverse-calculated 2024 and 2025
-regular-season player statistics under the publisher's CC BY 4.0 data grant:
-https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv.gz
-https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2024.csv.gz
-sideline filters REG defensive records, sums separate credited event counts by
-GSIS identity, and preserves historical team subtotals and source provenance.
-Seasons remain separate; LA is normalized to LAR for the same historical franchise.
-These are not defensive-quality, participation or fantasy-advantage scores.
-No independently verified NFL agreement or endorsement is claimed. No warranties
-are provided under the source license.
+Statistics use complete, settled regular-season weeks before the selected week.
+Schedule scores supply points; net yards include sack yards lost. Sacks and
+turnovers are totals. Competition ranks preserve ties. Gold stars retain the
+league top-10 definition in tackles, sacks or interceptions, including ties,
+only after weekly player counts reconcile to team counts. No defensive-quality,
+participation or fantasy-advantage score is implied. Source URLs, file dates,
+collection dates and review dates are retained in the single published data file.
 
-Explicit rookie seasons and observed 2025/2026 roster team/week records are
-derived from the reviewed nflverse-data player-reference and weekly-roster
-release assets under the same publisher CC BY 4.0 grant. sideline selects
-current defenders by GSIS identity, filters departed roster statuses, and
-aggregates source week observations without asserting tenure or games played.
-Player-reference photos, third-party ratings and draft-reference fields are
-excluded. Source and collection timestamps remain attached to the optional
-artifact.
-
-The optional 2025 injury-history archive also derives from nflverse-data
-under the publisher CC BY 4.0 license:
-https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2025.csv
-sideline selects current defensive identities by GSIS ID and preserves reported
-weeks, phases, historical teams, original injury/body-part text and separate
-practice/game status. Null status and absent weeks remain unknown. Source-file
-and collection timestamps are preserved without claiming daily practice dates,
-distinct injury counts, current availability or a complete career history.
-The source warranty disclaimer and lack of endorsement above apply.
-
-The optional defensive coaching artifact contains independently recorded factual
-names, titles, season ranges and checked dates for all 32 teams: 31 formal
-coordinators and one separately titled head coach/defensive playcaller. Selected
-prior-job/predecessor facts retain exact primary-source links in
-`web/coordinators.json`. It reproduces no biography
-prose or coach images, and does not claim that nflverse’s CC BY grant covers team
-pages. Team content remains subject to its own terms; no endorsement, content
-reuse licence or systematic collection permission is claimed. This is a bounded
-manual research batch, not an automated team-site feed.
-
-## Current-season defensive statistics
-
-The optional defensive-stat artifact adapts nflverse-data weekly team and player
-statistics under the publisher's [CC BY 4.0](https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md)
-grant. Original releases: [team statistics](https://github.com/nflverse/nflverse-data/releases/tag/stats_team)
-and [player statistics](https://github.com/nflverse/nflverse-data/releases/tag/stats_player).
-sideline selects regular-season game records, normalizes teams/GSIS identities,
-calculates net yards and combined tackles, and derives pre-week totals and
-competition ranks. The data are supplied as-is without warranties; attribution
-does not imply nflverse, NFL, ESPN or team endorsement. Upstream data and media
-retain their own terms.
+Data dictionaries:
+https://nflreadr.nflverse.com/articles/dictionary_depth_charts.html
+https://nflreadr.nflverse.com/articles/dictionary_team_stats.html
+https://nflreadr.nflverse.com/articles/dictionary_player_stats.html

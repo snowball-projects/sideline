@@ -1,155 +1,31 @@
-import { validateDefenseStats } from "./validate-defense-stats.mjs";
-import { validateContributions } from "./validate-contribution.mjs";
-import { validateCoordinators, MAX_COORDINATOR_BYTES } from "./validate-coordinator.mjs";
-import { validateInjuryHistory } from "./validate-injury-history.mjs";
-import { validatePlayerHistory } from "./validate-player-history.mjs";
-import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
-import { parseFeed, TEAMS, safeUrl } from "./validate-feed.mjs";
-import { sourceDefinitions, PUBLICATION_POLICY } from "./refresh-data.mjs";
-
-const root = new URL("../", import.meta.url);
-const requireLive = process.argv.includes("--require-live");
-if (process.argv.slice(2).some((arg) => arg !== "--require-live"))
-  throw new Error("Unknown build option.");
-const example = parseFeed(
-  await readFile(new URL("web/example.json", root), "utf8"),
-);
-if (example.mode !== "example")
-  throw new Error("Example asset must be fictional.");
-const files = [
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+const root = new URL("../", import.meta.url),
+  dist = new URL("dist/", root);
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist);
+// Publication data were checked by the collector. Build only copies files.
+for (const file of [
   "index.html",
   "styles.css",
   "app.mjs",
-  "model.mjs",
-  "team-cards.mjs",
   "field.mjs",
-  "defense-stats.mjs",
-  "player-details.mjs",
-  "player-history.mjs",
-  "injury-history.mjs",
-  "feed.mjs",
-  "popover.mjs",
-  "refresh.mjs",
-  "contribution.mjs",
-  "coordinator.mjs",
-  "team-assets.json",
-  "example.json",
   "icon.svg",
   "apple-touch-icon.png",
   "icon-192.png",
   "icon-512.png",
   "manifest.json",
-];
-const teamAssets = JSON.parse(
-  await readFile(new URL("web/team-assets.json", root), "utf8"),
-);
-if (
-  Object.keys(teamAssets).length !== TEAMS.length ||
-  TEAMS.some((team) => !teamAssets[team])
-)
-  throw new Error("Every NFL team must have a reviewed identifying logo.");
-for (const [team, asset] of Object.entries(teamAssets)) {
-  if (
-    !TEAMS.includes(team) ||
-    !["svg", "png"].some(
-      (extension) => asset.url === `team-logos/${team}.${extension}`,
-    ) ||
-    !safeUrl(asset.source) ||
-    !safeUrl(asset.license_url)
-  )
-    throw new Error("Invalid team image provenance.");
-  const bytes = await readFile(new URL(`web/${asset.url}`, root));
-  if (createHash("sha256").update(bytes).digest("hex") !== asset.sha256)
-    throw new Error(`Team image changed without provenance review: ${team}`);
-  files.push(asset.url);
-}
-let current;
+  "team-logos",
+])
+  await cp(new URL("web/" + file, root), new URL(file, dist), {
+    recursive: true,
+  });
 try {
-  current = await readFile(new URL("web/current.json", root), "utf8");
+  await cp(new URL("web/current.json", root), new URL("current.json", dist));
 } catch (error) {
-  if (error.code !== "ENOENT" || requireLive) throw error;
+  if (error.code !== "ENOENT" || process.argv.includes("--require-live"))
+    throw error;
 }
-if (current) {
-  const data = parseFeed(current);
-  if (!PUBLICATION_POLICY.verified || data.mode !== "live")
-    throw new Error("Current data must pass the reviewed public-data policy.");
-  const season = data.weeks[0]?.season;
-  const approved = sourceDefinitions(season);
-  if (
-    data.sources.length !== approved.length ||
-    data.sources.some(
-      (source) =>
-        !approved.some(
-          (entry) =>
-            entry.id === source.id &&
-            entry.url === source.url &&
-            entry.terms_url === source.terms_url,
-        ),
-    )
-  ) {
-    throw new Error(
-      "Current data sources are outside the reviewed release allowlist.",
-    );
-  }
-  files.push("current.json");
-}
-try {
-  const history = JSON.parse(
-    await readFile(new URL("web/contributions.json", root), "utf8"),
-  );
-  validateContributions(history);
-  files.push("contributions.json");
-} catch (error) {
-  console.warn(`Optional historical data omitted: ${error.message}`);
-}
-try {
-  validateContributions(JSON.parse(await readFile(new URL("web/contributions-2024.json", root), "utf8")), Date.now(), 2024);
-  files.push("contributions-2024.json");
-} catch (error) {
-  console.warn(`Optional 2024 production omitted: ${error.message}`);
-}
-try {
-  validateDefenseStats(JSON.parse(await readFile(new URL("web/defense-stats.json", root), "utf8")));
-  files.push("defense-stats.json");
-} catch (error) { console.warn(`Optional defensive statistics omitted: ${error.message}`); }
-const html = await readFile(new URL("web/index.html", root), "utf8");
-try {
-  const coaching = await readFile(new URL("web/coordinators.json", root), "utf8");
-  if (Buffer.byteLength(coaching) > MAX_COORDINATOR_BYTES) throw new Error("Coaching facts exceed the public bound.");
-  validateCoordinators(JSON.parse(coaching));
-  files.push("coordinators.json");
-} catch (error) {
-  console.warn(`Optional coaching facts omitted: ${error.message}`);
-}
-try {
-  validatePlayerHistory(JSON.parse(await readFile(new URL("web/player-history.json", root), "utf8")));
-  files.push("player-history.json");
-} catch (error) {
-  console.warn(`Optional player history omitted: ${error.message}`);
-}
-try {
-  validateInjuryHistory(JSON.parse(await readFile(new URL("web/injury-history.json", root), "utf8")));
-  files.push("injury-history.json");
-} catch (error) {
-  console.warn(`Optional injury archive omitted: ${error.message}`);
-}
-for (const name of ["styles.css", "app.mjs", "icon.svg"]) {
-  if (!html.includes(name)) throw new Error("Missing asset reference: " + name);
-}
-await rm(new URL("dist/", root), { recursive: true, force: true });
-await mkdir(new URL("dist/", root));
-await mkdir(new URL("dist/team-logos/", root));
-for (const file of files)
-  await cp(new URL("web/" + file, root), new URL("dist/" + file, root));
 for (const file of ["LICENSE", "THIRD-PARTY-NOTICES.md"])
-  await cp(new URL(file, root), new URL("dist/" + file, root));
-await writeFile(new URL("dist/.nojekyll", root), "");
-console.log(
-  "Built " +
-    files.length +
-    " public static files; " +
-    (current
-      ? "validated current feed included."
-      : "current feed unavailable, fictional fallback only."),
-);
+  await cp(new URL(file, root), new URL(file, dist));
+await writeFile(new URL(".nojekyll", dist), "");
+console.log("Built static sideline files");
