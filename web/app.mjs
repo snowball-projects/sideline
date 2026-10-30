@@ -60,10 +60,11 @@ $("popup").addEventListener("click", (event) => {
       $("popup").close();
   }
 });
-$("popup").addEventListener(
-  "close",
-  () => opener?.isConnected && opener.focus(),
-);
+$("popup").addEventListener("close", () => {
+  // Preserve focus if another interaction started before this queued event.
+  if (!$("popup").open && document.activeElement === document.body)
+    opener?.isConnected && opener.focus();
+});
 function playerPopup(group, control, report) {
   const player = group.players[0],
     content = node("div"),

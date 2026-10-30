@@ -219,3 +219,58 @@ test("real collected data: current, historical, bye, future and no omitted field
   expect(errors).toEqual([]);
   expect(requests).toHaveLength(1);
 });
+
+for (const input of ["keyboard", "pointer"]) {
+  test(`queued popup close preserves an immediate ${input} search`, async ({
+    page,
+  }) => {
+    const { errors, requests } = await open(page);
+    await page.getByRole("button", { name: "Sources and licenses" }).click();
+    await page.evaluate((input) => {
+      const popup = document.querySelector("#popup"),
+        search = document.querySelector("#search");
+      window.popupClosed = new Promise((resolve) =>
+        popup.addEventListener("close", resolve, { once: true }),
+      );
+      const beginSearch = () => {
+        search.focus();
+        search.value = "ATL";
+        search.dispatchEvent(new Event("input", { bubbles: true }));
+      };
+      if (input === "keyboard") {
+        // Close and search in one task so the native close event is still queued.
+        popup.addEventListener(
+          "cancel",
+          (event) => {
+            event.preventDefault();
+            popup.close();
+            beginSearch();
+          },
+          { once: true },
+        );
+      } else
+        document
+          .querySelector("#close-popup")
+          .addEventListener("click", beginSearch, { once: true });
+    }, input);
+    if (input === "keyboard") await page.keyboard.press("Escape");
+    else await page.getByRole("button", { name: "Close popup" }).click();
+    await page.evaluate(() => window.popupClosed);
+    await expect(page.locator("#search")).toBeFocused();
+    await expect(page.locator("#results")).toBeVisible();
+    if (input === "keyboard") {
+      await page.locator("#search").press("ArrowDown");
+      await page.keyboard.press("Enter");
+    } else
+      await page
+        .locator("#results")
+        .getByRole("button", { name: "ATL", exact: true })
+        .click();
+    await expect(page.locator(".card")).toHaveCount(2);
+    await expect(
+      page.getByRole("button", { name: "Remove ATL", exact: true }),
+    ).toBeFocused();
+    expect(errors).toEqual([]);
+    expect(requests).toHaveLength(1);
+  });
+}
