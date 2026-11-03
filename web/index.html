@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#173e39" />
+    <meta name="theme-color" content="#10231f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="sideline" />
     <meta
@@ -42,11 +42,10 @@
           <button id="offense" aria-pressed="true" disabled>Offense</button>
           <button id="defense" aria-pressed="false" disabled>Defense</button>
         </div>
-        <label class="sr-only" for="sort">Sort teams</label>
-        <select id="sort" disabled></select>
+        <button id="sort" aria-haspopup="dialog" aria-controls="popup" disabled>Record · Best first</button>
       </div>
       <div class="header-actions">
-        <button id="compare" disabled>Compare</button>
+        <button id="compare" aria-haspopup="dialog" aria-controls="popup" disabled>Compare</button>
         <button id="clear-compare" hidden>Clear</button>
         <button id="info" aria-label="Sources and licenses">i</button>
       </div>

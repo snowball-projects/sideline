@@ -16,6 +16,13 @@ async function open(page, {data = feed, selections = [], week = 1} = {}) {
   await page.locator("#week").selectOption(String(week));
   return {errors,requests};
 }
+async function chooseSort(page, value, direction) {
+  await page.locator("#sort").click();
+  await page.locator(`[data-sort="${value}"]`).click();
+  if(direction) await page.locator(`[data-direction="${direction}"]`).click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("dialog")).toBeHidden();
+}
 const cardFor = (page, team) => page.getByRole("article", {name:`${team} offense`,exact:true});
 test("all teams, one selected unit, exact player target, popup and keyboard focus", async ({page},info) => {
   const {errors, requests} = await open(page);
@@ -46,10 +53,26 @@ test("player representation follows card width rather than the viewport", async 
   await card.evaluate((el)=>el.style.width="700px");
   expect(await player.evaluate((el)=>getComputedStyle(el.querySelector(".player-name")).display)).not.toBe("none");
 });
-test("arbitrary compare filter persists more than six selections and clears", async ({page}) => {
+test("team pills apply immediately, persist more than six selections and clear", async ({page},info) => {
   await open(page);
   await page.locator("#compare").click();
-  for (const team of ["ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE"]) await page.locator(`.compare-options input[value="${team}"]`).check();
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  const first=page.locator('.compare-options button[data-team="ARI"]');
+  await first.focus(); await page.keyboard.press("Enter");
+  await expect(first).toHaveAttribute("aria-pressed","true");
+  await expect(first.locator(".pill-check")).toBeVisible();
+  await expect(page.locator(".card")).toHaveCount(1);
+  await page.keyboard.press("Enter");
+  await expect(first).toHaveAttribute("aria-pressed","false");
+  await expect(page.locator(".card")).toHaveCount(32);
+  for (const team of ["ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE"]) {
+    const control=page.locator(`.compare-options button[data-team="${team}"]`);
+    if(info.project.use.hasTouch) await control.tap(); else await control.click();
+    await expect(control).toHaveAttribute("aria-pressed","true");
+    await expect(control.locator("img")).toBeVisible();
+  }
+  await expect(page.locator(".card")).toHaveCount(8);
+  await page.screenshot({path:info.outputPath("compare-pills.png")});
   await page.keyboard.press("Escape");
   await expect(page.locator(".card")).toHaveCount(8);
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sideline.compare")).length)).toBe(8);
@@ -64,8 +87,10 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
   await expect(page.locator(".opponent")).toHaveText("Bye");
   await page.locator("#defense").click();
   await expect(page.locator(".defense-stats")).toContainText("Turnovers forced");
-  await expect(page.locator("#sort option")).toHaveText(["Record","Points allowed / game","Yards allowed / game","Sacks","Turnovers forced","Starters listed Out"]);
-  await page.locator("#sort").selectOption("stat-0");
+  await page.locator("#sort").click();
+  await expect(page.locator('[role="group"][aria-label="Sort statistic"] .pill-label')).toHaveText(["Record","Points allowed / game","Yards allowed / game","Sacks","Turnovers forced","Starters listed Out"]);
+  await page.keyboard.press("Escape");
+  await chooseSort(page,"stat-0");
   await page.locator("#week").selectOption("4");
   await expect(page.locator(".field-empty")).toHaveText("Starters unavailable");
   await expect(page.locator(".player")).toHaveCount(0);
@@ -77,7 +102,7 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
 test("record and stat sorts are best first, and keyboard opens the same team page", async ({page}) => {
   await open(page,{week:2});
   await expect(page.locator(".card").first()).toHaveAttribute("aria-label","ATL offense");
-  await page.locator("#sort").selectOption("stat-0");
+  await chooseSort(page,"stat-0");
   await expect(page.locator(".card").first()).toHaveAttribute("aria-label","WAS offense");
   const heading=page.locator(".card").first().getByRole("link");
   await heading.focus(); await page.keyboard.press("Enter");
@@ -101,7 +126,7 @@ test("Out sort uses starters in the selected unit, and only the most serious col
   data.weeks[0].teams.ATL.offense=[];
   own.offense[0].players[0].injury={injury:"Knee",game:"Out",practice:"Limited",badges:["OUT","LP"]};
   await open(page,{data});
-  await page.locator("#sort").selectOption("out");
+  await chooseSort(page,"out");
   await expect(page.locator(".card").first()).toHaveAttribute("aria-label","BUF offense");
   await expect(page.locator(".card").nth(1)).toHaveAttribute("aria-label","BAL offense");
   await expect(page.locator(".card").nth(2)).toHaveAttribute("aria-label","ARI offense");
@@ -180,7 +205,14 @@ test("real collected snapshot renders all observed slots and stars for both unit
   }
   const philly=page.getByRole("article",{name:`${real.teams.PHI.name} defense`,exact:true});
   if(sourceMissingPhilly(real)) await expect(philly.locator(".player-unavailable")).toHaveAttribute("aria-label","Slot 2 unavailable");
-  await page.screenshot({path:info.outputPath("real-week9.png")}); expect(errors).toEqual([]);
+  await page.screenshot({path:info.outputPath("real-week9.png")});
+  await page.locator("#compare").click();
+  const teamPills=page.locator(".compare-options .choice-pill");
+  await expect(teamPills).toHaveCount(32);
+  const overflow=await teamPills.evaluateAll(pills=>pills.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
+  expect(overflow).toEqual([]);
+  await page.screenshot({path:info.outputPath("real-compare-pills.png")});
+  await page.keyboard.press("Escape"); expect(errors).toEqual([]);
 });
 
 function sourceMissingPhilly(data) { const groups=data.weeks.find((w)=>w.week===9).teams.PHI.defense; return groups.length && !groups.some((g)=>g.slot===2); }
@@ -206,6 +238,12 @@ test("only report entries carry visible status codes; unlisted players stay plai
     }
     await expect(player.locator(".status-mark")).toBeVisible();
     await expect(player.locator(".status-mark")).toHaveText(code);
+    const contrast=await player.evaluate((el)=>{
+      const style=getComputedStyle(el);
+      const lum=(color)=>color.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((total,v,i)=>total+v*[.2126,.7152,.0722][i],0);
+      const a=lum(style.color),b=lum(style.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    });
+    expect(contrast,`${code} text contrast`).toBeGreaterThanOrEqual(4.5);
     expect(await player.evaluate((el)=>{
       const box=el.getBoundingClientRect(), mark=el.querySelector(".status-mark").getBoundingClientRect();
       return mark.left>=box.left && mark.right<=box.right && mark.top>=box.top && mark.bottom<=box.bottom;
@@ -214,10 +252,10 @@ test("only report entries carry visible status codes; unlisted players stay plai
   const unknown=cardFor(page,"ATL").locator(".player").first();
   await expect(unknown.locator(".status-mark")).toHaveCount(0);
   await expect(unknown).toHaveClass("player");
-  await expect(unknown).toHaveCSS("background-color","rgb(255, 255, 255)");
+  await expect(unknown).toHaveCSS("background-color","rgb(25, 51, 45)");
   const unlisted=cardFor(page,"ARI").locator('.player[data-slot="7"]');
   await expect(unlisted).toHaveClass("player");
-  await expect(unlisted).toHaveCSS("background-color","rgb(255, 255, 255)");
+  await expect(unlisted).toHaveCSS("background-color","rgb(25, 51, 45)");
   const full=cardFor(page,"ARI").locator('.player[data-slot="6"]');
   await expect(full).toHaveClass(/status-full/);
   await expect(page.locator("dialog")).not.toBeVisible();
@@ -250,4 +288,44 @@ test("matchup pages keep ordinary players unmarked and preserve their popup fact
   await page.keyboard.press("Escape");
   await other.locator(".player").first().click();
   await expect(page.locator("dialog dd")).toHaveText(["No injury report yet","No injury report yet","No injury report yet"]);
+});
+
+test("sort pills reverse known values while missing records, ranks and Out counts stay last", async ({page},info) => {
+  const data=structuredClone(feed), teams=data.weeks[1].teams;
+  for(const [team,wins,losses,rank,out] of [["ATL",0,5,3,0],["BAL",4,0,1,2],["BUF",2,2,2,1],["CAR",2,2,2,1]]) {
+    teams[team].record={wins,losses,ties:0};teams[team].stats.offense.forEach(metric=>metric.rank=rank);
+    teams[team].report=true;teams[team].offense.forEach((g,i)=>g.players[0].injury=i<out ? {injury:"Knee",game:"Out",practice:"Not listed",badges:["OUT"]}:null);
+  }
+  teams.ARI.record=null;teams.ARI.stats=null;teams.ARI.report=false;
+  await open(page,{data,selections:["ARI","ATL","BAL","BUF","CAR"],week:2});
+  for(const sort of ["record","stat-0","out"]) {
+    await chooseSort(page,sort,"worst");
+    await expect(page.locator(".card h2")).toHaveText(["ATL","BUF","CAR","BAL","ARI"]);
+    await expect(page.locator("#sort")).toContainText(sort==="out" ? "Fewest first":"Worst first");
+    await chooseSort(page,sort,"best");
+    await expect(page.locator(".card h2")).toHaveText(["BAL","BUF","CAR","ATL","ARI"]);
+    await expect(page.locator("#sort")).toContainText(sort==="out" ? "Most first":"Best first");
+  }
+  await page.locator("#sort").click();
+  await expect(page.locator('[data-sort="out"]')).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator('[data-direction="best"]')).toHaveAttribute("aria-pressed","true");
+  await page.locator('[data-sort="stat-0"]').focus();await page.keyboard.press("Enter");
+  await expect(page.locator('[data-direction="worst"]')).toHaveAttribute("aria-label","Worst first");
+  await page.locator('[data-direction="worst"]').focus();await page.keyboard.press("Enter");
+  await expect(page.locator("#sort")).toHaveText("Points / game · Worst first");
+  await page.screenshot({path:info.outputPath("sort-pills.png")});
+  await page.keyboard.press("Escape");await expect(page.locator("#sort")).toBeFocused();
+  await page.locator("#defense").click();await expect(page.locator("#sort")).toHaveText("Points allowed / game · Worst first");
+  expect(await page.locator("#sort").evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+});
+test("forest palette stays dark under both system preferences", async ({page}) => {
+  await open(page);
+  for(const colorScheme of ["light","dark"]) {
+    await page.emulateMedia({colorScheme});
+    await expect(page.locator("html")).toHaveCSS("background-color","rgb(16, 35, 31)");
+    await expect(page.locator("html")).toHaveCSS("color-scheme","dark");
+    await expect(page.locator(".card").first()).toHaveCSS("background-color","rgb(25, 51, 45)");
+    await expect(page.locator(".field-half").first()).toHaveCSS("background-color","rgb(35, 67, 56)");
+    await expect(page.locator("#offense")).toHaveCSS("color","rgb(229, 238, 231)");
+  }
 });
