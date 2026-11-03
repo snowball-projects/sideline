@@ -19,8 +19,7 @@ Preview: http://127.0.0.1:8786/. Browser checks: `npx playwright install --with-
 then `npm run test:browser`.
 
 One collector checks six nflverse datasets and writes `web/current.json`.
-GitHub Actions refreshes every four hours. Unchanged data skip publication;
-collection timestamps alone do not count as changes. Code pushes always publish.
+GitHub Actions refreshes every four hours and publishes GitHub Pages.
 Failed collection leaves the published site intact. Records and statistics use
 completed league weeks before the selected week. Stars mark top-10 positional
 yards/touchdown leaders or defensive count leaders, including ties.
