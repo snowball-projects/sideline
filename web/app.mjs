@@ -12,6 +12,14 @@ const button = (text, action, className) => {
   el.addEventListener("click", action);
   return el;
 };
+function pill(label, pressed, action) {
+  const control = button(undefined, action, "choice-pill"), check = node("span", "✓", "pill-check");
+  check.setAttribute("aria-hidden", "true");
+  control.setAttribute("aria-label", label);
+  control.setAttribute("aria-pressed", String(pressed));
+  control.append(node("span", label, "pill-label"), check);
+  return control;
+}
 const link = (text, url) => {
   const el = node("a", text); el.href = url; el.target = "_blank"; el.rel = "noreferrer";
   return el;
@@ -25,7 +33,7 @@ for (const [code, label] of Object.values(statusMarks)) {
   $("status-key-list").append(item);
 }
 const storageKey = "sideline.compare";
-let data, week, side = "offense", selected = [], opener, teamSide = "offense";
+let data, week, side = "offense", selected = [], opener, teamSide = "offense", sortBy = "record", sortDirection = "best";
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch {} }
 function popup(title, content, control) {
   opener = control;
@@ -120,7 +128,8 @@ function stats(record, unitSide) {
 }
 function reportNotice(own) { return node("p", own.report ? "" : "No injury report yet", "report-notice"); }
 function renderCards() {
-  const teams = sortTeams(selected.length ? selected : Object.keys(data.teams), week, side, $("sort").value);
+  const teams = sortTeams(selected.length ? selected : Object.keys(data.teams), week, side, sortBy, sortDirection);
+  $("sort").textContent = `${sortOptions().find(([value]) => value === sortBy)[1]} · ${directionLabel(sortDirection)}`;
   $("cards").replaceChildren();
   $("message").textContent = `${teams.length} teams · ${week.stats_through ? `Stats through week ${week.stats_through}` : week.week === 1 ? "No prior games" : "Stats unavailable"}`;
   $("compare").textContent = selected.length ? `Compare (${selected.length})` : "Compare";
@@ -160,27 +169,50 @@ function renderTeam() {
 }
 function render() { renderCards(); renderTeam(); }
 function sortOptions() {
-  const previous = $("sort").value || "record";
-  $("sort").replaceChildren();
-  for (const [value, label] of [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters listed Out"]]) {
-    const option = node("option", label); option.value = value; $("sort").append(option);
-  }
-  $("sort").value = previous;
+  return [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters listed Out"]];
 }
+function directionLabel(direction) {
+  return sortBy === "out" ? (direction === "best" ? "Most first" : "Fewest first") : (direction === "best" ? "Best first" : "Worst first");
+}
+$("sort").addEventListener("click", () => {
+  const content = node("div"), metrics = node("div", undefined, "choice-options"), directions = node("div", undefined, "choice-options");
+  metrics.setAttribute("role", "group"); metrics.setAttribute("aria-label", "Sort statistic");
+  directions.setAttribute("role", "group"); directions.setAttribute("aria-label", "Sort direction");
+  const choices = sortOptions().map(([value, label]) => {
+    const control = pill(label, value === sortBy, () => { sortBy = value; refresh(); renderCards(); });
+    control.dataset.sort = value; metrics.append(control); return control;
+  });
+  const order = ["best", "worst"].map((value) => {
+    const control = pill(directionLabel(value), value === sortDirection, () => { sortDirection = value; refresh(); renderCards(); });
+    control.dataset.direction = value; directions.append(control); return control;
+  });
+  function refresh() {
+    for (const control of choices) control.setAttribute("aria-pressed", String(control.dataset.sort === sortBy));
+    for (const control of order) {
+      const label = directionLabel(control.dataset.direction);
+      control.setAttribute("aria-pressed", String(control.dataset.direction === sortDirection));
+      control.setAttribute("aria-label", label); control.querySelector(".pill-label").textContent = label;
+    }
+  }
+  content.append(metrics, node("h3", "Order"), directions);
+  popup("Sort teams", content, $("sort"));
+});
 for (const unit of ["offense", "defense"]) $(unit).addEventListener("click", () => {
   side = unit;
   for (const name of ["offense", "defense"]) $(name).setAttribute("aria-pressed", String(side === name));
-  sortOptions(); renderCards();
+  renderCards();
 });
-$("sort").addEventListener("change", renderCards);
 $("week").addEventListener("change", () => { week = data.weeks.find((entry) => entry.week === +$("week").value); render(); });
 window.addEventListener("hashchange", () => { if (data) { renderTeam(); ( $("team-view").hidden ? $("cards") : $("team-view").querySelector("a") ).focus(); } });
 $("compare").addEventListener("click", () => {
-  const content = node("div", undefined, "compare-options");
+  const content = node("div", undefined, "compare-options choice-options");
+  content.setAttribute("role", "group"); content.setAttribute("aria-label", "Compare teams");
   for (const [team, asset] of Object.entries(data.teams)) {
-    const label = node("label"), input = node("input"); input.type = "checkbox"; input.checked = selected.includes(team); input.value = team;
-    input.addEventListener("change", () => { selected = input.checked ? [...selected, team] : selected.filter((item) => item !== team); save(); renderCards(); });
-    label.append(input, logo(team, 24), node("span", asset.name)); content.append(label);
+    const control = pill(asset.name, selected.includes(team), () => {
+      selected = selected.includes(team) ? selected.filter((item) => item !== team) : [...selected, team];
+      control.setAttribute("aria-pressed", String(selected.includes(team))); save(); renderCards();
+    });
+    control.dataset.team = team; control.prepend(logo(team, 24)); content.append(control);
   }
   popup("Compare teams", content, $("compare"));
 });
@@ -210,7 +242,7 @@ async function load() {
     for (const entry of data.weeks) { const option = node("option", entry.label); option.value = entry.week; $("week").append(option); }
     $("week").value = week.week;
     for (const id of ["week", "offense", "defense", "sort", "compare"]) $(id).disabled = false;
-    sortOptions(); render();
+    render();
   } catch { $("message").textContent = "Weekly data unavailable"; }
 }
 load();

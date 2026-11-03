@@ -123,3 +123,13 @@ test("an absent injury entry is neutral and distinct from observed full particip
   assert.equal(playerStatus({injury:{practice:"Full Participation in Practice",game:"Not listed",badges:[]}},true).status,"full");
   assert.equal(playerStatus({injury:{practice:"Not listed",game:"Not listed",badges:[]}},true).status,"undesignated");
 });
+
+test("both sort directions keep missing data last and alphabetical ties stable", () => {
+  const unit = (n, out) => Array.from({length:n}, (_,i)=>({position:"WR",players:[{injury:i<out ? {badges:["OUT"]}:null}]}));
+  const team = (wins, losses, rank, out) => ({record:{wins,losses,ties:0},stats:{offense:Array(4).fill({rank}),defense:Array(4).fill({rank})},offense:unit(11,out),defense:unit(12,out),report:true});
+  const week={teams:{ARI:{...team(0,0,0,0),record:null,stats:null,report:false},ATL:team(0,5,3,0),BAL:team(4,0,1,2),BUF:team(2,2,2,1),CAR:team(2,2,2,1)}};
+  for(const side of ["offense","defense"]) for(const choice of ["record","stat-0","stat-1","stat-2","stat-3","out"]) {
+    assert.deepEqual(sortTeams(Object.keys(week.teams),week,side,choice,"best"),["BAL","BUF","CAR","ATL","ARI"],`${side} ${choice} best`);
+    assert.deepEqual(sortTeams(Object.keys(week.teams),week,side,choice,"worst"),["ATL","BUF","CAR","BAL","ARI"],`${side} ${choice} worst`);
+  }
+});

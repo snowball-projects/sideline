@@ -62,17 +62,22 @@ export function outCount(team, side) {
   if (!team.report || unit.length !== (side === "offense" ? 11 : 12)) return null;
   return unit.filter((group) => playerStatus(group.players[0], team.report).status === "out").length;
 }
-export function sortTeams(teams, week, side, sort) {
+export function sortTeams(teams, week, side, sort, direction = "best") {
   const score = (team) => {
     const own = week.teams[team];
     if (sort === "out") {
       const count = outCount(own, side);
-      return count === null ? Infinity : -count;
+      return count === null ? null : -count;
     }
-    if (sort.startsWith("stat-")) return own.stats?.[side][+sort.slice(5)].rank ?? Infinity;
+    if (sort.startsWith("stat-")) return own.stats?.[side][+sort.slice(5)].rank ?? null;
     const record = own.record;
     const games = record && record.wins + record.losses + record.ties;
-    return record ? (games ? -(record.wins + record.ties / 2) / games : 0) : Infinity;
+    return record ? (games ? -(record.wins + record.ties / 2) / games : 0) : null;
   };
-  return [...teams].sort((a, b) => score(a) - score(b) || a.localeCompare(b));
+  return [...teams].sort((a, b) => {
+    const left = score(a), right = score(b);
+    if (left === null || right === null)
+      return left === right ? a.localeCompare(b) : left === null ? 1 : -1;
+    return (left - right) * (direction === "worst" ? -1 : 1) || a.localeCompare(b);
+  });
 }

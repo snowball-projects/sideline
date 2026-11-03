@@ -1,7 +1,7 @@
 # sideline
 
 All 32 NFL teams, with pre-week records, unit statistics, starters and injuries.
-Compare any teams or open a matchup across the line of scrimmage.
+Compare teams and sort either way in a forest-green dashboard, or open a matchup.
 A snowball project. [Open sideline](https://snowball-projects.github.io/sideline/).
 
 Node 24:
