@@ -107,7 +107,7 @@ function replaceDefensiveCounts(inputs, countForIndex) {
   }
 }
 
-test("defensive values include fractional sacks and rank only among defenders", () => {
+test("defensive values and fractional sacks retain the original all-row ranking pool", () => {
   const inputs = fixtureInputs();
   replaceDefensiveCounts(inputs, index => index === 0 ? [15, .5, 0] : [1, 1, 1]);
   const rows = parseCsv(inputs.playerStats.csv);
@@ -122,11 +122,26 @@ test("defensive values include fractional sacks and rank only among defenders", 
   });
   writeRows(inputs, "teamStats", teamRows);
   const player = depth(feed(inputs), {side:"defense"}).players[0];
-  metric(player, "tackles", 15, 1, {star:true});
-  metric(player, "sacks", .5, 32);
-  metric(player, "interceptions", 0, 32);
+  metric(player, "tackles", 15, 2, {star:true});
+  metric(player, "sacks", .5, 33);
+  metric(player, "interceptions", 0, 33, {tied:true});
   assert.deepEqual(Object.keys(player.stats).sort(), ["interceptions", "sacks", "tackles"]);
   assert.equal(player.star, true);
+});
+
+test("defensive starters retain stats and stars with alternate source position codes", () => {
+  for (const position of ["WR", "LS", "RB", "NEW_DEF"]) {
+    const inputs = fixtureInputs();
+    replaceDefensiveCounts(inputs, index => index === 0 ? [15, .5, 1] : [1, 1, 0]);
+    const rows = parseCsv(inputs.playerStats.csv);
+    rows.find(row => row.player_id === "def-ARI").position = position;
+    writeRows(inputs, "playerStats", rows);
+    const player = depth(feed(inputs), {side:"defense"}).players[0];
+    metric(player, "tackles", 15, 1, {star:true});
+    metric(player, "sacks", .5, 32);
+    metric(player, "interceptions", 1, 1, {star:true});
+    assert.equal(player.star, true, position + " cannot exclude a defensive depth-chart starter");
+  }
 });
 
 test("every defender tied at tenth retains its earning stat, and zero metrics never earn a star", () => {

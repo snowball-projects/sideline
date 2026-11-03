@@ -485,7 +485,6 @@ function statistics(inputs, games, season) {
   return { teams, players };
 }
 const OFFENSIVE_STATS = { QB: "passing", RB: "rushing", WR: "receiving", TE: "receiving" };
-const DEFENSIVE_POSITIONS = new Set("CB DB DE DL DT EDGE FS ILB LB MLB NT OLB S SAF SS".split(" "));
 function rankedPlayerStats(sums, keys) {
   const values = keys.map((_, index) => [...sums.values()].map((counts) => counts[index]));
   return new Map([...sums].filter(([, counts]) => counts.some((value) => value !== 0))
@@ -566,11 +565,10 @@ function preWeekStats(week, games, stats, now) {
   const sums = new Map(),
     reconciled = new Map();
   for (const row of stats.players.filter((row) => keys.has(row.join))) {
-    const defender = DEFENSIVE_POSITIONS.has(row.position);
-    if (defender && !sums.has(row.id)) sums.set(row.id, [0, 0, 0]);
+    if (!sums.has(row.id)) sums.set(row.id, [0, 0, 0]);
     if (!reconciled.has(row.join)) reconciled.set(row.join, [0, 0, 0]);
     row.counts.forEach((value, index) => {
-      if (defender) sums.get(row.id)[index] += value;
+      sums.get(row.id)[index] += value;
       reconciled.get(row.join)[index] += value;
     });
   }
