@@ -144,6 +144,8 @@ test("lifting automatically pairs units and player taps preserve the lifted team
   await player.tap();
   await expect(page.locator("dialog")).toContainText("Knee");
   await expect(page.locator("dialog")).toContainText("backup-ARI");
+  await expect(page.locator("dialog dl")).toHaveCount(0);
+  await expect(page.locator("dialog")).not.toContainText(/No injury report yet|Not listed|Game status|Practice status/);
   await expect(page).toHaveURL(/#team=ARI$/);
   await page.keyboard.press("Escape"); await expect(player).toBeFocused();
   await expect(page.locator("#wallet-view")).toBeVisible();
