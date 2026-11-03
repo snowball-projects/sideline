@@ -33,6 +33,8 @@ jobs:
 
   web:
     name: dashboard checks
+    outputs:
+      deploy: ${{ steps.publication.outputs.deploy }}
     needs: unit
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -48,11 +50,15 @@ jobs:
       - name: Collect reviewed public data
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: npm run refresh
-      - name: Assemble publication artifact
+      - name: Compare refresh with live data
+        id: publication
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: node scripts/publication.mjs
+      - name: Assemble publication artifact
+        if: steps.publication.outputs.deploy == 'true'
         run: npm run build:live
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: steps.publication.outputs.deploy == 'true'
         with:
           path: dist
           retention-days: 1
@@ -87,7 +93,7 @@ jobs:
 
   deploy:
     needs: [web, browser]
-    if: ${{ !cancelled() && needs.web.result == 'success' && (needs.browser.result == 'success' || needs.browser.result == 'skipped') && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    if: ${{ !cancelled() && needs.web.result == 'success' && needs.web.outputs.deploy == 'true' && (needs.browser.result == 'success' || needs.browser.result == 'skipped') && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

@@ -95,7 +95,7 @@ test("one browser data request, one collector and no removed runtime or validati
   assert.doesNotMatch(build, /JSON\.parse|validate|example/);
   assert.deepEqual(
     (await readdir(new URL("../scripts/", import.meta.url))).sort(),
-    ["build-web.mjs", "collect.mjs", "serve-web.mjs"],
+    ["build-web.mjs", "collect.mjs", "publication.mjs", "serve-web.mjs"],
   );
 });
 
