@@ -1,7 +1,8 @@
 # sideline
 
 All 32 NFL teams, with pre-week records, unit statistics, starters and injuries.
-Compare teams and sort either way in a forest-green dashboard, or open a matchup.
+Phones use overlapping team strips with a lifted, scrollable matchup and bottom
+pile. Larger screens keep the team grid and separate matchup page.
 A snowball project. [Open sideline](https://snowball-projects.github.io/sideline/).
 
 Node 24:
@@ -24,7 +25,7 @@ completed league weeks before the selected week. Stars mark top-10 positional
 yards/touchdown leaders or defensive count leaders, including ties.
 Depth charts retain observed slot order; missing charts and reports stay unknown.
 Compare choices remain in your browser. Cards use name pills when wide and 40px
-position dots when narrow; team matchup pages always use pills. Visible status
+position dots when narrow; larger-screen matchup pages always use pills. Status
 codes have a compact key; unlisted players are unmarked and unknown Out counts
 sort after supported counts.
 

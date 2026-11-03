@@ -1,4 +1,4 @@
-import { rows, shortName, statLabels, statusMarks, playerStatus, recordText, sortTeams } from "./field.mjs";
+import { rows, shortName, statLabels, statusMarks, playerStatus, recordText, outCount, sortTeams } from "./field.mjs";
 const $ = (id) => document.getElementById(id);
 const node = (tag, text, className) => {
   const el = document.createElement(tag);
@@ -33,6 +33,9 @@ for (const [code, label] of Object.values(statusMarks)) {
   $("status-key-list").append(item);
 }
 const storageKey = "sideline.compare";
+const phone = matchMedia("(width < 600px)");
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+history.scrollRestoration = "manual";
 let data, week, side = "offense", selected = [], opener, teamSide = "offense", sortBy = "record", sortDirection = "best";
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch {} }
 function popup(title, content, control) {
@@ -48,7 +51,9 @@ $("popup").addEventListener("click", (event) => {
   if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) $("popup").close();
 });
 $("popup").addEventListener("close", () => {
-  if (!$("popup").open && document.activeElement === document.body && opener?.isConnected) opener.focus();
+  if (!$("popup").open && document.activeElement === document.body) {
+    if (opener?.isConnected) opener.focus(); else focusRoute();
+  }
 });
 function playerPopup(group, control, report) {
   const player = group.players[0], content = node("div"), details = node("dl");
@@ -110,7 +115,14 @@ function logo(team, size = 36) {
 function teamHeading(team, unitSide, navigable = false) {
   const section = node("div", undefined, "team-heading"), own = week.teams[team];
   const labels = node("div", undefined, "team-labels"), heading = node("h2");
-  if (navigable) { const a = node("a", data.teams[team].name); a.href = `#team=${team}`; heading.append(a); }
+  if (navigable) {
+    const a = node("a", data.teams[team].name); a.href = `#team=${team}`;
+    a.addEventListener("click", event => {
+      if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); openTeam(team, a);
+    });
+    heading.append(a);
+  }
   else heading.textContent = data.teams[team].name;
   labels.append(heading, node("span", `${recordText(own.record)} · ${unitSide === "offense" ? "Offense" : "Defense"}`, "record"));
   section.append(logo(team), labels);
@@ -127,8 +139,39 @@ function stats(record, unitSide) {
   return section;
 }
 function reportNotice(own) { return node("p", own.report ? "" : "No injury report yet", "report-notice"); }
+function visibleTeams() {
+  return sortTeams(selected.length ? selected : Object.keys(data.teams), week, side, sortBy, sortDirection);
+}
+function currentTeam() {
+  const team = new URLSearchParams(location.hash.slice(1)).get("team");
+  return Object.hasOwn(data.teams, team) ? team : null;
+}
+function walletStrip(team, expanded = false) {
+  const own = week.teams[team], count = outCount(own, side);
+  const opponentName = own.opponent ? data.teams[own.opponent].name : own.bye ? "Bye" : "Opponent unavailable";
+  const control = button(undefined, () => expanded ? closeTeam() : openTeam(team, control), "wallet-strip");
+  control.dataset.team = team;
+  control.setAttribute("aria-expanded", String(expanded));
+  control.setAttribute("aria-controls", "wallet-view");
+  control.setAttribute("aria-label", `${data.teams[team].name}, ${recordText(own.record)}, ${opponentName}, ${count === null ? "Out count unavailable" : `${count} starters listed Out`}`);
+  const labels = node("span", undefined, "wallet-labels"), detail = node("span", undefined, "wallet-record");
+  detail.append(node("span", recordText(own.record)));
+  if (count === null) detail.append(node("span", "Out unavailable", "wallet-out-unknown"));
+  else if (count) {
+    const dots = node("span", undefined, "out-dots");
+    dots.setAttribute("aria-hidden", "true"); dots.append(node("span", "Out", "out-label"));
+    for (let i = 0; i < count; i++) dots.append(node("span", undefined, "out-dot"));
+    detail.append(dots);
+  }
+  labels.append(node("span", data.teams[team].name, "wallet-name"), detail);
+  const opponent = node("span", undefined, "wallet-opponent-logo");
+  if (own.opponent) opponent.append(logo(own.opponent, 22)); else opponent.textContent = own.bye ? "Bye" : "–";
+  opponent.setAttribute("aria-hidden", "true");
+  control.append(logo(team, 36), labels, opponent);
+  return control;
+}
 function renderCards() {
-  const teams = sortTeams(selected.length ? selected : Object.keys(data.teams), week, side, sortBy, sortDirection);
+  const teams = visibleTeams();
   $("sort").textContent = `${sortOptions().find(([value]) => value === sortBy)[1]} · ${directionLabel(sortDirection)}`;
   $("cards").replaceChildren();
   $("message").textContent = `${teams.length} teams · ${week.stats_through ? `Stats through week ${week.stats_through}` : week.week === 1 ? "No prior games" : "Stats unavailable"}`;
@@ -136,38 +179,151 @@ function renderCards() {
   $("clear-compare").hidden = !selected.length;
   for (const team of teams) {
     const own = week.teams[team], card = node("article", undefined, "card");
+    card.dataset.team = team;
     card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
-    card.addEventListener("click", (event) => { if (!event.target.closest("button, a")) location.hash = `team=${team}`; });
-    const heading = teamHeading(team, side, true), opponent = node("span", undefined, "opponent");
-    if (own.opponent) { opponent.append(node("span", "vs"), logo(own.opponent, 24)); opponent.setAttribute("aria-label", `Opponent ${data.teams[own.opponent].name}`); opponent.setAttribute("role", "img"); }
-    else opponent.textContent = own.bye ? "Bye" : "Opponent unavailable";
-    heading.append(opponent);
-    card.append(heading, stats(own.stats, side), reportNotice(own), field(own[side], side, own.report), node("div", "Line of scrimmage", "scrimmage"));
+    if (phone.matches) card.append(walletStrip(team));
+    else {
+      card.addEventListener("click", event => { if (!event.target.closest("button, a")) openTeam(team); });
+      const heading = teamHeading(team, side, true), opponent = node("span", undefined, "opponent");
+      if (own.opponent) { opponent.append(node("span", "vs"), logo(own.opponent, 24)); opponent.setAttribute("aria-label", `Opponent ${data.teams[own.opponent].name}`); opponent.setAttribute("role", "img"); }
+      else opponent.textContent = own.bye ? "Bye" : "Opponent unavailable";
+      heading.append(opponent);
+      card.append(heading, stats(own.stats, side), reportNotice(own), field(own[side], side, own.report), node("div", "Line of scrimmage", "scrimmage"));
+    }
     $("cards").append(card);
   }
 }
-function renderTeam() {
-  const team = new URLSearchParams(location.hash.slice(1)).get("team");
-  const shown = Object.hasOwn(data.teams, team);
-  $("cards").hidden = shown; $("team-view").hidden = !shown;
-  if (!shown) return;
-  const own = week.teams[team], otherSide = teamSide === "offense" ? "defense" : "offense";
-  const toolbar = node("div", undefined, "team-toolbar"), back = node("a", "All teams"); back.href = "#";
-  const toggle = node("div", undefined, "unit-switch"); toggle.setAttribute("role", "group"); toggle.setAttribute("aria-label", "Team matchup unit");
-  for (const unit of ["offense", "defense"]) {
-    const control = button(unit === "offense" ? "Offense" : "Defense", () => { teamSide = unit; renderTeam(); $("team-view").querySelector(`[aria-pressed="true"]`).focus(); });
-    control.setAttribute("aria-pressed", String(unit === teamSide)); toggle.append(control);
-  }
-  toolbar.append(back, toggle);
-  const match = node("article", undefined, "matchup");
-  match.append(teamHeading(team, teamSide), stats(own.stats, teamSide), reportNotice(own), field(own[teamSide], teamSide, own.report), node("div", "Line of scrimmage", "scrimmage"));
+function matchupContent(team, unit, heading) {
+  const own = week.teams[team], otherUnit = unit === "offense" ? "defense" : "offense";
+  const content = document.createDocumentFragment(), opponent = node("section", undefined, "opponent-half");
+  content.append(heading, stats(own.stats, unit), reportNotice(own), field(own[unit], unit, own.report), node("div", "Line of scrimmage", "scrimmage"));
   if (own.opponent) {
     const other = week.teams[own.opponent];
-    match.append(field(other[otherSide], otherSide, other.report, true), reportNotice(other), stats(other.stats, otherSide), teamHeading(own.opponent, otherSide));
-  } else match.append(node("p", own.bye ? "Bye" : "Opponent unavailable", "bye"));
-  $("team-view").replaceChildren(toolbar, match);
+    opponent.append(field(other[otherUnit], otherUnit, other.report, true), reportNotice(other), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
+  } else opponent.append(node("p", own.bye ? "Bye" : "Opponent unavailable", "bye"));
+  content.append(opponent);
+  return content;
 }
-function render() { renderCards(); renderTeam(); }
+function walletPile(team) {
+  const remaining = visibleTeams().filter(value => value !== team);
+  const pile = button(undefined, closeTeam, "wallet-pile"); pile.id = "wallet-pile";
+  pile.setAttribute("aria-label", `Team stack, ${remaining.length} other teams`); pile.setAttribute("aria-controls", "cards");
+  for (const other of (remaining.length ? remaining.slice(0, 3) : [team]).toReversed()) {
+    const layer = node("span", undefined, "pile-layer"); layer.setAttribute("aria-hidden", "true");
+    layer.append(logo(other, 26), node("span", data.teams[other].name, "pile-name")); pile.append(layer);
+  }
+  const count = node("span", `${remaining.length} other ${remaining.length === 1 ? "team" : "teams"}`, "pile-count");
+  count.setAttribute("aria-hidden", "true"); pile.append(count);
+  return pile;
+}
+function swipeToClose(scroll) {
+  let start;
+  scroll.addEventListener("touchstart", event => {
+    start = scroll.scrollTop <= 0 && event.touches.length === 1 && !event.target.closest(".player")
+      ? {x:event.touches[0].clientX, y:event.touches[0].clientY} : null;
+  }, {passive:true});
+  scroll.addEventListener("touchend", event => {
+    const touch = event.changedTouches[0];
+    if (start && scroll.scrollTop <= 0 && touch.clientY - start.y >= 64 && Math.abs(touch.clientX - start.x) < (touch.clientY - start.y) / 2) {
+      if (event.cancelable) event.preventDefault(); closeTeam();
+    }
+    start = null;
+  }, {passive:false});
+  scroll.addEventListener("touchcancel", () => start = null, {passive:true});
+}
+function renderTeam() {
+  const team = currentTeam(), wallet = Boolean(team && phone.matches);
+  const scrollTop = $("wallet-view").dataset.team === team ? ($("wallet-scroll")?.scrollTop || 0) : 0;
+  $("cards").hidden = Boolean(team); $("cards").inert = Boolean(team);
+  $("team-view").hidden = !team || phone.matches;
+  $("wallet-view").hidden = !wallet;
+  document.body.classList.toggle("wallet-open", wallet);
+  $("wallet-view").dataset.team = wallet ? team : "";
+  $("wallet-view").replaceChildren(); $("team-view").replaceChildren();
+  if (!team) return;
+  if (wallet) {
+    const scroll = node("div"); scroll.id = "wallet-scroll"; scroll.tabIndex = 0;
+    scroll.setAttribute("role", "region"); scroll.setAttribute("aria-label", "Matchup details");
+    const card = node("article", undefined, "card wallet-lift"); card.id = "wallet-card";
+    card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
+    card.append(matchupContent(team, side, walletStrip(team, true)));
+    card.querySelector(".opponent-half").classList.add("wallet-opponent");
+    scroll.append(card); swipeToClose(scroll);
+    $("wallet-view").append(scroll, walletPile(team)); scroll.scrollTop = scrollTop;
+  } else {
+    const toolbar = node("div", undefined, "team-toolbar"), back = node("a", "All teams"); back.href = "#";
+    back.addEventListener("click", event => { event.preventDefault(); closeTeam(); });
+    const toggle = node("div", undefined, "unit-switch"); toggle.setAttribute("role", "group"); toggle.setAttribute("aria-label", "Team matchup unit");
+    for (const unit of ["offense", "defense"]) {
+      const control = button(unit === "offense" ? "Offense" : "Defense", () => { teamSide = unit; renderTeam(); $("team-view").querySelector('[aria-pressed="true"]').focus(); });
+      control.setAttribute("aria-pressed", String(unit === teamSide)); toggle.append(control);
+    }
+    toolbar.append(back, toggle);
+    const match = node("article", undefined, "matchup"); match.append(matchupContent(team, teamSide, teamHeading(team, teamSide)));
+    $("team-view").append(toolbar, match);
+  }
+}
+function baseURL() { const url = new URL(location.href); url.hash = ""; return url; }
+function preparePhoneLink() {
+  const team = currentTeam();
+  if (phone.matches && team && history.state?.sidelineTeam !== team) {
+    const target = location.href;
+    history.replaceState({stackY:0, focusTeam:team}, "", baseURL());
+    history.pushState({sidelineTeam:team}, "", target);
+  }
+}
+function focusRoute() {
+  if (!data) return;
+  const team = currentTeam();
+  if (team) {
+    const target = phone.matches ? $("wallet-view").querySelector(".wallet-strip") : $("team-view").querySelector("a");
+    target?.focus({preventScroll:true});
+  } else {
+    const target = phone.matches && history.state?.focusTeam
+      ? ($("cards").querySelector(`[data-team="${history.state.focusTeam}"] .wallet-strip`) || $("cards")) : $("cards");
+    target.focus({preventScroll:true}); window.scrollTo(0, history.state?.stackY || 0);
+    if (target !== $("cards")) {
+      const box = target.getBoundingClientRect();
+      if (box.bottom <= 0 || box.top >= innerHeight) target.scrollIntoView({block:"nearest"});
+    }
+  }
+}
+function animateRoute(origin) {
+  if (!phone.matches || reducedMotion.matches) return;
+  const options = {duration:240, easing:"cubic-bezier(.2,.8,.2,1)"};
+  if (currentTeam()) {
+    const card = $("wallet-card");
+    card.animate([{transform:`translateY(${origin ? origin.top - card.getBoundingClientRect().top : 24}px)`, opacity:.8}, {transform:"none", opacity:1}], options);
+    for (const layer of $("wallet-pile").querySelectorAll(".pile-layer"))
+      layer.animate([{transform:"translateY(-72px)", opacity:.2}, {transform:"none", opacity:1}], options);
+  } else $("cards").animate([{transform:"translateY(10px)", opacity:.6}, {transform:"none", opacity:1}], options);
+}
+function routeChanged(origin) {
+  if ($("popup").open) $("popup").close();
+  preparePhoneLink(); renderTeam(); window.scrollTo(0, currentTeam() ? 0 : (history.state?.stackY || 0));
+  focusRoute(); animateRoute(origin);
+}
+function openTeam(team, control) {
+  const origin = control?.getBoundingClientRect();
+  history.replaceState({stackY:window.scrollY, focusTeam:team}, "", location.href);
+  history.pushState({sidelineTeam:team}, "", `#team=${team}`);
+  routeChanged(origin);
+}
+function closeTeam() {
+  if (history.state?.sidelineTeam === currentTeam()) history.back();
+  else { history.replaceState(null, "", baseURL()); routeChanged(); }
+}
+function render() { preparePhoneLink(); renderCards(); renderTeam(); }
+phone.addEventListener("change", () => {
+  if (!data) return;
+  if (currentTeam()) {
+    if (phone.matches) {
+      side = teamSide;
+      for (const unit of ["offense", "defense"]) $(unit).setAttribute("aria-pressed", String(unit === side));
+    } else teamSide = side;
+  }
+  render(); focusRoute();
+});
 function sortOptions() {
   return [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters listed Out"]];
 }
@@ -179,11 +335,11 @@ $("sort").addEventListener("click", () => {
   metrics.setAttribute("role", "group"); metrics.setAttribute("aria-label", "Sort statistic");
   directions.setAttribute("role", "group"); directions.setAttribute("aria-label", "Sort direction");
   const choices = sortOptions().map(([value, label]) => {
-    const control = pill(label, value === sortBy, () => { sortBy = value; refresh(); renderCards(); });
+    const control = pill(label, value === sortBy, () => { sortBy = value; refresh(); render(); });
     control.dataset.sort = value; metrics.append(control); return control;
   });
   const order = ["best", "worst"].map((value) => {
-    const control = pill(directionLabel(value), value === sortDirection, () => { sortDirection = value; refresh(); renderCards(); });
+    const control = pill(directionLabel(value), value === sortDirection, () => { sortDirection = value; refresh(); render(); });
     control.dataset.direction = value; directions.append(control); return control;
   });
   function refresh() {
@@ -200,23 +356,23 @@ $("sort").addEventListener("click", () => {
 for (const unit of ["offense", "defense"]) $(unit).addEventListener("click", () => {
   side = unit;
   for (const name of ["offense", "defense"]) $(name).setAttribute("aria-pressed", String(side === name));
-  renderCards();
+  render();
 });
 $("week").addEventListener("change", () => { week = data.weeks.find((entry) => entry.week === +$("week").value); render(); });
-window.addEventListener("hashchange", () => { if (data) { renderTeam(); ( $("team-view").hidden ? $("cards") : $("team-view").querySelector("a") ).focus(); } });
+window.addEventListener("hashchange", () => { if (data) routeChanged(); });
 $("compare").addEventListener("click", () => {
   const content = node("div", undefined, "compare-options choice-options");
   content.setAttribute("role", "group"); content.setAttribute("aria-label", "Compare teams");
   for (const [team, asset] of Object.entries(data.teams)) {
     const control = pill(asset.name, selected.includes(team), () => {
       selected = selected.includes(team) ? selected.filter((item) => item !== team) : [...selected, team];
-      control.setAttribute("aria-pressed", String(selected.includes(team))); save(); renderCards();
+      control.setAttribute("aria-pressed", String(selected.includes(team))); save(); render();
     });
     control.dataset.team = team; control.prepend(logo(team, 24)); content.append(control);
   }
   popup("Compare teams", content, $("compare"));
 });
-$("clear-compare").addEventListener("click", () => { selected = []; save(); renderCards(); $("compare").focus(); });
+$("clear-compare").addEventListener("click", () => { selected = []; save(); render(); $("compare").focus(); });
 $("info").addEventListener("click", () => {
   const content = node("div");
   if (!data) content.append(node("p", "Weekly data unavailable"));
@@ -242,7 +398,7 @@ async function load() {
     for (const entry of data.weeks) { const option = node("option", entry.label); option.value = entry.week; $("week").append(option); }
     $("week").value = week.week;
     for (const id of ["week", "offense", "defense", "sort", "compare"]) $(id).disabled = false;
-    render();
+    render(); if (currentTeam()) { focusRoute(); animateRoute(); }
   } catch { $("message").textContent = "Weekly data unavailable"; }
 }
 load();
