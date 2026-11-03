@@ -186,7 +186,8 @@ test("injury detail follows card width, clips long bodies and stays available to
     return {width:box.width,height:box.height,name:getComputedStyle(el.querySelector(".player-name")).display};
   });
   if (geometry.name === "none") {
-    expect(geometry.width).toBe(40); expect(geometry.height).toBe(40);
+    expect(geometry.width).toBeCloseTo(40, 3); expect(geometry.height).toBeCloseTo(40, 3);
+    await expect(qb).toHaveCSS("width", "40px"); await expect(qb).toHaveCSS("height", "40px");
     expect(await renderedBody(qb)).toBe(false);
   }
   await expect(qb.locator(".status-mark")).toBeVisible();

@@ -50,7 +50,23 @@ async function chooseSort(page, value, direction = "best") {
   await page.keyboard.press("Escape");
   await expect(page.locator("dialog")).toBeHidden();
 }
+async function revealStrip(page, team) {
+  // Sticky geometry describes the painted pile, not the strip's normal-flow slot.
+  // Scroll that slot into the open middle of the native stack before tapping it.
+  await strip(page, team).evaluate(el => {
+    const cards = el.closest("#cards"), articles = [...cards.children];
+    let offset = parseFloat(getComputedStyle(cards).paddingTop) || 0;
+    for (const article of articles) {
+      const css = getComputedStyle(article);
+      offset += parseFloat(css.marginTop) || 0;
+      if (article.contains(el)) break;
+      offset += article.offsetHeight + (parseFloat(css.marginBottom) || 0);
+    }
+    cards.scrollTop = Math.max(0, offset - cards.clientHeight / 3);
+  });
+}
 async function lift(page, team) {
+  await revealStrip(page, team);
   await strip(page, team).click();
   await expect(page).toHaveURL(new RegExp(`#team=${team}$`));
   await expect(page.locator("#wallet-view")).toBeVisible();
@@ -164,14 +180,15 @@ test("lifting automatically pairs units and player taps preserve the lifted team
 
 test("native back and forward restore the lift and its exact stack position", async ({page}) => {
   await open(page);
-  await strip(page, "WAS").scrollIntoViewIfNeeded();
+  await revealStrip(page, "WAS");
   const position = await page.locator("#cards").evaluate(el => ({page:scrollY, stack:el.scrollTop}));
   const order = await page.locator("#cards .wallet-strip").evaluateAll(els => els.map(el => el.dataset.team));
   await lift(page, "WAS");
   await page.goBack(); await collapsed(page);
   await expect(strip(page, "WAS")).toBeFocused();
   const restored = await page.locator("#cards").evaluate(el => ({page:scrollY, stack:el.scrollTop}));
-  expect(restored.page).toBeCloseTo(position.page, 0); expect(restored.stack).toBeCloseTo(position.stack, 0);
+  expect(position.stack).toBeGreaterThan(0);
+  expect(restored.page).toBe(0); expect(restored.stack).toBeCloseTo(position.stack, 0);
   expect(await page.locator("#cards .wallet-strip").evaluateAll(els => els.map(el => el.dataset.team))).toEqual(order);
   await page.goForward(); await expect(page.locator("#wallet-view")).toBeVisible();
   await expect(liftedStrip(page)).toHaveAttribute("data-team", "WAS");
@@ -206,10 +223,11 @@ test("the bottom pile stays fixed while the lifted matchup scrolls and dismisses
   await expect(strip(page, "ARI")).toBeFocused();
 });
 
-test("a downward swipe collapses the strip, but a player gesture never collapses it", async ({page}) => {
+test("native downward gestures preserve the lifted team, including on players", async ({page, browserName}) => {
+  test.skip(browserName !== "chromium", "Raw touch dispatch uses Chromium's CDP; native scrolling is checked separately in every engine.");
   await open(page); await lift(page, "ARI");
-  await swipeDown(page, liftedStrip(page)); await collapsed(page);
-  await lift(page, "ARI");
+  await swipeDown(page, liftedStrip(page));
+  await expect(page.locator("#wallet-view")).toBeVisible(); await expect(page).toHaveURL(/#team=ARI$/);
   await swipeDown(page, page.locator('#wallet-view .player[data-slot="1"]').first(), 70);
   await expect(page.locator("#wallet-view")).toBeVisible(); await expect(page).toHaveURL(/#team=ARI$/);
   if (await page.locator("dialog").isVisible()) await page.keyboard.press("Escape");

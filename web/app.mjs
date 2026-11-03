@@ -26,10 +26,11 @@ const link = (text, url) => {
 };
 const localTime = (value) => value ? new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Not supplied";
 document.querySelector(".skip-link").addEventListener("click", (event) => {
-  event.preventDefault(); $("main").focus();
+  event.preventDefault(); (phone.matches ? ($("wallet-scroll") || $("cards")) : $("main")).focus();
 });
-for (const [code, label] of Object.values(statusMarks)) {
-  const item = node("li"); item.append(node("strong", code), document.createTextNode(` ${label}`));
+for (const [status, [code, label]] of Object.entries(statusMarks)) {
+  const item = node("li"), badge = node("span", code, `injury-badge status-${status}`);
+  badge.setAttribute("role", "img"); badge.setAttribute("aria-label", label); item.append(badge);
   $("status-key-list").append(item);
 }
 const storageKey = "sideline.compare";
@@ -171,7 +172,6 @@ function stats(record, unitSide) {
   });
   return section;
 }
-function reportNotice(own) { return node("p", own.report ? "" : "No injury report yet", "report-notice"); }
 function visibleTeams() {
   return sortTeams(selected.length ? selected : Object.keys(data.teams), week, side, sortBy, sortDirection);
 }
@@ -204,15 +204,17 @@ function walletStrip(team, expanded = false) {
   return control;
 }
 function renderCards() {
-  const teams = visibleTeams();
+  const teams = visibleTeams(), scrollTop = $("cards").scrollTop;
+  $("cards").tabIndex = phone.matches ? 0 : -1;
   $("sort").textContent = `${sortOptions().find(([value]) => value === sortBy)[1]} · ${directionLabel(sortDirection)}`;
   $("cards").replaceChildren();
   $("message").textContent = `${teams.length} teams · ${week.stats_through ? `Stats through week ${week.stats_through}` : week.week === 1 ? "No prior games" : "Stats unavailable"}`;
   $("compare").textContent = selected.length ? `Compare (${selected.length})` : "Compare";
   $("clear-compare").hidden = !selected.length;
-  for (const team of teams) {
+  for (const [index, team] of teams.entries()) {
     const own = week.teams[team], card = node("article", undefined, "card");
     card.dataset.team = team;
+    card.style.setProperty("--stack-index", index);
     card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
     if (phone.matches) card.append(walletStrip(team));
     else {
@@ -221,18 +223,19 @@ function renderCards() {
       if (own.opponent) { opponent.append(node("span", "vs"), logo(own.opponent, 24)); opponent.setAttribute("aria-label", `Opponent ${data.teams[own.opponent].name}`); opponent.setAttribute("role", "img"); }
       else opponent.textContent = own.bye ? "Bye" : "Opponent unavailable";
       heading.append(opponent);
-      card.append(heading, stats(own.stats, side), reportNotice(own), field(own[side], side), node("div", "Line of scrimmage", "scrimmage"));
+      card.append(heading, stats(own.stats, side), field(own[side], side), node("div", "Line of scrimmage", "scrimmage"));
     }
     $("cards").append(card);
   }
+  $("cards").scrollTop = scrollTop;
 }
 function matchupContent(team, unit, heading) {
   const own = week.teams[team], otherUnit = unit === "offense" ? "defense" : "offense";
   const content = document.createDocumentFragment(), opponent = node("section", undefined, "opponent-half");
-  content.append(heading, stats(own.stats, unit), reportNotice(own), field(own[unit], unit), node("div", "Line of scrimmage", "scrimmage"));
+  content.append(heading, stats(own.stats, unit), field(own[unit], unit), node("div", "Line of scrimmage", "scrimmage"));
   if (own.opponent) {
     const other = week.teams[own.opponent];
-    opponent.append(field(other[otherUnit], otherUnit, true), reportNotice(other), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
+    opponent.append(field(other[otherUnit], otherUnit, true), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
   } else opponent.append(node("p", own.bye ? "Bye" : "Opponent unavailable", "bye"));
   content.append(opponent);
   return content;
@@ -249,28 +252,12 @@ function walletPile(team) {
   count.setAttribute("aria-hidden", "true"); pile.append(count);
   return pile;
 }
-function swipeToClose(scroll) {
-  let start;
-  scroll.addEventListener("touchstart", event => {
-    start = scroll.scrollTop <= 0 && event.touches.length === 1 && !event.target.closest(".player")
-      ? {x:event.touches[0].clientX, y:event.touches[0].clientY} : null;
-  }, {passive:true});
-  scroll.addEventListener("touchend", event => {
-    const touch = event.changedTouches[0];
-    if (start && scroll.scrollTop <= 0 && touch.clientY - start.y >= 64 && Math.abs(touch.clientX - start.x) < (touch.clientY - start.y) / 2) {
-      if (event.cancelable) event.preventDefault(); closeTeam();
-    }
-    start = null;
-  }, {passive:false});
-  scroll.addEventListener("touchcancel", () => start = null, {passive:true});
-}
 function renderTeam() {
   const team = currentTeam(), wallet = Boolean(team && phone.matches);
   const scrollTop = $("wallet-view").dataset.team === team ? ($("wallet-scroll")?.scrollTop || 0) : 0;
   $("cards").hidden = Boolean(team); $("cards").inert = Boolean(team);
   $("team-view").hidden = !team || phone.matches;
   $("wallet-view").hidden = !wallet;
-  document.body.classList.toggle("wallet-open", wallet);
   $("wallet-view").dataset.team = wallet ? team : "";
   $("wallet-view").replaceChildren(); $("team-view").replaceChildren();
   if (!team) return;
@@ -281,7 +268,7 @@ function renderTeam() {
     card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
     card.append(matchupContent(team, side, walletStrip(team, true)));
     card.querySelector(".opponent-half").classList.add("wallet-opponent");
-    scroll.append(card); swipeToClose(scroll);
+    scroll.append(card);
     $("wallet-view").append(scroll, walletPile(team)); scroll.scrollTop = scrollTop;
   } else {
     const toolbar = node("div", undefined, "team-toolbar"), back = node("a", "All teams"); back.href = "#";
@@ -301,10 +288,30 @@ function preparePhoneLink() {
   const team = currentTeam();
   if (phone.matches && team && history.state?.sidelineTeam !== team) {
     const target = location.href;
-    history.replaceState({stackY:0, focusTeam:team}, "", baseURL());
+    history.replaceState({stackY:0, pageY:0, focusTeam:team}, "", baseURL());
     history.pushState({sidelineTeam:team}, "", target);
   }
 }
+function exposedStackStrip(control) {
+  const box = control.getBoundingClientRect(), port = $("cards").getBoundingClientRect();
+  return box.top >= port.top && box.bottom <= port.bottom && control.contains(
+    document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
+}
+function revealStackStrip(control) {
+  const cards = $("cards");
+  if (exposedStackStrip(control)) return;
+  let top = 0;
+  for (const card of cards.children) {
+    const style = getComputedStyle(card);
+    top += parseFloat(style.marginTop);
+    if (card.contains(control)) break;
+    top += card.offsetHeight + parseFloat(style.marginBottom);
+  }
+  cards.scrollTop = top - cards.clientHeight / 3;
+}
+$("cards").addEventListener("focusin", event => {
+  if (phone.matches && event.target.matches(".wallet-strip:focus-visible")) revealStackStrip(event.target);
+});
 function focusRoute() {
   if (!data) return;
   const team = currentTeam();
@@ -314,10 +321,13 @@ function focusRoute() {
   } else {
     const target = phone.matches && history.state?.focusTeam
       ? ($("cards").querySelector(`[data-team="${history.state.focusTeam}"] .wallet-strip`) || $("cards")) : $("cards");
-    target.focus({preventScroll:true}); window.scrollTo(0, history.state?.stackY || 0);
-    if (target !== $("cards")) {
-      const box = target.getBoundingClientRect();
-      if (box.bottom <= 0 || box.top >= innerHeight) target.scrollIntoView({block:"nearest"});
+    if (phone.matches) {
+      $("cards").scrollTop = history.state?.stackY || 0;
+      // Keep an edge tap's original offset; focus the region if its strip is buried.
+      const exposed = target === $("cards") || exposedStackStrip(target);
+      (exposed ? target : $("cards")).focus({preventScroll:true});
+    } else {
+      target.focus({preventScroll:true}); window.scrollTo(0, history.state?.pageY || 0);
     }
   }
 }
@@ -329,16 +339,16 @@ function animateRoute(origin) {
     card.animate([{transform:`translateY(${origin ? origin.top - card.getBoundingClientRect().top : 24}px)`, opacity:.8}, {transform:"none", opacity:1}], options);
     for (const layer of $("wallet-pile").querySelectorAll(".pile-layer"))
       layer.animate([{transform:"translateY(-72px)", opacity:.2}, {transform:"none", opacity:1}], options);
-  } else $("cards").animate([{transform:"translateY(10px)", opacity:.6}, {transform:"none", opacity:1}], options);
+  }
 }
 function routeChanged(origin) {
   if ($("popup").open) $("popup").close();
-  preparePhoneLink(); renderTeam(); window.scrollTo(0, currentTeam() ? 0 : (history.state?.stackY || 0));
+  preparePhoneLink(); renderTeam(); window.scrollTo(0, phone.matches || currentTeam() ? 0 : (history.state?.pageY || 0));
   focusRoute(); animateRoute(origin);
 }
 function openTeam(team, control) {
   const origin = control?.getBoundingClientRect();
-  history.replaceState({stackY:window.scrollY, focusTeam:team}, "", location.href);
+  history.replaceState({stackY:$("cards").scrollTop, pageY:window.scrollY, focusTeam:team}, "", location.href);
   history.pushState({sidelineTeam:team}, "", `#team=${team}`);
   routeChanged(origin);
 }
