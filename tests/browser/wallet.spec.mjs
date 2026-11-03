@@ -61,6 +61,8 @@ async function collapsed(page) {
   await expect(page.locator("#cards")).toBeVisible();
 }
 async function swipeDown(page, target, distance = 100) {
+  // Raw CDP touches bypass Playwright actionability, so measure after the lift settles.
+  await target.scrollIntoViewIfNeeded();
   const box = await target.boundingBox();
   if (!box) throw new Error("Swipe target is not visible");
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
