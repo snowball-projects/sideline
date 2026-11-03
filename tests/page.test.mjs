@@ -2,57 +2,50 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { rows, searchTeam, restoreSelections } from "../web/field.mjs";
+import { rows, starters, playerStatus, recordText, sortTeams } from "../web/field.mjs";
 import { fixture } from "./fixture.mjs";
-test("offensive and defensive search destinations follow the selected week and never invent a bye opponent", () => {
-  const feed = fixture();
-  assert.equal(
-    searchTeam({ team: "ARI", position: "QB" }, feed.weeks[0]),
-    "ARI",
-  );
-  assert.equal(
-    searchTeam({ team: "ARI", position: "LCB" }, feed.weeks[0]),
-    "ATL",
-  );
-  assert.equal(
-    searchTeam({ team: "ARI", position: "LCB" }, feed.weeks[1]),
-    null,
-  );
-  assert.deepEqual(
-    restoreSelections(
-      [
-        { team: "ARI", side: "opponent", unit: "defense" },
-        "ARI",
-        "ATL",
-        "invalid",
-      ],
-      feed.teams,
-    ),
-    ["ARI", "ATL"],
-  );
-  assert.equal(
-    restoreSelections(Object.keys(feed.teams), feed.teams).length,
-    6,
-  );
-});
-test("every current fixture starter has one field row, in the required field order", () => {
+test("field places every supported starter once, with scrimmage-adjacent players last", () => {
   const team = fixture().weeks[0].teams.ARI;
   for (const side of ["offense", "defense"])
-    assert.deepEqual(
-      rows(team[side], side)
-        .flat()
-        .map((group) => group.slot)
-        .sort((a, b) => a - b),
-      team[side].map((group) => group.slot).sort((a, b) => a - b),
-    );
-  assert.deepEqual(
-    rows(team.offense, "offense")[0].map((group) => group.position),
-    ["QB", "RB"],
-  );
-  assert.deepEqual(
-    rows(team.defense, "defense").map((row) => row[0].position),
-    ["LDE", "MLB", "LCB"],
-  );
+    assert.deepEqual(rows(team[side], side).flat().map((group) => group.slot).sort((a,b) => a-b), starters(team[side], side).map((group) => group.slot).sort((a,b) => a-b));
+  assert.deepEqual(rows(team.offense, "offense")[0].map((group) => group.position), ["QB", "RB"]);
+  assert.deepEqual(rows(team.defense, "defense").map((row) => row[0]?.position), [undefined, "MLB", "LCB"]);
+  assert.equal(starters([...team.offense, {position: "FB"}], "offense").length, 11);
+});
+test("depth slots place TE at scrimmage, safeties deep, nickel inside corners, and source holes stay unavailable", () => {
+  const slot = (position, index) => ({ position, slot: index + 1, players: [{ name: position }] });
+  const offense = ["WR", "WR", "LT", "LG", "C", "RG", "RT", "WR", "QB", "TE", "RB"].map(slot);
+  const attacking = rows(offense, "offense");
+  assert.deepEqual(attacking[1].map((group) => group.slot), [1, 2, 8]);
+  assert.deepEqual(attacking[2].map((group) => group.position), ["LT", "LG", "C", "RG", "RT", "TE"]);
+  const defense = ["LDE", "NT", "RDE", "WLB", "LILB", "RILB", "SLB", "LCB", "SS", "FS", "RCB", "NB"].map(slot);
+  const defending = rows(defense, "defense");
+  assert.deepEqual(defending[0].map((group) => group.position), ["SS", "FS"]);
+  assert.deepEqual(defending[1].map((group) => group.position), ["WLB", "LILB", "RILB", "SLB", "NB"]);
+  assert.deepEqual(defending[2].map((group) => group.position), ["LCB", "LDE", "NT", "RDE", "RCB"]);
+  const missing = rows(defense.filter((group) => group.slot !== 2), "defense").flat().find((group) => group.slot === 2);
+  assert.equal(missing.position, "Slot 2");
+  assert.equal(missing.unavailable, true);
+  assert.equal(missing.players, undefined);
+  assert.deepEqual(rows([], "defense"), [[], [], []]);
+});
+test("severity respects game statuses before practice; missing reports remain unknown", () => {
+  assert.deepEqual(playerStatus({injury: {badges: ["LP", "OUT"]}}, true), {status: "out", label: "Out"});
+  assert.equal(playerStatus({injury: {badges: ["DNP", "Q"]}}, true).status, "questionable");
+  assert.equal(playerStatus({}, false).status, "unknown");
+  assert.equal(playerStatus({}, true).label, "No injury listed");
+  assert.equal(playerStatus({injury:{injury:"Ankle",game:"Not listed",practice:"Full Participation in Practice",badges:[]}},true).label,"Full participation · No game designation");
+});
+test("record, selected-unit rank and Out sorts honor ties and unavailable data", () => {
+  const metric = (rank) => Array.from({length:4}, () => ({rank}));
+  const team = (wins, losses, ties, rank, out = false) => ({record: {wins,losses,ties}, stats: {offense:metric(rank), defense:metric(4-rank)}, offense:[{position:"QB", players:[{injury: out ? {badges:["OUT"]} : null}]}], defense:[], report:true});
+  const week = {teams: {ARI:team(2,1,1,3), ATL:team(3,1,0,2), BAL:team(1,1,0,1,true)}};
+  assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","record"),["ATL","ARI","BAL"]);
+  assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","stat-0"),["BAL","ATL","ARI"]);
+  assert.deepEqual(sortTeams(Object.keys(week.teams),week,"defense","stat-0"),["ARI","ATL","BAL"]);
+  assert.equal(sortTeams(Object.keys(week.teams),week,"offense","out")[0],"BAL");
+  assert.equal(recordText({wins:2,losses:1,ties:1}),"2-1-1");
+  assert.equal(recordText(null),"Record unavailable");
 });
 test("strict CSP, iPhone manifest and existing logo provenance remain intact", async () => {
   const html = await readFile(
