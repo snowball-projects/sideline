@@ -54,7 +54,7 @@ h2 a:hover { text-decoration: underline; }
 .field-row { display: flex; align-items: center; justify-content: space-around; gap: 4px; min-width: 0; }
 .below .field-row:first-of-type { grid-row: 3; }
 .below .field-row:last-of-type { grid-row: 1; }
-.player, .player-unavailable { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; padding: 3px 3px; width: 100px; flex: 1; max-width: 160px; height: 42px; min-width: 0; border-color: #aab7ae; background: #edf0ed; }
+.player, .player-unavailable { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; padding: 3px 3px; width: 100px; flex: 1; max-width: 160px; height: 42px; min-width: 0; border-color: var(--border); background: var(--surface); }
 .player-unavailable { border: 1px dashed #aab7ae; border-radius: 8px; background: #edf0ed; color: var(--muted); }
 .player-name { font-size: 11px; font-weight: 650; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field-row:has(> :nth-child(6)) .player-name { font-size: 10px; }
@@ -67,7 +67,6 @@ h2 a:hover { text-decoration: underline; }
 .status-questionable { background: #efd18c; border-color: #c9a44d; }
 .status-dnp { background: #e5b9db; border-color: #bd8eaf; }
 .status-limited { background: #c5d9ed; border-color: #91b0d0; }
-.status-unknown { background: #edf0ed; border-color: #aab7ae; border-style: dashed; }
 .star { pointer-events: none; position: absolute; right: -5px; top: -7px; font-size: 15px; line-height: 16px; color: #805100; background: #fff2bd; border-radius: 50%; padding: 0 1px; }
 .field-empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--muted); font-size: 12px; }
 .scrimmage { text-align: center; font-size: 9px; line-height: 16px; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid var(--ink); }

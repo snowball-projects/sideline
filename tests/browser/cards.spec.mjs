@@ -71,8 +71,8 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
   await expect(page.locator(".player")).toHaveCount(0);
   await page.locator("#week").selectOption("3");
   await expect(page.locator(".report-notice")).toHaveText("No injury report yet");
-  await expect(page.locator(".status-full,.status-unlisted,.status-undesignated")).toHaveCount(0);
-  await expect(page.locator(".status-unknown")).toHaveCount(3);
+  await expect(page.locator(".status-mark")).toHaveCount(0);
+  await expect(page.locator(".player")).toHaveClass(["player","player","player"]);
 });
 test("record and stat sorts are best first, and keyboard opens the same team page", async ({page}) => {
   await open(page,{week:2});
@@ -185,7 +185,7 @@ test("real collected snapshot renders all observed slots and stars for both unit
 
 function sourceMissingPhilly(data) { const groups=data.weeks.find((w)=>w.week===9).teams.PHI.defense; return groups.length && !groups.some((g)=>g.slot===2); }
 
-test("visible status marks distinguish every state without color or opening a player", async ({page},info) => {
+test("only report entries carry visible status codes; unlisted players stay plain", async ({page},info) => {
   const data=structuredClone(feed), own=data.weeks[0].teams.ARI;
   const values=[
     {badges:["OUT","LP"],game:"Out"}, {badges:["D"],game:"Doubtful"},
@@ -197,8 +197,13 @@ test("visible status marks distinguish every state without color or opening a pl
   values.forEach((injury,i)=>own.offense[i].players[0].injury=injury && {injury:"Ankle",game:"Not listed",practice:"Not listed",...injury});
   own.offense[0].players[0].star=true;
   await open(page,{data,selections:["ARI","ATL"]});
-  for(const [i,code] of ["OUT","D","Q","DNP","LP","FP","NL","ND"].entries()) {
+  for(const [i,code] of ["OUT","D","Q","DNP","LP","FP",null,"ND"].entries()) {
     const player=cardFor(page,"ARI").locator(`.player[data-slot="${i+1}"]`);
+    if (code === null) {
+      await expect(player.locator(".status-mark")).toHaveCount(0);
+      await expect(player).toHaveClass("player");
+      continue;
+    }
     await expect(player.locator(".status-mark")).toBeVisible();
     await expect(player.locator(".status-mark")).toHaveText(code);
     expect(await player.evaluate((el)=>{
@@ -207,16 +212,18 @@ test("visible status marks distinguish every state without color or opening a pl
     })).toBe(true);
   }
   const unknown=cardFor(page,"ATL").locator(".player").first();
-  await expect(unknown.locator(".status-mark")).toHaveText("?");
-  await expect(unknown).toHaveClass(/status-unknown/);
+  await expect(unknown.locator(".status-mark")).toHaveCount(0);
+  await expect(unknown).toHaveClass("player");
+  await expect(unknown).toHaveCSS("background-color","rgb(255, 255, 255)");
   const unlisted=cardFor(page,"ARI").locator('.player[data-slot="7"]');
-  await expect(unlisted).toHaveClass(/status-unlisted/);
+  await expect(unlisted).toHaveClass("player");
+  await expect(unlisted).toHaveCSS("background-color","rgb(255, 255, 255)");
   const full=cardFor(page,"ARI").locator('.player[data-slot="6"]');
   await expect(full).toHaveClass(/status-full/);
   await expect(page.locator("dialog")).not.toBeVisible();
   await page.locator("#status-key summary").focus(); await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeVisible();
-  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practise","LP Limited in practice","FP Full participation","NL No injury listed","ND No game designation","? No injury report"]);
+  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practise","LP Limited in practice","FP Full participation","ND No game designation"]);
   await page.screenshot({path:info.outputPath("status-key.png")});
   await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeHidden();
@@ -226,4 +233,21 @@ test("visible status marks distinguish every state without color or opening a pl
     await page.locator("#status-key summary").tap();
     await expect(page.locator("#status-key-list")).toBeHidden();
   }
+});
+
+test("matchup pages keep ordinary players unmarked and preserve their popup facts", async ({page}) => {
+  await open(page,{selections:["ARI"]});
+  await cardFor(page,"ARI").getByRole("link",{name:"ARI",exact:true}).click();
+  const own=page.locator(".matchup .field-half").first(), other=page.locator(".matchup .field-half").last();
+  await expect(own.locator(".status-mark")).toHaveText(["Q"]);
+  await expect(other.locator(".status-mark")).toHaveCount(0);
+  await expect(page.locator("#status-key-list")).not.toContainText("NL");
+  await expect(page.locator("#status-key-list")).not.toContainText("No injury report");
+  const normal=own.locator('.player[data-slot="2"]');
+  await expect(normal).toHaveClass("player");
+  await normal.click();
+  await expect(page.locator("dialog dd")).toHaveText(["Not listed","Not listed","Not listed"]);
+  await page.keyboard.press("Escape");
+  await other.locator(".player").first().click();
+  await expect(page.locator("dialog dd")).toHaveText(["No injury report yet","No injury report yet","No injury report yet"]);
 });
