@@ -97,6 +97,9 @@ export function fixtureInputs() {
       team,
       opponent_team: other,
       player_id: `def-${team}`,
+      position: "DE",
+      passing_yards: 0, passing_tds: 0, rushing_yards: 0, rushing_tds: 0,
+      receiving_yards: 0, receiving_tds: 0,
       ...counts,
     });
     if (i === 0)

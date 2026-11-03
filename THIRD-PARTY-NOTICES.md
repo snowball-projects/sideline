@@ -54,7 +54,12 @@ Statistics use complete, settled regular-season weeks before the selected week.
 Schedule scores supply points; net yards include sack yards lost. Sacks and
 turnovers are totals. Competition ranks preserve ties. Gold stars retain the
 league top-10 definition in tackles, sacks or interceptions, including ties,
-only after weekly player counts reconcile to team counts. No defensive-quality,
+only after weekly player counts reconcile to team counts. Offensive stars use
+position-specific top-10 passing yards or touchdowns for QBs, rushing yards or
+touchdowns for RBs, and receiving yards or touchdowns for WRs and TEs separately,
+including ties. Offensive linemen, kickers and punters have no offensive stars.
+Win-loss-tie records use the same completed pre-week games as statistics.
+No defensive-quality,
 participation or fantasy-advantage score is implied. Source URLs, file dates,
 collection dates and review dates are retained in the single published data file.
 

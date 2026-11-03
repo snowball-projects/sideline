@@ -290,3 +290,82 @@ test("an explicit season remains authoritative during the January rollover windo
     sourceDefinitions(2028).map((source) => source.url),
   );
 });
+
+const encodeRows = (rows) => [Object.keys(rows[0]).join(","), ...rows.map((row) =>
+  Object.values(row).map((value) => JSON.stringify(String(value))).join(","))].join("\n");
+test("records use the statistics window, including ties, byes and unsettled games", () => {
+  const inputs = fixtureInputs();
+  inputs.schedule.csv = inputs.schedule.csv.replace('"10","20"', '"10","10"');
+  const feed = normalize(inputs, { season: 2026, now });
+  assert.deepEqual(feed.weeks[0].teams.ARI.record, { wins: 0, losses: 0, ties: 0 });
+  assert.deepEqual(feed.weeks[1].teams.ARI.record, { wins: 0, losses: 0, ties: 1 });
+  assert.deepEqual(feed.weeks[1].teams.ATL.record, { wins: 0, losses: 0, ties: 1 });
+  assert.deepEqual(feed.weeks[1].teams.BAL.record, { wins: 0, losses: 1, ties: 0 });
+  assert.deepEqual(feed.weeks[1].teams.BUF.record, { wins: 1, losses: 0, ties: 0 });
+  assert.deepEqual(feed.weeks[2].teams.ARI.record, feed.weeks[1].teams.ARI.record);
+  const early = { ...inputs, depth: { ...inputs.depth, csv: encodeRows(parseCsv(inputs.depth.csv).filter((row) => row.dt < "2026-09-11")) } };
+  const unsettled = normalize(early, { season: 2026, now: new Date("2026-09-11T12:00:00Z") });
+  assert.deepEqual(unsettled.weeks[1].teams.ARI.record, { wins: 0, losses: 0, ties: 0 });
+  inputs.schedule.csv = inputs.schedule.csv.split("\n").filter((_, i) => i !== 3).join("\n");
+  assert.equal(normalize(inputs, { season: 2026, now }).weeks[1].teams.ARI.record, null);
+});
+test("offensive stars rank QBs, RBs, WRs and TEs separately, keep positive ties and exclude other positions", () => {
+  const inputs = fixtureInputs(), original = parseCsv(inputs.playerStats.csv), rows = [...original];
+  const metrics = { QB: "passing", RB: "rushing", WR: "receiving", TE: "receiving" };
+  for (const [position, kind] of Object.entries(metrics)) {
+    for (let i = 0; i < 13; i++) {
+      const row = { ...original[i], player_id: `${position}-${i}`, position,
+        def_tackles_solo: 0, def_tackles_with_assist: 0, def_tackle_assists: 0,
+        def_sacks: 0, def_interceptions: 0 };
+      row[`${kind}_yards`] = position === "TE" ? 13 - i : 500 - i;
+      row[`${kind}_tds`] = i === 12 ? 1 : 0;
+      if (i === 10) row[`${kind}_yards`] = position === "TE" ? 4 : 491; // tied tenth
+      rows.push(row);
+    }
+  }
+  // A zero-event position must never receive a star merely because everyone ties.
+  rows.push({ ...original[0], player_id: "zero", position: "QB",
+    def_tackles_solo: 0, def_tackles_with_assist: 0, def_tackle_assists: 0,
+    def_sacks: 0, def_interceptions: 0 });
+  inputs.playerStats.csv = encodeRows(rows);
+  const depth = parseCsv(inputs.depth.csv);
+  for (const [position] of Object.entries(metrics))
+    for (let i = 0; i < 13; i++) depth.push({ ...depth[0], team: "ARI", pos_slot: 20,
+      pos_abb: position, pos_rank: i + 1, gsis_id: `${position}-${i}`, player_name: `${position}-${i}`,
+      dt: "2026-09-16T12:00:00Z" });
+  // Give each position its own slot.
+  for (const row of depth) if (+row.pos_slot === 20)
+    row.pos_slot = 12 + Object.keys(metrics).indexOf(row.pos_abb);
+  depth.push({ ...depth[0], pos_slot: 16, pos_abb: "QB", gsis_id: "zero", player_name: "zero",
+    dt: "2026-09-16T12:00:00Z" });
+  inputs.depth.csv = encodeRows(depth);
+  const feed = normalize(inputs, { season: 2026, now });
+  for (const position of Object.keys(metrics)) {
+    const players = feed.weeks[1].teams.ARI.offense.find((g) => g.slot === 12 + Object.keys(metrics).indexOf(position)).players;
+    assert.equal(players.filter((p) => p.star).length, 12, position);
+    assert.equal(players[10].star, true, "tie at tenth");
+    assert.equal(players[11].star, undefined, "outside top ten");
+    assert.equal(players[12].star, true, "touchdown leader");
+  }
+  assert.equal(feed.weeks[1].teams.ARI.offense.find((g) => g.slot === 16).players[0].star, undefined);
+  assert.ok(feed.weeks[0].teams.ARI.offense.every((g) => g.players.every((p) => !p.star)));
+  for (const position of ["LT", "K", "P"]) {
+    inputs.playerStats.csv = encodeRows(rows.map((row) => row.player_id === "QB-0" ? { ...row, position } : row));
+    assert.equal(normalize(inputs, { season: 2026, now }).weeks[1].teams.ARI.offense.find((g) => g.slot === 12).players[0].star, undefined);
+  }
+});
+
+test("offensive qualifications never award defensive stars to two-way players", () => {
+  const inputs = fixtureInputs(), rows = parseCsv(inputs.playerStats.csv);
+  rows[0] = { ...rows[0], position: "WR", receiving_yards: "100" };
+  inputs.playerStats.csv = encodeRows(rows);
+  assert.equal(normalize(inputs, { season: 2026, now }).weeks[1].teams.ARI.defense[0].players[0].star, undefined);
+});
+
+test("unidentified offensive production fails collection rather than disappearing from ranks", () => {
+  const inputs = fixtureInputs(), rows = parseCsv(inputs.playerStats.csv);
+  rows.push({ ...rows[0], player_id: "", position: "QB", passing_yards: "500", passing_tds: "5",
+    def_tackles_solo: "0", def_tackles_with_assist: "0", def_tackle_assists: "0", def_sacks: "0", def_interceptions: "0" });
+  inputs.playerStats.csv = encodeRows(rows);
+  assert.throws(() => normalize(inputs, { season: 2026, now }), /unidentified statistics/);
+});
