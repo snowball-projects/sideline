@@ -106,6 +106,29 @@ test("collapsed strips overlap, show opponents and match selected-unit Out count
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test("Out dots retain a visible count in forced-colors mode", async ({page}, info) => {
+  await page.emulateMedia({forcedColors:"active"});
+  await open(page, {selections:["ARI", "ATL", "BUF", "BAL"]});
+  await expect(strip(page, "ARI").locator(".out-dot")).toHaveCount(2);
+  await expect(strip(page, "ATL").locator(".out-dot")).toHaveCount(1);
+  const dot = strip(page, "ARI").locator(".out-dot").first();
+  await expect(dot).toHaveCSS("outline-style", "solid");
+  await expect(dot).toHaveCSS("outline-width", "1px");
+  const colors = await dot.evaluate(el => ({
+    outline:getComputedStyle(el).outlineColor,
+    surface:getComputedStyle(el.closest(".wallet-strip")).backgroundColor,
+  }));
+  expect(colors.outline).not.toBe(colors.surface);
+  await page.screenshot({path:info.outputPath("wallet-forced-colors.png")});
+  await page.locator("#defense").click();
+  await expect(strip(page, "ARI").locator(".out-dot")).toHaveCount(1);
+  await expect(strip(page, "ATL").locator(".out-dot")).toHaveCount(2);
+  await lift(page, "ARI");
+  const liftedDots = liftedStrip(page).locator(".out-dot");
+  await expect(liftedDots).toHaveCount(1);
+  await expect(liftedDots).toHaveCSS("outline-style", "solid");
+});
+
 test("lifting automatically pairs units and player taps preserve the lifted team", async ({page}, info) => {
   const {errors} = await open(page);
   await lift(page, "ARI");

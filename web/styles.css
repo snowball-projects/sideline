@@ -170,3 +170,7 @@ details { margin-block: 18px; } summary { cursor: pointer; }
   #wallet-pile:hover { background: transparent; }
   #wallet-pile:hover .pile-layer { background: var(--hover); }
 }
+
+@media (forced-colors: active) {
+  .out-dot { outline: 1px solid ButtonText; }
+}
