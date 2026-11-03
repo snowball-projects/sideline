@@ -33,7 +33,7 @@ export default defineConfig({
       use: {browserName:"chromium", viewport:{width:768,height:1024}, hasTouch:true},
     },
     {
-      name: "narrow-chromium", testMatch: ["**/wallet.spec.mjs", "**/players.spec.mjs"],
+      name: "narrow-chromium", testMatch: ["**/wallet.spec.mjs", "**/players.spec.mjs", "**/scroll.spec.mjs"],
       use: {
         browserName: "chromium",
         viewport: { width: 320, height: 760 },
@@ -42,7 +42,7 @@ export default defineConfig({
       },
     },
     {
-      name: "mobile-chromium", testMatch: ["**/wallet.spec.mjs", "**/players.spec.mjs"],
+      name: "mobile-chromium", testMatch: ["**/wallet.spec.mjs", "**/players.spec.mjs", "**/scroll.spec.mjs"],
       use: {
         browserName: "chromium",
         viewport: { width: 390, height: 844 },

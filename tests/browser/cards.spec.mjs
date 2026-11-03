@@ -95,7 +95,8 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
   await expect(page.locator(".field-empty")).toHaveText("Starters unavailable");
   await expect(page.locator(".player")).toHaveCount(0);
   await page.locator("#week").selectOption("3");
-  await expect(page.locator(".report-notice")).toHaveText("No injury report yet");
+  await expect(page.locator(".report-notice")).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("No injury report yet");
   await expect(page.locator(".status-mark")).toHaveCount(0);
   await expect(page.locator(".player")).toHaveClass(["player","player","player"]);
 });
@@ -265,7 +266,15 @@ test("only report entries carry visible status codes; unlisted players stay plai
   await expect(page.locator("dialog")).not.toBeVisible();
   await page.locator("#status-key summary").focus(); await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeVisible();
-  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practice","LP Limited in practice"]);
+  await expect(page.locator("#status-key-list li")).toHaveText(["OUT","D","Q","DNP","LP"]);
+  for (const [status,label] of [["out","Out"],["doubtful","Doubtful"],["questionable","Questionable"],["dnp","Did not practice"],["limited","Limited in practice"]]) {
+    const badge=page.locator("#status-key-list").getByRole("img",{name:label,exact:true});
+    await expect(badge).toBeVisible();
+    const colors=await cardFor(page,"ARI").locator(`.player.status-${status}`).evaluate(el=>{
+      const css=getComputedStyle(el);return [css.color,css.backgroundColor,css.borderColor];
+    });
+    for (const [index,property] of ["color","background-color","border-color"].entries()) await expect(badge).toHaveCSS(property,colors[index]);
+  }
   await page.screenshot({path:info.outputPath("status-key.png")});
   await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeHidden();
@@ -348,4 +357,16 @@ test("fresh team links and browser back keep the larger-screen matchup page", as
   await page.goBack();
   await expect(page.locator("#cards")).toBeVisible();
   await expect(page.locator("#team-view")).toBeHidden();
+});
+
+
+test("larger screens restore document scroll after opening a deep team card", async ({page}) => {
+  await open(page);
+  const heading = page.locator("#cards .card").last().getByRole("link");
+  await heading.scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => scrollY);
+  expect(before).toBeGreaterThan(0);
+  await heading.click(); await expect(page.locator("#team-view")).toBeVisible();
+  await page.goBack(); await expect(page.locator("#cards")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(before, 0);
 });

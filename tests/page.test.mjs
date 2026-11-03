@@ -90,7 +90,7 @@ test("one browser data request, one collector and no removed runtime or validati
   assert.equal((app.match(/\bfetch\(/g) || []).length, 1);
   assert.doesNotMatch(
     app,
-    /setInterval|ResizeObserver|validate|contributions|coordinator|player-history|injury-history/,
+    /setInterval|ResizeObserver|touchstart|touchmove|touchend|touchcancel|setPointerCapture|validate|contributions|coordinator|player-history|injury-history/,
   );
   assert.doesNotMatch(build, /JSON\.parse|validate|example/);
   assert.deepEqual(
