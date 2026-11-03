@@ -22,7 +22,8 @@ One collector checks six nflverse datasets and writes `web/current.json`.
 GitHub Actions refreshes every four hours and publishes GitHub Pages.
 Failed collection leaves the published site intact. Records and statistics use
 completed league weeks before the selected week. Stars mark top-10 positional
-yards/touchdown leaders or defensive count leaders, including ties.
+yards/touchdown leaders or defensive count leaders, including ties. Tracked
+starter stats publish pre-week values, league ranks and the measures earning stars.
 Depth charts retain observed slot order; missing charts and reports stay unknown.
 Compare choices remain in your browser. Cards use name pills when wide and 40px
 position dots when narrow; larger-screen matchup pages always use pills. Status

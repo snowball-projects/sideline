@@ -484,6 +484,18 @@ function statistics(inputs, games, season) {
   }
   return { teams, players };
 }
+const OFFENSIVE_STATS = { QB: "passing", RB: "rushing", WR: "receiving", TE: "receiving" };
+function rankedPlayerStats(sums, keys) {
+  const values = keys.map((_, index) => [...sums.values()].map((counts) => counts[index]));
+  return new Map([...sums].filter(([, counts]) => counts.some((value) => value !== 0))
+    .map(([id, counts]) => [id, Object.fromEntries(keys.map((key, index) => {
+      const value = counts[index], standing = rank(values[index], value);
+      return [key, { value, rank: standing.rank,
+        ...(standing.tied ? { tied: true } : {}),
+        ...(value > 0 && standing.rank <= 10 ? { star: true } : {}),
+      }];
+    }))]));
+}
 function preWeekStats(week, games, stats, now) {
   let through = 0;
   const accepted = [];
@@ -535,7 +547,7 @@ function preWeekStats(week, games, stats, now) {
       ].forEach((value, index) => (total.defense[index] += value));
     }
   if (!through || Object.values(totals).some((total) => !total.games))
-    return { through: 0, totals: null, stars: { offense: new Set(), defense: new Set() }, records };
+    return { through: 0, totals: null, playerStats: { offense: new Map(), defense: new Map() }, records };
   for (const side of ["offense", "defense"]) {
     for (const total of Object.values(totals))
       for (const index of [0, 1]) total[side][index] /= total.games;
@@ -560,7 +572,7 @@ function preWeekStats(week, games, stats, now) {
       reconciled.get(row.join)[index] += value;
     });
   }
-  const stars = { offense: new Set(), defense: new Set() };
+  const playerStats = { offense: new Map(), defense: new Map() };
   const coverage = [...keys].every((key) =>
     stats.teams
       .get(key)
@@ -568,35 +580,18 @@ function preWeekStats(week, games, stats, now) {
         (value, index) => value === (reconciled.get(key)?.[index] || 0),
       ),
   );
-  if (coverage)
-    for (const [id, counts] of sums)
-      if (
-        counts.some(
-          (value, index) =>
-            value > 0 &&
-            rank(
-              [...sums.values()].map((other) => other[index]),
-              value,
-            ).rank <= 10,
-        )
-      )
-        stars.defense.add(id);
+  if (coverage) playerStats.defense = rankedPlayerStats(sums, ["tackles", "sacks", "interceptions"]);
   // Rank each offensive position separately. Receiving totals never pool WRs
   // with TEs; zero-event ties do not award stars to inactive players.
-  for (const [position, kind] of Object.entries({
-    QB: "passing", RB: "rushing", WR: "receiving", TE: "receiving",
-  })) {
+  for (const [position, kind] of Object.entries(OFFENSIVE_STATS)) {
     const offense = new Map();
     for (const row of stats.players.filter((row) => keys.has(row.join) && row.position === position)) {
       if (!offense.has(row.id)) offense.set(row.id, [0, 0]);
       row.offense[kind].forEach((value, index) => offense.get(row.id)[index] += value);
     }
-    for (const [id, counts] of offense)
-      if (counts.some((value, index) => value > 0 &&
-        rank([...offense.values()].map((other) => other[index]), value).rank <= 10))
-        stars.offense.add(id);
+    playerStats.offense.set(position, rankedPlayerStats(offense, [`${kind}_yards`, `${kind}_tds`]));
   }
-  return { through, totals, stars, records };
+  return { through, totals, playerStats, records };
 }
 const BADGES = {
   Out: "OUT",
@@ -756,7 +751,7 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
   const outputWeeks = weeks.map((week) => {
     const pre = complete
       ? preWeekStats(week.week, games, stats, instant)
-      : { through: 0, totals: null, stars: { offense: new Set(), defense: new Set() }, records: null };
+      : { through: 0, totals: null, playerStats: { offense: new Map(), defense: new Map() }, records: null };
     const teams = Object.fromEntries(
       TEAMS.map((team) => {
         const game = games.find(
@@ -789,24 +784,28 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
               ),
             "Conflicting depth slot",
           );
+          const metrics = side === "defense" ? pre.playerStats.defense.get(id)
+            : pre.playerStats.offense.get(position)?.get(id);
           group.players.push({
             id,
             name,
             order,
             injury: report?.get(id) || null,
-            ...(pre.stars[side].has(id) && (side === "defense" || ["QB", "RB", "WR", "TE"].includes(position))
-              ? { star: true } : {}),
+            ...(Object.values(metrics || {}).some((metric) => metric.star) ? { star: true } : {}),
           });
         }
         const unit = (side) =>
           [...groups.values()]
             .filter((group) => group.side === side)
             .sort((a, b) => a.slot - b.slot)
-            .map(({ position, slot, players }) => ({
-              position,
-              slot,
-              players: players.sort((a, b) => a.order - b.order),
-            }));
+            .map(({ position, slot, players }) => {
+              players.sort((a, b) => a.order - b.order);
+              const starter = players[0], metrics = side === "defense"
+                ? pre.playerStats.defense.get(starter.id)
+                : pre.playerStats.offense.get(position)?.get(starter.id);
+              return { position, slot, players: players.map((player, index) =>
+                index === 0 && metrics ? { ...player, stats: metrics } : player) };
+            });
         return [
           team,
           {
