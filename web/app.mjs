@@ -74,14 +74,17 @@ function field(unit, unitSide, report, below = false) {
         continue;
       }
       const player = group.players[0], status = playerStatus(player, report);
-      const control = button(undefined, () => playerPopup(group, control, report), `player status-${status.status}`);
+      const control = button(undefined, () => playerPopup(group, control, report), player.injury ? `player status-${status.status}` : "player");
       control.setAttribute("aria-label", `${player.name}, ${group.position}, ${status.label}${player.star ? ", league top 10" : ""}`);
       control.dataset.slot = group.slot;
       control.title = `${player.name} · ${group.position} · ${status.label}`;
       const meta = node("span", undefined, "player-meta");
-      const mark = node("span", statusMarks[status.status][0], "status-mark");
-      mark.setAttribute("aria-hidden", "true");
-      meta.append(node("span", group.position, "position"), mark);
+      meta.append(node("span", group.position, "position"));
+      if (player.injury) {
+        const mark = node("span", statusMarks[status.status][0], "status-mark");
+        mark.setAttribute("aria-hidden", "true");
+        meta.append(mark);
+      }
       control.append(node("span", shortName(player.name), "player-name"), meta);
       if (player.star) {
         const star = node("span", "★", "star"); star.setAttribute("aria-label", "League top 10"); control.append(star);

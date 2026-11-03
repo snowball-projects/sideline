@@ -25,7 +25,7 @@ yards/touchdown leaders or defensive count leaders, including ties.
 Depth charts retain observed slot order; missing charts and reports stay unknown.
 Compare choices remain in your browser. Cards use name pills when wide and 40px
 position dots when narrow; team matchup pages always use pills. Visible status
-codes have a compact key; unlisted injuries are neutral and unknown Out counts
+codes have a compact key; unlisted players are unmarked and unknown Out counts
 sort after supported counts.
 
 [MIT software](LICENSE). Original data: CC0. nflverse: CC BY 4.0.

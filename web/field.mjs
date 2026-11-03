@@ -36,9 +36,7 @@ export const statusMarks = {
   dnp: ["DNP", "Did not practise"],
   limited: ["LP", "Limited in practice"],
   full: ["FP", "Full participation"],
-  unlisted: ["NL", "No injury listed"],
   undesignated: ["ND", "No game designation"],
-  unknown: ["?", "No injury report"],
 };
 export function playerStatus(player, report) {
   const badges = player.injury?.badges || [];
