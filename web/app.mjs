@@ -61,6 +61,12 @@ const playerStatLabels = {
   receiving_yards: "Receiving yards", receiving_tds: "Receiving TDs",
   tackles: "Tackles", sacks: "Sacks", interceptions: "Interceptions",
 };
+const ordinalRules = new Intl.PluralRules("en", { type: "ordinal" });
+function playerRankText(key, metric, position) {
+  const ending = { one: "st", two: "nd", few: "rd", other: "th" }[ordinalRules.select(metric.rank)];
+  const scope = ["tackles", "sacks", "interceptions"].includes(key) ? "defenders" : `${position}s`;
+  return `${metric.tied ? "Tied " : ""}${metric.rank}${ending} among ${scope}`;
+}
 const injuryBody = (player) => player.injury?.injury && player.injury.injury !== "Not specified" ? player.injury.injury : "";
 function injurySummary(player) {
   const status = playerStatus(player), detail = injuryBody(player), line = node("p", undefined, "player-injury");
@@ -78,7 +84,7 @@ function playerPopup(group, control) {
     const stats = node("dl", undefined, "player-stats");
     for (const [key, metric] of Object.entries(player.stats)) {
       const row = node("div", undefined, `player-stat${metric.star ? " star-stat" : ""}`);
-      const value = node("dd"); value.append(node("strong", metric.value.toLocaleString()), node("span", `${metric.tied ? "T" : ""}#${metric.rank}`, "rank"));
+      const value = node("dd"); value.append(node("strong", metric.value.toLocaleString()), node("span", playerRankText(key, metric, group.position), "rank"));
       if (metric.star) {
         const star = node("span", "★", "stat-star"); star.setAttribute("role", "img"); star.setAttribute("aria-label", "League top 10"); value.append(star);
       }

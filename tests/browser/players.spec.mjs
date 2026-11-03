@@ -67,10 +67,10 @@ test("player popup shows earned statistics and ordered designated backups withou
   await expect(stats.locator(".player-stat")).toHaveCount(2);
   const yards = stats.locator(".player-stat").filter({hasText:"Passing yards"});
   await expect(yards).toContainText("1,234");
-  await expect(yards).toContainText("T#10");
+  await expect(yards).toContainText("Tied 10th among QBs");
   const touchdowns = stats.locator(".player-stat").filter({hasText:"Passing TDs"});
   await expect(touchdowns).toContainText("5");
-  await expect(touchdowns).toContainText("#12");
+  await expect(touchdowns).toContainText("12th among QBs");
   await expect(touchdowns).not.toContainText("★");
   await expect(stats.locator(".star-stat")).toHaveCount(1);
   await expect(stats.locator(".star-stat")).toContainText("Passing yards");
@@ -86,6 +86,25 @@ test("player popup shows earned statistics and ordered designated backups withou
   await close(page, qb);
   if (page.viewportSize().width < 600) await expect(page).toHaveURL(/#team=ARI$/);
   expect(errors).toEqual([]);
+});
+
+test("each offensive stat names its position scope and ordinal ties explicitly", async ({page}, info) => {
+  const data = playerFeed(), own = data.weeks[0].teams.ARI;
+  const cases = [
+    {slot:1, stats:{passing_yards:{value:1234,rank:11,tied:true},passing_tds:{value:5,rank:21}}, labels:["Tied 11th among QBs", "21st among QBs"]},
+    {slot:2, stats:{rushing_yards:{value:456,rank:12,tied:true},rushing_tds:{value:2,rank:22}}, labels:["Tied 12th among RBs", "22nd among RBs"]},
+    {slot:3, stats:{receiving_yards:{value:789,rank:3,star:true},receiving_tds:{value:1,rank:23,tied:true}}, labels:["3rd among WRs", "Tied 23rd among WRs"]},
+    {slot:11, stats:{receiving_yards:{value:315,rank:13,tied:true},receiving_tds:{value:4,rank:1,star:true}}, labels:["Tied 13th among TEs", "1st among TEs"]},
+  ];
+  for (const entry of cases) own.offense.find(group => group.slot === entry.slot).players[0].stats = entry.stats;
+  await open(page, data);
+  for (const entry of cases) {
+    const player = playerAt(page, entry.slot); await player.click();
+    await expect(page.locator("dialog .player-stat .rank")).toHaveText(entry.labels);
+    expect(await page.locator("dialog").evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    if (entry.slot === 11) await page.screenshot({path:info.outputPath("player-rank-scopes.png")});
+    await close(page, player);
+  }
 });
 
 test("nothing to report leaves just the player's name and position", async ({page}) => {
@@ -197,10 +216,10 @@ test("defensive popup preserves fractional values and multiple star-earning metr
   await expect(stats.locator(".player-stat").filter({hasText:"Tackles"})).toContainText("31");
   const sacks = stats.locator(".player-stat").filter({hasText:"Sacks"});
   await expect(sacks).toContainText("3.5");
-  await expect(sacks).toContainText("T#7");
+  await expect(sacks).toContainText("Tied 7th among defenders");
   const interceptions = stats.locator(".player-stat").filter({hasText:"Interceptions"});
   await expect(interceptions).toContainText("0");
-  await expect(interceptions).toContainText("T#34");
+  await expect(interceptions).toContainText("Tied 34th among defenders");
   await expect(interceptions).not.toContainText("★");
   await expect(stats.locator(".star-stat")).toHaveCount(2);
   await expectNoOldRows(page);

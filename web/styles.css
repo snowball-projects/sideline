@@ -88,11 +88,11 @@ dialog p, dialog li { font-size: 13px; line-height: 1.5; }
 .injury-badge { display: inline-block; border: 1px solid; border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 650; }
 .player-stats { display: grid; gap: 6px; font-size: 13px; margin: 0; }
 .player-stat { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; }
-.player-stat dd { display: flex; align-items: baseline; justify-content: end; gap: 10px; font-variant-numeric: tabular-nums; }
+.player-stat dd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: end; gap: 3px 8px; min-width: 0; max-width: 65%; font-variant-numeric: tabular-nums; }
 .star-stat { border-color: var(--accent); }
 .stat-star { color: var(--accent); }
 .player-injury .injury-body { overflow-wrap: anywhere; }
-.player-stat .rank { white-space: nowrap; }
+.player-stat .rank { order: 1; flex-basis: 100%; white-space: normal; text-align: right; }
 dialog li { margin: 8px 0; }
 dt { color: var(--muted); } dd { margin: 0; }
 details { margin-block: 18px; } summary { cursor: pointer; }
