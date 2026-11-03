@@ -736,14 +736,10 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
   const roster = parseCsv(inputs.roster.csv);
   columns(
     roster,
-    ["season", "team", "full_name", "gsis_id", "position", "status"],
+    ["season", "team", "full_name", "gsis_id", "status"],
     "Roster",
   );
-  const players = new Map();
-  const addPlayer = (player) => {
-    players.set(`${player.team}:${player.id}`, player);
-    return player;
-  };
+  const rosterNames = new Map();
   for (const row of roster)
     if (
       +row.season === season &&
@@ -751,14 +747,9 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
     ) {
       const id = identity(row);
       if (id && clean(row.full_name))
-        addPlayer({
-          id,
-          name: clean(row.full_name),
-          team: club(row.team),
-          position: clean(row.position),
-        });
+        rosterNames.set(`${club(row.team)}:${id}`, clean(row.full_name));
     }
-  check(players.size > 0, "Roster has no identified current players");
+  check(rosterNames.size > 0, "Roster has no identified current players");
   const reports = injuryRecords(inputs.injuries.csv, season, games),
     snapshots = depthSnapshots(inputs.depth.csv, weeks, games, instant);
   const stats = statistics(inputs, games, season);
@@ -777,7 +768,7 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
         const groups = new Map();
         for (const row of snapshot?.rows || []) {
           const id = identity(row),
-            name = clean(row.player_name) || players.get(`${team}:${id}`)?.name;
+            name = clean(row.player_name) || rosterNames.get(`${team}:${id}`);
           if (!id || !name) continue;
           const side = row.pos_grp === "3WR 1TE" ? "offense" : "defense",
             position = clean(row.pos_abb),
@@ -788,7 +779,6 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
             position && Number.isInteger(slot) && Number.isInteger(order),
             "Invalid depth position/order",
           );
-          const player = addPlayer({ id, name, team, position });
           if (!groups.has(key))
             groups.set(key, { side, slot, position, players: [] });
           const group = groups.get(key);
@@ -800,8 +790,8 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
             "Conflicting depth slot",
           );
           group.players.push({
-            id: player.id,
-            name: player.name,
+            id,
+            name,
             order,
             injury: report?.get(id) || null,
             ...(pre.stars[side].has(id) && (side === "defense" || ["QB", "RB", "WR", "TE"].includes(position))
@@ -851,7 +841,6 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
     injury_updated_at: inputs.injuries.metadata.source_updated_at,
     sources,
     teams: assets,
-    players: [...players.values()].sort((a, b) => a.name.localeCompare(b.name)),
     weeks: outputWeeks,
   };
 }
@@ -901,7 +890,7 @@ if (
 ) {
   const data = await publish();
   console.log(
-    `${data.season}: ${data.weeks.length} weeks, ${data.players.length} players`,
+    `${data.season}: ${data.weeks.length} weeks, ${Object.keys(data.teams).length} teams`,
   );
   const instant = Date.parse(data.generated_at);
   const week = data.weeks.find((item) => Date.parse(item.starts_at) <= instant && instant < Date.parse(item.ends_at));
