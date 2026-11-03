@@ -33,25 +33,14 @@ export const statusMarks = {
   out: ["OUT", "Out"],
   doubtful: ["D", "Doubtful"],
   questionable: ["Q", "Questionable"],
-  dnp: ["DNP", "Did not practise"],
+  dnp: ["DNP", "Did not practice"],
   limited: ["LP", "Limited in practice"],
-  full: ["FP", "Full participation"],
-  undesignated: ["ND", "No game designation"],
 };
-export function playerStatus(player, report) {
+export function playerStatus(player) {
   const badges = player.injury?.badges || [];
-  for (const [badge, status, label] of [
-    ["OUT", "out", "Out"], ["D", "doubtful", "Doubtful"],
-    ["Q", "questionable", "Questionable"], ["DNP", "dnp", "Did not practise"],
-    ["LP", "limited", "Limited in practice"],
-  ]) if (badges.includes(badge)) return { status, label };
-  if (player.injury) return {
-    status: player.injury.practice === "Full Participation in Practice" ? "full" : "undesignated",
-    label: `${player.injury.practice === "Full Participation in Practice" ? "Full participation" : "Injury listed"} · ${player.injury.game === "Not listed" ? "No game designation" : player.injury.game}`,
-  };
-  return report
-    ? { status: "unlisted", label: "No injury listed" }
-    : { status: "unknown", label: "No injury report yet" };
+  for (const [status, [code, label]] of Object.entries(statusMarks))
+    if (badges.includes(code)) return { status, label };
+  return { status: "neutral", label: "" };
 }
 export function recordText(record) {
   return record ? `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}` : "Record unavailable";
@@ -60,7 +49,7 @@ export function recordText(record) {
 export function outCount(team, side) {
   const unit = starters(team[side], side);
   if (!team.report || unit.length !== (side === "offense" ? 11 : 12)) return null;
-  return unit.filter((group) => playerStatus(group.players[0], team.report).status === "out").length;
+  return unit.filter((group) => playerStatus(group.players[0]).status === "out").length;
 }
 export function sortTeams(teams, week, side, sort, direction = "best") {
   const score = (team) => {

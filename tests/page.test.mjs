@@ -29,12 +29,12 @@ test("depth slots place TE at scrimmage, safeties deep, nickel inside corners, a
   assert.equal(missing.players, undefined);
   assert.deepEqual(rows([], "defense"), [[], [], []]);
 });
-test("severity respects game statuses before practice; missing reports remain unknown", () => {
-  assert.deepEqual(playerStatus({injury: {badges: ["LP", "OUT"]}}, true), {status: "out", label: "Out"});
-  assert.equal(playerStatus({injury: {badges: ["DNP", "Q"]}}, true).status, "questionable");
-  assert.equal(playerStatus({}, false).status, "unknown");
-  assert.equal(playerStatus({}, true).label, "No injury listed");
-  assert.equal(playerStatus({injury:{injury:"Ankle",game:"Not listed",practice:"Full Participation in Practice",badges:[]}},true).label,"Full participation · No game designation");
+test("severity prefers game designations to practice; other players stay unmarked", () => {
+  assert.deepEqual(playerStatus({injury: {badges: ["LP", "OUT"]}}), {status: "out", label: "Out"});
+  assert.equal(playerStatus({injury: {badges: ["DNP", "Q"]}}).status, "questionable");
+  assert.equal(playerStatus({}).status, "neutral");
+  assert.equal(playerStatus({}).label, "");
+  assert.deepEqual(playerStatus({injury:{injury:"Ankle",game:"Not listed",practice:"Full Participation in Practice",badges:[]}}), {status:"neutral",label:""});
 });
 test("record, selected-unit rank and Out sorts honor ties and unavailable data", () => {
   const metric = (rank) => Array.from({length:4}, () => ({rank}));
@@ -117,11 +117,9 @@ test("Out counts keep known zero separate from missing reports and incomplete ch
   assert.equal(outCount({report:true,defense:unit(11)},"defense"),null);
   assert.equal(outCount({report:true,defense:unit(12,true)},"defense"),1);
 });
-test("an absent injury entry is neutral and distinct from observed full participation", () => {
-  assert.equal(playerStatus({},true).status,"unlisted");
-  assert.equal(playerStatus({},false).status,"unknown");
-  assert.equal(playerStatus({injury:{practice:"Full Participation in Practice",game:"Not listed",badges:[]}},true).status,"full");
-  assert.equal(playerStatus({injury:{practice:"Not listed",game:"Not listed",badges:[]}},true).status,"undesignated");
+test("absent injuries and report entries without a requested designation stay unmarked", () => {
+  for (const player of [{}, {injury:{practice:"Full Participation in Practice",game:"Not listed",badges:[]}}, {injury:{practice:"Not listed",game:"Not listed",badges:[]}}])
+    assert.deepEqual(playerStatus(player), {status:"neutral",label:""});
 });
 
 test("both sort directions keep missing data last and alphabetical ties stable", () => {

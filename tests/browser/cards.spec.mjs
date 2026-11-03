@@ -30,7 +30,7 @@ test("all teams, one selected unit, exact player target, popup and keyboard focu
   const card = cardFor(page,"ARI");
   await expect(card.locator(".player")).toHaveCount(11);
   await expect(card.locator(".opponent")).toHaveAttribute("aria-label","Opponent ATL");
-  const qb = card.getByRole("button",{name:"qb-ARI, QB, Questionable",exact:true});
+  const qb = card.locator('.player[data-slot="1"]');
   await qb.focus(); await page.keyboard.press("Enter");
   await expect(page.locator("dialog")).toContainText("Knee");
   await expect(page.locator("dialog")).toContainText("backup-ARI");
@@ -136,15 +136,18 @@ test("Out sort uses starters in the selected unit, and only the most serious col
   await page.locator("#defense").click();
   await expect(page.locator(".card").first()).toHaveAttribute("aria-label","ARI defense");
 });
-test("an injury row with full participation preserves its designation, and gaps stay unavailable", async ({page}) => {
+test("full participation has no field badge, keeps its body part and gaps stay unavailable", async ({page}) => {
   const data=structuredClone(feed);
   data.weeks[0].teams.ARI.offense[0].players[0].injury={injury:"Ankle",game:"Not listed",practice:"Full Participation in Practice",badges:[]};
   data.weeks[1].stats_through=0; data.weeks[1].teams.ARI.stats=null;
   await open(page,{data,selections:["ARI"]});
-  const player=page.getByRole("button",{name:"qb-ARI, QB, Full participation · No game designation",exact:true});
+  const player=cardFor(page,"ARI").locator('.player[data-slot="1"]');
+  await expect(player).toHaveClass("player");
+  await expect(player.locator(".status-mark")).toHaveCount(0);
   await player.click();
   await expect(page.locator("dialog")).toContainText("Ankle");
-  await expect(page.locator("dialog")).toContainText("backup-ARI");
+  await expect(page.locator("dialog")).not.toContainText("backup-ARI");
+  await expect(page.locator("dialog")).not.toContainText("Full participation");
   await page.keyboard.press("Escape");
   await page.locator("#week").selectOption("2");
   await expect(page.locator("#message")).toContainText("Stats unavailable");
@@ -229,7 +232,7 @@ test("only report entries carry visible status codes; unlisted players stay plai
   values.forEach((injury,i)=>own.offense[i].players[0].injury=injury && {injury:"Ankle",game:"Not listed",practice:"Not listed",...injury});
   own.offense[0].players[0].star=true;
   await open(page,{data,selections:["ARI","ATL"]});
-  for(const [i,code] of ["OUT","D","Q","DNP","LP","FP",null,"ND"].entries()) {
+  for(const [i,code] of ["OUT","D","Q","DNP","LP",null,null,null].entries()) {
     const player=cardFor(page,"ARI").locator(`.player[data-slot="${i+1}"]`);
     if (code === null) {
       await expect(player.locator(".status-mark")).toHaveCount(0);
@@ -257,11 +260,12 @@ test("only report entries carry visible status codes; unlisted players stay plai
   await expect(unlisted).toHaveClass("player");
   await expect(unlisted).toHaveCSS("background-color","rgb(25, 51, 45)");
   const full=cardFor(page,"ARI").locator('.player[data-slot="6"]');
-  await expect(full).toHaveClass(/status-full/);
+  await expect(full).toHaveClass("player");
+  await expect(full).toHaveCSS("background-color","rgb(25, 51, 45)");
   await expect(page.locator("dialog")).not.toBeVisible();
   await page.locator("#status-key summary").focus(); await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeVisible();
-  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practise","LP Limited in practice","FP Full participation","ND No game designation"]);
+  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practice","LP Limited in practice"]);
   await page.screenshot({path:info.outputPath("status-key.png")});
   await page.keyboard.press("Enter");
   await expect(page.locator("#status-key-list")).toBeHidden();
@@ -284,10 +288,13 @@ test("matchup pages keep ordinary players unmarked and preserve their popup fact
   const normal=own.locator('.player[data-slot="2"]');
   await expect(normal).toHaveClass("player");
   await normal.click();
-  await expect(page.locator("dialog dd")).toHaveText(["Not listed","Not listed","Not listed"]);
+  await expect(page.locator("dialog h2")).toHaveText("rb-ARI · RB");
+  await expect(page.locator("dialog dl")).toHaveCount(0);
+  await expect(page.locator("dialog")).not.toContainText(/Not listed|No injury report yet|Next on the depth chart/);
   await page.keyboard.press("Escape");
   await other.locator(".player").first().click();
-  await expect(page.locator("dialog dd")).toHaveText(["No injury report yet","No injury report yet","No injury report yet"]);
+  await expect(page.locator("dialog dl")).toHaveCount(0);
+  await expect(page.locator("dialog")).not.toContainText(/Not listed|No injury report yet|Next on the depth chart/);
 });
 
 test("sort pills reverse known values while missing records, ranks and Out counts stay last", async ({page},info) => {

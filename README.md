@@ -26,9 +26,10 @@ yards/touchdown leaders or defensive count leaders, including ties. Tracked
 starter stats publish pre-week values, league ranks and the measures earning stars.
 Depth charts retain observed slot order; missing charts and reports stay unknown.
 Compare choices remain in your browser. Cards use name pills when wide and 40px
-position dots when narrow; larger-screen matchup pages always use pills. Status
-codes have a compact key; unlisted players are unmarked and unknown Out counts
-sort after supported counts.
+position dots when narrow; larger-screen matchup pages always use pills. Five
+injury badges have a compact key; other players stay unmarked. Player details show
+supplied injury facts, ranked stats and ordered replacements for game designations.
+Unknown Out counts sort after supported counts.
 
 [MIT software](LICENSE). Original data: CC0. nflverse: CC BY 4.0.
 Team marks retain their owners’ terms. [Sources and credits](THIRD-PARTY-NOTICES.md).

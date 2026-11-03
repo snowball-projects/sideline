@@ -55,24 +55,49 @@ $("popup").addEventListener("close", () => {
     if (opener?.isConnected) opener.focus(); else focusRoute();
   }
 });
-function playerPopup(group, control, report) {
-  const player = group.players[0], content = node("div"), details = node("dl");
-  const absent = report ? "Not listed" : "No injury report yet";
-  for (const [label, value] of [
-    ["Injury", player.injury?.injury || absent], ["Game status", player.injury?.game || absent],
-    ["Practice status", player.injury?.practice || absent],
-  ]) details.append(node("dt", label), node("dd", value));
-  content.append(details);
-  if (player.star) content.append(node("p", "★ League top 10"));
-  if (player.injury) {
+const playerStatLabels = {
+  passing_yards: "Passing yards", passing_tds: "Passing TDs",
+  rushing_yards: "Rushing yards", rushing_tds: "Rushing TDs",
+  receiving_yards: "Receiving yards", receiving_tds: "Receiving TDs",
+  tackles: "Tackles", sacks: "Sacks", interceptions: "Interceptions",
+};
+const injuryBody = (player) => player.injury?.injury && player.injury.injury !== "Not specified" ? player.injury.injury : "";
+function injurySummary(player) {
+  const status = playerStatus(player), detail = injuryBody(player), line = node("p", undefined, "player-injury");
+  if (statusMarks[status.status]) line.append(node("span", status.label, `injury-badge status-${status.status}`));
+  const designation = player.injury?.game;
+  if (designation && designation !== "Not listed" && designation !== status.label) line.append(node("span", designation));
+  if (detail) line.append(node("span", detail, "injury-body"));
+  return line;
+}
+function playerPopup(group, control) {
+  const player = group.players[0], content = node("div"), injury = injurySummary(player);
+  if (injury.childElementCount) content.append(injury);
+  if (player.stats) {
+    content.append(node("h3", `Stats through week ${week.stats_through}`));
+    const stats = node("dl", undefined, "player-stats");
+    for (const [key, metric] of Object.entries(player.stats)) {
+      const row = node("div", undefined, `player-stat${metric.star ? " star-stat" : ""}`);
+      const value = node("dd"); value.append(node("strong", metric.value.toLocaleString()), node("span", `${metric.tied ? "T" : ""}#${metric.rank}`, "rank"));
+      if (metric.star) {
+        const star = node("span", "★", "stat-star"); star.setAttribute("role", "img"); star.setAttribute("aria-label", "League top 10"); value.append(star);
+      }
+      row.append(node("dt", playerStatLabels[key]), value); stats.append(row);
+    }
+    content.append(stats);
+  }
+  if (["out", "doubtful", "questionable"].includes(playerStatus(player).status)) {
     content.append(node("h3", "Next on the depth chart"));
     const list = node("ol");
-    for (const backup of group.players.slice(1)) list.append(node("li", `${backup.name} · ${group.position} · ${playerStatus(backup, report).label}`));
+    for (const backup of group.players.slice(1)) {
+      const item = node("li"); item.append(node("span", `${backup.name} · ${group.position}`));
+      const summary = injurySummary(backup); if (summary.childElementCount) item.append(summary); list.append(item);
+    }
     content.append(group.players.length > 1 ? list : node("p", "None listed"));
   }
   popup(`${player.name} · ${group.position}`, content, control);
 }
-function field(unit, unitSide, report, below = false) {
+function field(unit, unitSide, below = false) {
   const half = node("section", undefined, `field-half ${unitSide}${below ? " below" : ""}`);
   half.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} starters`);
   if (!unit.length) half.append(node("p", "Starters unavailable", "field-empty"));
@@ -86,17 +111,19 @@ function field(unit, unitSide, report, below = false) {
         row.append(missing);
         continue;
       }
-      const player = group.players[0], status = playerStatus(player, report);
-      const control = button(undefined, () => playerPopup(group, control, report), player.injury ? `player status-${status.status}` : "player");
-      control.setAttribute("aria-label", `${player.name}, ${group.position}, ${status.label}${player.star ? ", league top 10" : ""}`);
+      const player = group.players[0], status = playerStatus(player), mark = statusMarks[status.status], detail = injuryBody(player);
+      const description = [player.name, group.position, status.label, detail, player.star ? "league top 10" : ""].filter(Boolean);
+      const control = button(undefined, () => playerPopup(group, control), mark ? `player status-${status.status}` : "player");
+      control.setAttribute("aria-label", description.join(", "));
       control.dataset.slot = group.slot;
-      control.title = `${player.name} · ${group.position} · ${status.label}`;
+      control.title = description.join(" · ");
       const meta = node("span", undefined, "player-meta");
       meta.append(node("span", group.position, "position"));
-      if (player.injury) {
-        const mark = node("span", statusMarks[status.status][0], "status-mark");
-        mark.setAttribute("aria-hidden", "true");
-        meta.append(mark);
+      if (mark) {
+        const code = node("span", mark[0], "status-mark"); code.setAttribute("aria-hidden", "true"); meta.append(code);
+        if (detail) {
+          const body = node("span", detail, "injury-body"); body.setAttribute("aria-hidden", "true"); meta.append(body);
+        }
       }
       control.append(node("span", shortName(player.name), "player-name"), meta);
       if (player.star) {
@@ -188,7 +215,7 @@ function renderCards() {
       if (own.opponent) { opponent.append(node("span", "vs"), logo(own.opponent, 24)); opponent.setAttribute("aria-label", `Opponent ${data.teams[own.opponent].name}`); opponent.setAttribute("role", "img"); }
       else opponent.textContent = own.bye ? "Bye" : "Opponent unavailable";
       heading.append(opponent);
-      card.append(heading, stats(own.stats, side), reportNotice(own), field(own[side], side, own.report), node("div", "Line of scrimmage", "scrimmage"));
+      card.append(heading, stats(own.stats, side), reportNotice(own), field(own[side], side), node("div", "Line of scrimmage", "scrimmage"));
     }
     $("cards").append(card);
   }
@@ -196,10 +223,10 @@ function renderCards() {
 function matchupContent(team, unit, heading) {
   const own = week.teams[team], otherUnit = unit === "offense" ? "defense" : "offense";
   const content = document.createDocumentFragment(), opponent = node("section", undefined, "opponent-half");
-  content.append(heading, stats(own.stats, unit), reportNotice(own), field(own[unit], unit, own.report), node("div", "Line of scrimmage", "scrimmage"));
+  content.append(heading, stats(own.stats, unit), reportNotice(own), field(own[unit], unit), node("div", "Line of scrimmage", "scrimmage"));
   if (own.opponent) {
     const other = week.teams[own.opponent];
-    opponent.append(field(other[otherUnit], otherUnit, other.report, true), reportNotice(other), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
+    opponent.append(field(other[otherUnit], otherUnit, true), reportNotice(other), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
   } else opponent.append(node("p", own.bye ? "Bye" : "Opponent unavailable", "bye"));
   content.append(opponent);
   return content;

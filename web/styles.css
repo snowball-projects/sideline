@@ -60,10 +60,11 @@ h2 a:hover { text-decoration: underline; }
 .player-unavailable { border: 1px dashed var(--muted); border-radius: 8px; background: var(--page); color: var(--muted); }
 .player-name { font-size: 11px; font-weight: 650; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field-row:has(> :nth-child(6)) .player-name { font-size: 10px; }
-.player-meta { display: inline-flex; align-items: center; justify-content: center; gap: 5px; line-height: 12px; }
+.player-meta { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: center; justify-content: center; column-gap: 5px; height: 12px; width: 100%; overflow: hidden; line-height: 12px; }
+.player-meta > * { flex: none; line-height: 12px; }
+.player-meta .injury-body { font-size: 9px; white-space: nowrap; }
 .position { font-size: 10px; font-weight: 700; }
 .status-mark { font-size: 9px; font-weight: 800; line-height: 10px; }
-.status-full { color: #e5eee7; background: #2e5140; border-color: #75a48d; }
 .status-out { color: #fff0f0; background: #7f2936; border-color: #df8492; }
 .status-doubtful { color: #ffeddb; background: #6c3f21; border-color: #d49b66; }
 .status-questionable { color: #fff1c7; background: #635020; border-color: #c5aa58; }
@@ -83,8 +84,16 @@ dialog::backdrop { background: #0b292655; }
 dialog h2 { font-size: 19px; margin: 0 0 18px; }
 dialog h3 { font-size: 14px; margin: 18px 0 8px; }
 dialog p, dialog li { font-size: 13px; line-height: 1.5; }
+.player-injury { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.injury-badge { display: inline-block; border: 1px solid; border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 650; }
+.player-stats { display: grid; gap: 6px; font-size: 13px; margin: 0; }
+.player-stat { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; }
+.player-stat dd { display: flex; align-items: baseline; justify-content: end; gap: 10px; font-variant-numeric: tabular-nums; }
+.star-stat { border-color: var(--accent); }
+.stat-star { color: var(--accent); }
+.player-injury .injury-body { overflow-wrap: anywhere; }
+.player-stat .rank { white-space: nowrap; }
 dialog li { margin: 8px 0; }
-dl { display: grid; grid-template-columns: 105px 1fr; font-size: 13px; gap: 8px; margin: 0; }
 dt { color: var(--muted); } dd { margin: 0; }
 details { margin-block: 18px; } summary { cursor: pointer; }
 .choice-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
@@ -102,7 +111,8 @@ details { margin-block: 18px; } summary { cursor: pointer; }
   .card .player, .card .player-unavailable { width: var(--player-size); height: var(--player-size); max-width: none; flex: 0 0 var(--player-size); border-radius: 50%; padding: 0; }
   .card .player-name { display: none; }
   .card .player-unavailable .player-name { display: block; font-size: 6px; }
-  .card .player-meta { flex-direction: column; gap: 0; line-height: 12px; }
+  .card .player-meta { flex-direction: column; flex-wrap: nowrap; gap: 0; width: auto; height: auto; overflow: visible; line-height: 12px; }
+  .card .player-meta .injury-body { display: none; }
   .card .position { font-size: 10px; }
   .card .status-mark { font-size: 9px; line-height: 10px; }
   .card .team-heading { height: 36px; padding-block: 2px; }
