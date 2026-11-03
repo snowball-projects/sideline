@@ -107,7 +107,7 @@ function field(unit, side, report) {
       const badges = report ? player.injury?.badges || [] : [];
       control.setAttribute(
         "aria-label",
-        `${player.name}, ${group.position}${badges.length ? ", " + badges.join(", ") : ""}${player.star ? ", league top 10 defender" : ""}`,
+        `${player.name}, ${group.position}${badges.length ? ", " + badges.join(", ") : ""}${player.star ? ", league top 10" : ""}`,
       );
       control.append(
         node("span", shortName(player.name), "player-name"),
@@ -117,7 +117,7 @@ function field(unit, side, report) {
       for (const badge of badges) status.append(node("span", badge, "badge"));
       if (player.star) {
         const star = node("span", "★", "star");
-        star.setAttribute("aria-label", "League top 10 defender");
+        star.setAttribute("aria-label", "League top 10");
         status.append(star);
       }
       control.append(status);

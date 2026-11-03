@@ -425,7 +425,8 @@ function statistics(inputs, games, season) {
               "fumbles_lost_total",
               "fumble_recovery_opp",
             ]
-          : ["player_id"]),
+          : ["player_id", "position", "passing_yards", "passing_tds",
+              "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds"]),
       ],
       key,
     );
@@ -449,7 +450,11 @@ function statistics(inputs, games, season) {
       const counts = defensiveCounts(row),
         join = `${game.id}:${team}`;
       const id = key === "playerStats" ? identity(row) : team;
-      if (!id && counts.every((value) => value === 0)) continue; // Unattributed zero-event rows carry no defensive facts.
+      const offense = key === "playerStats" ? Object.fromEntries(
+        ["passing", "rushing", "receiving"].map((kind) =>
+          [kind, [number(row, `${kind}_yards`, -200), number(row, `${kind}_tds`, 0, 20)]])) : null;
+      if (!id && counts.every((value) => value === 0) && Object.values(offense).flat().every((value) => value === 0))
+        continue; // Unattributed zero-event rows carry no tracked facts.
       check(
         id && !seen.has(`${join}:${id}`),
         "Duplicate or unidentified statistics row",
@@ -471,7 +476,10 @@ function statistics(inputs, games, season) {
             number(row, "def_interceptions", 0, 20) +
             number(row, "fumble_recovery_opp", 0, 20),
         });
-      else target.push({ join, id, counts });
+      else target.push({
+        join, id, counts, position: clean(row.position),
+        offense,
+      });
     }
   }
   return { teams, players };
@@ -504,6 +512,8 @@ function preWeekStats(week, games, stats, now) {
       { games: 0, offense: [0, 0, 0, 0], defense: [0, 0, 0, 0] },
     ]),
   );
+  const records = Object.fromEntries(TEAMS.map((team) =>
+    [team, { wins: 0, losses: 0, ties: 0 }]));
   const keys = new Set();
   for (const game of accepted)
     for (const team of [game.home, game.away]) {
@@ -513,6 +523,8 @@ function preWeekStats(week, games, stats, now) {
         opponent = stats.teams.get(`${game.id}:${other}`),
         total = totals[team];
       total.games++;
+      const result = game.scores[team] - game.scores[other];
+      records[team][result > 0 ? "wins" : result < 0 ? "losses" : "ties"]++;
       keys.add(key);
       own.offense.forEach((value, index) => (total.offense[index] += value));
       [
@@ -523,7 +535,7 @@ function preWeekStats(week, games, stats, now) {
       ].forEach((value, index) => (total.defense[index] += value));
     }
   if (!through || Object.values(totals).some((total) => !total.games))
-    return { through: 0, totals: null, stars: new Set() };
+    return { through: 0, totals: null, stars: { offense: new Set(), defense: new Set() }, records };
   for (const side of ["offense", "defense"]) {
     for (const total of Object.values(totals))
       for (const index of [0, 1]) total[side][index] /= total.games;
@@ -548,7 +560,7 @@ function preWeekStats(week, games, stats, now) {
       reconciled.get(row.join)[index] += value;
     });
   }
-  const stars = new Set();
+  const stars = { offense: new Set(), defense: new Set() };
   const coverage = [...keys].every((key) =>
     stats.teams
       .get(key)
@@ -568,8 +580,23 @@ function preWeekStats(week, games, stats, now) {
             ).rank <= 10,
         )
       )
-        stars.add(id);
-  return { through, totals, stars };
+        stars.defense.add(id);
+  // Rank each offensive position separately. Receiving totals never pool WRs
+  // with TEs; zero-event ties do not award stars to inactive players.
+  for (const [position, kind] of Object.entries({
+    QB: "passing", RB: "rushing", WR: "receiving", TE: "receiving",
+  })) {
+    const offense = new Map();
+    for (const row of stats.players.filter((row) => keys.has(row.join) && row.position === position)) {
+      if (!offense.has(row.id)) offense.set(row.id, [0, 0]);
+      row.offense[kind].forEach((value, index) => offense.get(row.id)[index] += value);
+    }
+    for (const [id, counts] of offense)
+      if (counts.some((value, index) => value > 0 &&
+        rank([...offense.values()].map((other) => other[index]), value).rank <= 10))
+        stars.offense.add(id);
+  }
+  return { through, totals, stars, records };
 }
 const BADGES = {
   Out: "OUT",
@@ -738,7 +765,7 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
   const outputWeeks = weeks.map((week) => {
     const pre = complete
       ? preWeekStats(week.week, games, stats, instant)
-      : { through: 0, totals: null, stars: new Set() };
+      : { through: 0, totals: null, stars: { offense: new Set(), defense: new Set() }, records: null };
     const teams = Object.fromEntries(
       TEAMS.map((team) => {
         const game = games.find(
@@ -777,7 +804,8 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
             name: player.name,
             order,
             injury: report?.get(id) || null,
-            ...(side === "defense" && pre.stars.has(id) ? { star: true } : {}),
+            ...(pre.stars[side].has(id) && (side === "defense" || ["QB", "RB", "WR", "TE"].includes(position))
+              ? { star: true } : {}),
           });
         }
         const unit = (side) =>
@@ -804,6 +832,7 @@ export function normalize(inputs, { season, now = new Date(), assets = {} }) {
               : null,
             offense: unit("offense"),
             defense: unit("defense"),
+            record: pre.records?.[team] || null,
             stats: pre.totals?.[team] || null,
           },
         ];
@@ -872,6 +901,20 @@ if (
 ) {
   const data = await publish();
   console.log(
-    `${data.season}: ${data.weeks.length} weeks, ${data.players.length} searchable players`,
+    `${data.season}: ${data.weeks.length} weeks, ${data.players.length} players`,
   );
+  const instant = Date.parse(data.generated_at);
+  const week = data.weeks.find((item) => Date.parse(item.starts_at) <= instant && instant < Date.parse(item.ends_at));
+  if (week) {
+    const counts = {}, seen = new Set();
+    for (const team of Object.values(week.teams))
+      for (const side of ["offense", "defense"])
+        for (const group of team[side])
+          for (const player of group.players)
+            if (player.star && !seen.has(player.id)) {
+              seen.add(player.id);
+              counts[group.position] = (counts[group.position] || 0) + 1;
+            }
+    console.log(`Week ${week.week} depth-chart stars by position (stats through week ${week.stats_through}): ${JSON.stringify(counts)}`);
+  }
 }
