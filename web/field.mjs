@@ -29,6 +29,17 @@ export function rows(unit, side) {
   return lines.map((_, index) => placed.filter((group) => group.depth === index)
     .toSorted((a, b) => horizontal(a) - horizontal(b)));
 }
+export const statusMarks = {
+  out: ["OUT", "Out"],
+  doubtful: ["D", "Doubtful"],
+  questionable: ["Q", "Questionable"],
+  dnp: ["DNP", "Did not practise"],
+  limited: ["LP", "Limited in practice"],
+  full: ["FP", "Full participation"],
+  unlisted: ["NL", "No injury listed"],
+  undesignated: ["ND", "No game designation"],
+  unknown: ["?", "No injury report"],
+};
 export function playerStatus(player, report) {
   const badges = player.injury?.badges || [];
   for (const [badge, status, label] of [
@@ -37,20 +48,29 @@ export function playerStatus(player, report) {
     ["LP", "limited", "Limited in practice"],
   ]) if (badges.includes(badge)) return { status, label };
   if (player.injury) return {
-    status: "healthy",
+    status: player.injury.practice === "Full Participation in Practice" ? "full" : "undesignated",
     label: `${player.injury.practice === "Full Participation in Practice" ? "Full participation" : "Injury listed"} · ${player.injury.game === "Not listed" ? "No game designation" : player.injury.game}`,
   };
   return report
-    ? { status: "healthy", label: "No injury listed" }
+    ? { status: "unlisted", label: "No injury listed" }
     : { status: "unknown", label: "No injury report yet" };
 }
 export function recordText(record) {
   return record ? `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}` : "Record unavailable";
 }
+// Count listed Out designations, never infer a missing report or unit is zero.
+export function outCount(team, side) {
+  const unit = starters(team[side], side);
+  if (!team.report || unit.length !== (side === "offense" ? 11 : 12)) return null;
+  return unit.filter((group) => playerStatus(group.players[0], team.report).status === "out").length;
+}
 export function sortTeams(teams, week, side, sort) {
   const score = (team) => {
     const own = week.teams[team];
-    if (sort === "out") return -starters(own[side], side).filter((group) => playerStatus(group.players[0], own.report).status === "out").length;
+    if (sort === "out") {
+      const count = outCount(own, side);
+      return count === null ? Infinity : -count;
+    }
     if (sort.startsWith("stat-")) return own.stats?.[side][+sort.slice(5)].rank ?? Infinity;
     const record = own.record;
     const games = record && record.wins + record.losses + record.ties;

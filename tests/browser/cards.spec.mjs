@@ -64,14 +64,15 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
   await expect(page.locator(".opponent")).toHaveText("Bye");
   await page.locator("#defense").click();
   await expect(page.locator(".defense-stats")).toContainText("Turnovers forced");
-  await expect(page.locator("#sort option")).toHaveText(["Record","Points allowed / game","Yards allowed / game","Sacks","Turnovers forced","Starters Out"]);
+  await expect(page.locator("#sort option")).toHaveText(["Record","Points allowed / game","Yards allowed / game","Sacks","Turnovers forced","Starters listed Out"]);
   await page.locator("#sort").selectOption("stat-0");
   await page.locator("#week").selectOption("4");
   await expect(page.locator(".field-empty")).toHaveText("Starters unavailable");
   await expect(page.locator(".player")).toHaveCount(0);
   await page.locator("#week").selectOption("3");
   await expect(page.locator(".report-notice")).toHaveText("No injury report yet");
-  await expect(page.locator(".status-healthy")).toHaveCount(0);
+  await expect(page.locator(".status-full,.status-unlisted,.status-undesignated")).toHaveCount(0);
+  await expect(page.locator(".status-unknown")).toHaveCount(3);
 });
 test("record and stat sorts are best first, and keyboard opens the same team page", async ({page}) => {
   await open(page,{week:2});
@@ -93,10 +94,18 @@ test("record and stat sorts are best first, and keyboard opens the same team pag
 test("Out sort uses starters in the selected unit, and only the most serious color", async ({page}) => {
   const data=structuredClone(feed);
   const own=data.weeks[0].teams.BUF; own.report=true;
+  data.weeks[0].teams.ARI.report=false;
+  data.weeks[0].teams.ARI.offense[0].players[0].injury=null;
+  data.weeks[0].teams.BAL.report=true; // supported zero precedes unavailable counts
+  data.weeks[0].teams.ATL.report=true;
+  data.weeks[0].teams.ATL.offense=[];
   own.offense[0].players[0].injury={injury:"Knee",game:"Out",practice:"Limited",badges:["OUT","LP"]};
   await open(page,{data});
   await page.locator("#sort").selectOption("out");
   await expect(page.locator(".card").first()).toHaveAttribute("aria-label","BUF offense");
+  await expect(page.locator(".card").nth(1)).toHaveAttribute("aria-label","BAL offense");
+  await expect(page.locator(".card").nth(2)).toHaveAttribute("aria-label","ARI offense");
+  await expect(page.locator(".card").nth(3)).toHaveAttribute("aria-label","ATL offense");
   await expect(page.locator(".card").first().locator(".status-out")).toHaveCount(1);
   await expect(page.locator(".card").first().locator(".status-limited")).toHaveCount(0);
   await page.locator("#defense").click();
@@ -175,3 +184,46 @@ test("real collected snapshot renders all observed slots and stars for both unit
 });
 
 function sourceMissingPhilly(data) { const groups=data.weeks.find((w)=>w.week===9).teams.PHI.defense; return groups.length && !groups.some((g)=>g.slot===2); }
+
+test("visible status marks distinguish every state without color or opening a player", async ({page},info) => {
+  const data=structuredClone(feed), own=data.weeks[0].teams.ARI;
+  const values=[
+    {badges:["OUT","LP"],game:"Out"}, {badges:["D"],game:"Doubtful"},
+    {badges:["Q"],game:"Questionable"}, {badges:["DNP"],practice:"Did Not Participate In Practice"},
+    {badges:["LP"],practice:"Limited Participation in Practice"},
+    {badges:[],game:"Not listed",practice:"Full Participation in Practice"},
+    null, {badges:[],game:"Not listed",practice:"Not listed"},
+  ];
+  values.forEach((injury,i)=>own.offense[i].players[0].injury=injury && {injury:"Ankle",game:"Not listed",practice:"Not listed",...injury});
+  own.offense[0].players[0].star=true;
+  await open(page,{data,selections:["ARI","ATL"]});
+  for(const [i,code] of ["OUT","D","Q","DNP","LP","FP","NL","ND"].entries()) {
+    const player=cardFor(page,"ARI").locator(`.player[data-slot="${i+1}"]`);
+    await expect(player.locator(".status-mark")).toBeVisible();
+    await expect(player.locator(".status-mark")).toHaveText(code);
+    expect(await player.evaluate((el)=>{
+      const box=el.getBoundingClientRect(), mark=el.querySelector(".status-mark").getBoundingClientRect();
+      return mark.left>=box.left && mark.right<=box.right && mark.top>=box.top && mark.bottom<=box.bottom;
+    })).toBe(true);
+  }
+  const unknown=cardFor(page,"ATL").locator(".player").first();
+  await expect(unknown.locator(".status-mark")).toHaveText("?");
+  await expect(unknown).toHaveClass(/status-unknown/);
+  const unlisted=cardFor(page,"ARI").locator('.player[data-slot="7"]');
+  await expect(unlisted).toHaveClass(/status-unlisted/);
+  const full=cardFor(page,"ARI").locator('.player[data-slot="6"]');
+  await expect(full).toHaveClass(/status-full/);
+  await expect(page.locator("dialog")).not.toBeVisible();
+  await page.locator("#status-key summary").focus(); await page.keyboard.press("Enter");
+  await expect(page.locator("#status-key-list")).toBeVisible();
+  await expect(page.locator("#status-key-list li")).toContainText(["OUT Out","D Doubtful","Q Questionable","DNP Did not practise","LP Limited in practice","FP Full participation","NL No injury listed","ND No game designation","? No injury report"]);
+  await page.screenshot({path:info.outputPath("status-key.png")});
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#status-key-list")).toBeHidden();
+  if(info.project.use.hasTouch) {
+    await page.locator("#status-key summary").tap();
+    await expect(page.locator("#status-key-list")).toBeVisible();
+    await page.locator("#status-key summary").tap();
+    await expect(page.locator("#status-key-list")).toBeHidden();
+  }
+});

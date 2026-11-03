@@ -1,4 +1,4 @@
-import { rows, shortName, statLabels, playerStatus, recordText, sortTeams } from "./field.mjs";
+import { rows, shortName, statLabels, statusMarks, playerStatus, recordText, sortTeams } from "./field.mjs";
 const $ = (id) => document.getElementById(id);
 const node = (tag, text, className) => {
   const el = document.createElement(tag);
@@ -20,6 +20,10 @@ const localTime = (value) => value ? new Date(value).toLocaleString(undefined, {
 document.querySelector(".skip-link").addEventListener("click", (event) => {
   event.preventDefault(); $("main").focus();
 });
+for (const [code, label] of Object.values(statusMarks)) {
+  const item = node("li"); item.append(node("strong", code), document.createTextNode(` ${label}`));
+  $("status-key-list").append(item);
+}
 const storageKey = "sideline.compare";
 let data, week, side = "offense", selected = [], opener, teamSide = "offense";
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch {} }
@@ -74,7 +78,11 @@ function field(unit, unitSide, report, below = false) {
       control.setAttribute("aria-label", `${player.name}, ${group.position}, ${status.label}${player.star ? ", league top 10" : ""}`);
       control.dataset.slot = group.slot;
       control.title = `${player.name} · ${group.position} · ${status.label}`;
-      control.append(node("span", shortName(player.name), "player-name"), node("span", group.position, "position"));
+      const meta = node("span", undefined, "player-meta");
+      const mark = node("span", statusMarks[status.status][0], "status-mark");
+      mark.setAttribute("aria-hidden", "true");
+      meta.append(node("span", group.position, "position"), mark);
+      control.append(node("span", shortName(player.name), "player-name"), meta);
       if (player.star) {
         const star = node("span", "★", "star"); star.setAttribute("aria-label", "League top 10"); control.append(star);
       }
@@ -151,7 +159,7 @@ function render() { renderCards(); renderTeam(); }
 function sortOptions() {
   const previous = $("sort").value || "record";
   $("sort").replaceChildren();
-  for (const [value, label] of [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters Out"]]) {
+  for (const [value, label] of [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters listed Out"]]) {
     const option = node("option", label); option.value = value; $("sort").append(option);
   }
   $("sort").value = previous;
@@ -178,7 +186,7 @@ $("info").addEventListener("click", () => {
   const content = node("div");
   if (!data) content.append(node("p", "Weekly data unavailable"));
   else {
-    content.append(node("p", `Collected ${localTime(data.generated_at)}. Injury file updated ${localTime(data.injury_updated_at)}.`), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
+    content.append(node("p", `Collected ${localTime(data.generated_at)}. Injury file updated ${localTime(data.injury_updated_at)}.`), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. Out sorting counts listed designations when a full observed unit and a team report are available; other counts are unavailable. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
     for (const source of data.sources) {
       const section = node("section"); section.append(link(source.label, source.url), node("p", `File updated ${localTime(source.source_updated_at)} · collected ${localTime(source.retrieved_at)} · checked ${source.checked_on}`)); content.append(section);
     }

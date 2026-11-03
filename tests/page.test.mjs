@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { rows, starters, playerStatus, recordText, sortTeams } from "../web/field.mjs";
+import { rows, starters, playerStatus, recordText, outCount, sortTeams } from "../web/field.mjs";
 import { fixture } from "./fixture.mjs";
 test("field places every supported starter once, with scrimmage-adjacent players last", () => {
   const team = fixture().weeks[0].teams.ARI;
@@ -38,7 +38,7 @@ test("severity respects game statuses before practice; missing reports remain un
 });
 test("record, selected-unit rank and Out sorts honor ties and unavailable data", () => {
   const metric = (rank) => Array.from({length:4}, () => ({rank}));
-  const team = (wins, losses, ties, rank, out = false) => ({record: {wins,losses,ties}, stats: {offense:metric(rank), defense:metric(4-rank)}, offense:[{position:"QB", players:[{injury: out ? {badges:["OUT"]} : null}]}], defense:[], report:true});
+  const team = (wins, losses, ties, rank, out = false) => ({record: {wins,losses,ties}, stats: {offense:metric(rank), defense:metric(4-rank)}, offense:Array.from({length:11},(_,i)=>({position:i ? "WR":"QB",players:[{injury:out && i===0 ? {badges:["OUT"]}:null}]})), defense:[], report:true});
   const week = {teams: {ARI:team(2,1,1,3), ATL:team(3,1,0,2), BAL:team(1,1,0,1,true)}};
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","record"),["ATL","ARI","BAL"]);
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","stat-0"),["BAL","ATL","ARI"]);
@@ -97,4 +97,29 @@ test("one browser data request, one collector and no removed runtime or validati
     (await readdir(new URL("../scripts/", import.meta.url))).sort(),
     ["build-web.mjs", "collect.mjs", "serve-web.mjs"],
   );
+});
+
+test("Out counts keep known zero separate from missing reports and incomplete charts", () => {
+  const unit = (count, out = false) => Array.from({length:count}, (_,i) => ({position:"WR", players:[{injury:out && i===0 ? {badges:["OUT"]}:null}]}));
+  const week = {teams:{
+    ARI:{report:false,offense:unit(11)},
+    ATL:{report:true,offense:[]},
+    BAL:{report:true,offense:unit(11)},
+    BUF:{report:true,offense:unit(11,true)},
+    CAR:{report:true,offense:unit(10)},
+  }};
+  assert.equal(outCount(week.teams.ARI,"offense"),null);
+  assert.equal(outCount(week.teams.ATL,"offense"),null);
+  assert.equal(outCount(week.teams.CAR,"offense"),null);
+  assert.equal(outCount(week.teams.BAL,"offense"),0);
+  assert.equal(outCount(week.teams.BUF,"offense"),1);
+  assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","out"),["BUF","BAL","ARI","ATL","CAR"]);
+  assert.equal(outCount({report:true,defense:unit(11)},"defense"),null);
+  assert.equal(outCount({report:true,defense:unit(12,true)},"defense"),1);
+});
+test("an absent injury entry is neutral and distinct from observed full participation", () => {
+  assert.equal(playerStatus({},true).status,"unlisted");
+  assert.equal(playerStatus({},false).status,"unknown");
+  assert.equal(playerStatus({injury:{practice:"Full Participation in Practice",game:"Not listed",badges:[]}},true).status,"full");
+  assert.equal(playerStatus({injury:{practice:"Not listed",game:"Not listed",badges:[]}},true).status,"undesignated");
 });
