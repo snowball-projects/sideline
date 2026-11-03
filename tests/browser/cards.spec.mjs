@@ -36,7 +36,7 @@ test("all teams, one selected unit, exact player target, popup and keyboard focu
   await expect(page.locator("dialog")).toContainText("backup-ARI");
   await page.keyboard.press("Escape"); await expect(qb).toBeFocused();
   const size = await qb.evaluate((el) => {const box=el.getBoundingClientRect(); return {width:box.width,height:box.height,name:getComputedStyle(el.querySelector(".player-name")).display};});
-  if (info.project.name === "desktop-chromium") expect(size.name).not.toBe("none");
+  if ((await card.boundingBox()).width >= 680) expect(size.name).not.toBe("none");
   else { expect(size.width).toBe(40); expect(size.height).toBe(40); expect(size.name).toBe("none"); }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({path:info.outputPath("all-teams.png")});
@@ -328,4 +328,17 @@ test("forest palette stays dark under both system preferences", async ({page}) =
     await expect(page.locator(".field-half").first()).toHaveCSS("background-color","rgb(35, 67, 56)");
     await expect(page.locator("#offense")).toHaveCSS("color","rgb(229, 238, 231)");
   }
+});
+
+test("fresh team links and browser back keep the larger-screen matchup page", async ({page}) => {
+  await open(page);
+  await page.goto("/#team=ARI");
+  await expect(page.locator("#team-view")).toBeVisible();
+  await expect(page.locator("#wallet-view")).toBeHidden();
+  await expect(page.locator("#team-view .team-heading h2")).toHaveText(["ARI","ATL"]);
+  await page.reload(); await expect(page.locator("#week")).toBeEnabled();
+  await expect(page.locator("#team-view")).toBeVisible();
+  await page.goBack();
+  await expect(page.locator("#cards")).toBeVisible();
+  await expect(page.locator("#team-view")).toBeHidden();
 });
