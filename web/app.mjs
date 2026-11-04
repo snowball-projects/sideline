@@ -319,7 +319,6 @@ function renderTeam() {
     const card = node("article", undefined, "card wallet-lift"); card.id = "wallet-card";
     card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
     card.append(matchupContent(team, side, walletStrip(team, true)));
-    card.querySelector(".opponent-half").classList.add("wallet-opponent");
     scroll.append(card);
     $("wallet-view").append(scroll, walletPile(team)); scroll.scrollTop = scrollTop;
   } else {
