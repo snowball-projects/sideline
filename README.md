@@ -30,7 +30,7 @@ position dots when narrow; larger-screen matchup pages always use pills. Phones
 keep controls fixed while the native team stack scrolls and its strips stick. Five
 injury badges have a compact key; other players stay unmarked. Player details show
 supplied injury facts, ranked stats and ordered replacements for game designations.
-Unknown Out counts sort after supported counts.
+Sort categories follow the selected unit; missing statistics stay last in either order.
 
 [MIT software](LICENSE). Original data: CC0. nflverse: CC BY 4.0.
 Team marks retain their owners’ terms. [Sources and credits](THIRD-PARTY-NOTICES.md).

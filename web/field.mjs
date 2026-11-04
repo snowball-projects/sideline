@@ -2,6 +2,7 @@ export function shortName(name) {
   const words = name.split(" ");
   return words.length === 1 ? name : `${words[0][0]}. ${words.slice(1).join(" ")}`;
 }
+export const statCategories = ["Points", "Yards", "Sacks", "Turnovers"];
 export const statLabels = {
   offense: ["Points / game", "Yards / game", "Sacks taken", "Turnovers lost"],
   defense: ["Points allowed / game", "Yards allowed / game", "Sacks", "Turnovers forced"],
@@ -54,11 +55,7 @@ export function outCount(team, side) {
 export function sortTeams(teams, week, side, sort, direction = "best") {
   const score = (team) => {
     const own = week.teams[team];
-    if (sort === "out") {
-      const count = outCount(own, side);
-      return count === null ? null : -count;
-    }
-    if (sort.startsWith("stat-")) return own.stats?.[side][+sort.slice(5)].rank ?? null;
+    if (sort.startsWith("stat-")) return own.stats?.[side][+sort.slice(5)]?.rank ?? null;
     const record = own.record;
     const games = record && record.wins + record.losses + record.ties;
     return record ? (games ? -(record.wins + record.ties / 2) / games : 0) : null;

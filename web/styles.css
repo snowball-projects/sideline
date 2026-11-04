@@ -46,6 +46,7 @@ h2 a:hover { text-decoration: underline; }
 .opponent { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 11px; }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px 12px 7px; }
 .metric { display: grid; gap: 1px; min-width: 0; }
+.sorted-stat { background: #e6b8520d; box-shadow: inset 0 -2px #e6b85255; border-radius: 3px; }
 .metric-label { font-size: 10px; height: 24px; line-height: 1.1; color: var(--muted); max-width: 100px; }
 .metric strong { font-size: 21px; line-height: 1; font-weight: 650; font-variant-numeric: tabular-nums; }
 .rank { font-size: 10px; color: var(--muted); }
