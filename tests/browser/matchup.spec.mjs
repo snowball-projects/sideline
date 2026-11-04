@@ -122,16 +122,20 @@ test("backfield labels fit between players, move around a middle player and surv
         await page.locator(`#${unit}`).click();
         for(const width of [320,390,599,600,768,1440]) {
           await page.setViewportSize({width,height:1000});
+          await expect(page.locator(width < 600 ? "#wallet-view" : "#team-view")).toBeVisible();
           await expect.poll(()=>geometry(page),{message:`${week} ${unit} ${width}`}).toEqual([]);
           if (width >= 600) expect(await root(page).locator(".backfield-row > .player").evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width<=160))).toBe(true);
           if (week === 1 || week === 2) {
-            const placement=await root(page).locator(".backfield-row").evaluateAll(rows=>rows.map(row=>{
-              const b=row.getBoundingClientRect(), label=row.querySelector(".backfield-label").getBoundingClientRect();
-              const players=[...row.querySelectorAll(".player")].map(el=>el.getBoundingClientRect());
-              const center=(label.left+label.right)/2;
-              return players.length===2 ? Math.abs(center-(players[0].right+players[1].left)/2)<1 : Math.abs(center-(b.left+b.right)/2)>20 && Math.abs((players[0].left+players[0].right)/2-(b.left+b.right)/2)<1;
-            }));
-            expect(placement,`center or side gap: ${week} ${unit} ${width}`).toEqual([true,true]);
+            const placement=async () => {
+              await page.clock.runFor(32);
+              return root(page).locator(".backfield-row").evaluateAll(rows=>rows.map(row=>{
+                const b=row.getBoundingClientRect(), label=row.querySelector(".backfield-label").getBoundingClientRect();
+                const players=[...row.querySelectorAll(".player")].map(el=>el.getBoundingClientRect());
+                const center=(label.left+label.right)/2;
+                return players.length===2 ? Math.abs(center-(players[0].right+players[1].left)/2)<1 : Math.abs(center-(b.left+b.right)/2)>20 && Math.abs((players[0].left+players[0].right)/2-(b.left+b.right)/2)<1;
+              }));
+            };
+            await expect.poll(placement,{message:`center or side gap: ${week} ${unit} ${width}`}).toEqual([true,true]);
           }
         }
       }
