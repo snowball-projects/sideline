@@ -43,7 +43,7 @@ export function playerStatus(player) {
   return { status: "neutral", label: "" };
 }
 export function recordText(record) {
-  return record ? `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}` : "Record unavailable";
+  return record ? `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}` : "";
 }
 // Count listed Out designations, never infer a missing report or unit is zero.
 export function outCount(team, side) {

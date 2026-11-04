@@ -45,7 +45,7 @@ test("record, selected-unit rank and Out sorts honor ties and unavailable data",
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"defense","stat-0"),["ARI","ATL","BAL"]);
   assert.equal(sortTeams(Object.keys(week.teams),week,"offense","out")[0],"BAL");
   assert.equal(recordText({wins:2,losses:1,ties:1}),"2-1-1");
-  assert.equal(recordText(null),"Record unavailable");
+  assert.equal(recordText(null),"");
 });
 test("strict CSP, iPhone manifest and existing logo provenance remain intact", async () => {
   const html = await readFile(

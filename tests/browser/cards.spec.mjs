@@ -92,7 +92,7 @@ test("global unit and stat sort, historical bye and unobserved weeks", async ({p
   await page.keyboard.press("Escape");
   await chooseSort(page,"stat-0");
   await page.locator("#week").selectOption("4");
-  await expect(page.locator(".field-empty")).toHaveText("Starters unavailable");
+  await expect(page.locator(".field-empty")).toHaveCount(0);
   await expect(page.locator(".player")).toHaveCount(0);
   await page.locator("#week").selectOption("3");
   await expect(page.locator(".report-notice")).toHaveCount(0);
@@ -151,8 +151,8 @@ test("full participation has no field badge, keeps its body part and gaps stay u
   await expect(page.locator("dialog")).not.toContainText("Full participation");
   await page.keyboard.press("Escape");
   await page.locator("#week").selectOption("2");
-  await expect(page.locator("#message")).toContainText("Stats unavailable");
-  await expect(page.locator(".rank")).toHaveText(["Unavailable","Unavailable","Unavailable","Unavailable"]);
+  await expect(page.locator("#message")).not.toContainText(/unavailable/i);
+  await expect(page.locator(".rank")).toHaveText(["","","",""]);
 });
 test("card opens a team matchup, independent switch retains team sides and pills", async ({page},info) => {
   const {errors}=await open(page,{selections:["ARI"]});
@@ -208,7 +208,7 @@ test("real collected snapshot renders all observed slots and stars for both unit
     }
   }
   const philly=page.getByRole("article",{name:`${real.teams.PHI.name} defense`,exact:true});
-  if(sourceMissingPhilly(real)) await expect(philly.locator(".player-unavailable")).toHaveAttribute("aria-label","Slot 2 unavailable");
+  if(sourceMissingPhilly(real)) await expect(philly.locator(".player-unavailable")).toHaveAttribute("aria-hidden","true");
   await page.screenshot({path:info.outputPath("real-week9.png")});
   await page.locator("#compare").click();
   const teamPills=page.locator(".compare-options .choice-pill");
@@ -369,4 +369,22 @@ test("larger screens restore document scroll after opening a deep team card", as
   await heading.click(); await expect(page.locator("#team-view")).toBeVisible();
   await page.goBack(); await expect(page.locator("#cards")).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(before, 0);
+});
+
+
+test("missing depth slots stay blank and preserve formation geometry", async ({page}) => {
+  const data=structuredClone(feed), own=data.weeks[0].teams.ARI;
+  own.defense=["LDE","NT","RDE","WLB","SS","FS","RCB"].map((position,i)=>({position,slot:i+1,players:[{name:position}]}));
+  own.defense=own.defense.filter(group=>group.slot!==2);
+  own.record=null; own.opponent=null; own.stats=null;
+  await open(page,{data,selections:["ARI"]});
+  await page.locator("#defense").click();
+  const card=page.locator("#cards .card"), gap=card.locator(".player-unavailable");
+  await expect(gap).toHaveCount(1);
+  await expect(gap).toBeEmpty();
+  await expect(gap).toHaveAttribute("aria-hidden","true");
+  expect(await gap.evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(0);
+  expect(await gap.evaluate(el=>getComputedStyle(el).visibility)).toBe("hidden");
+  await expect(card).not.toContainText(/unavailable|unknown|Slot 2|–/i);
+  await expect(card.locator(".metric strong")).toHaveText(["","","",""]);
 });

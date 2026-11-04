@@ -54,7 +54,7 @@ h2 a:hover { text-decoration: underline; }
 .below .field-row:first-of-type { grid-row: 3; }
 .below .field-row:last-of-type { grid-row: 1; }
 .player, .player-unavailable { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; padding: 3px 3px; width: 100px; flex: 1; max-width: 160px; height: 42px; min-width: 0; border-color: var(--border); background: var(--surface); }
-.player-unavailable { border: 1px dashed var(--muted); border-radius: 8px; background: var(--page); color: var(--muted); }
+.player-unavailable { visibility: hidden; }
 .player-name { font-size: 11px; font-weight: 650; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field-row:has(> :nth-child(6)) .player-name { font-size: 10px; }
 .player-meta { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: center; justify-content: center; column-gap: 5px; height: 12px; width: 100%; overflow: hidden; line-height: 12px; }
@@ -68,7 +68,6 @@ h2 a:hover { text-decoration: underline; }
 .status-dnp { color: #f5e6f5; background: #553454; border-color: #b790b4; }
 .status-limited { color: #e7f1ff; background: #2b4861; border-color: #7ca6c7; }
 .star { pointer-events: none; position: absolute; right: -5px; top: -7px; font-size: 15px; line-height: 16px; color: var(--page); background: var(--accent); border-radius: 50%; padding: 0 1px; }
-.field-empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--muted); font-size: 12px; }
 .scrimmage { text-align: center; font-size: 9px; line-height: 16px; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid var(--ink); }
 .team-toolbar { display: flex; align-items: center; justify-content: space-between; margin: 0 auto 12px; max-width: 760px; }
 .matchup { max-width: 760px; margin-inline: auto; }
@@ -107,7 +106,6 @@ details { margin-block: 18px; } summary { cursor: pointer; }
   .card .field-half { grid-template-rows: repeat(3, var(--player-size)); gap: 0; padding: 4px 8px; }
   .card .player, .card .player-unavailable { width: var(--player-size); height: var(--player-size); max-width: none; flex: 0 0 var(--player-size); border-radius: 50%; padding: 0; }
   .card .player-name { display: none; }
-  .card .player-unavailable .player-name { display: block; font-size: 6px; }
   .card .player-meta { flex-direction: column; flex-wrap: nowrap; gap: 0; width: auto; height: auto; overflow: visible; line-height: 12px; }
   .card .player-meta .injury-body { display: none; }
   .card .position { font-size: 10px; }
@@ -167,8 +165,7 @@ details { margin-block: 18px; } summary { cursor: pointer; }
   .wallet-labels { display: grid; gap: 4px; min-width: 0; flex: 1; }
   .wallet-name { font-size: 13px; font-weight: 700; line-height: 16px; }
   .wallet-record { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; line-height: 15px; }
-  .wallet-out-unknown { font-size: 10px; }
-  .wallet-opponent-logo { margin-left: auto; flex: none; font-size: 11px; color: var(--muted); }
+  .wallet-opponent-logo { margin-left: auto; flex: none; display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 15px; color: var(--muted); }
   .wallet-opponent-logo img { object-fit: contain; }
   .out-dots { display: inline-flex; align-items: center; gap: 3px; }
   .out-label { margin-right: 2px; font-size: 10px; }
