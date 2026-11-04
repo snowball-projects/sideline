@@ -1,4 +1,4 @@
-import { rows, shortName, statLabels, statusMarks, playerStatus, recordText, outCount, sortTeams } from "./field.mjs";
+import { rows, shortName, statCategories, statLabels, statusMarks, playerStatus, recordText, outCount, sortTeams } from "./field.mjs";
 const $ = (id) => document.getElementById(id);
 const node = (tag, text, className) => {
   const el = document.createElement(tag);
@@ -164,7 +164,7 @@ function stats(record, unitSide) {
   const section = node("section", undefined, `stats ${unitSide}-stats`);
   section.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} statistics`);
   statLabels[unitSide].forEach((label, index) => {
-    const metric = record?.[unitSide][index], item = node("div", undefined, "metric");
+    const metric = record?.[unitSide][index], item = node("div", undefined, `metric${sortBy === `stat-${index}` ? " sorted-stat" : ""}`);
     item.append(node("span", label, "metric-label"), node("strong", metric ? metric.value.toLocaleString(undefined, { maximumFractionDigits: index < 2 ? 1 : 0 }) : ""), node("span", metric ? `${metric.tied ? "T" : ""}#${metric.rank}` : "", "rank"));
     section.append(item);
   });
@@ -365,10 +365,10 @@ phone.addEventListener("change", () => {
   render(); focusRoute();
 });
 function sortOptions() {
-  return [["record", "Record"], ...statLabels[side].map((label, index) => [`stat-${index}`, label]), ["out", "Starters listed Out"]];
+  return [["record", "Record"], ...statCategories.map((label, index) => [`stat-${index}`, label])];
 }
 function directionLabel(direction) {
-  return sortBy === "out" ? (direction === "best" ? "Most first" : "Fewest first") : (direction === "best" ? "Best first" : "Worst first");
+  return direction === "best" ? "Best first" : "Worst first";
 }
 $("sort").addEventListener("click", () => {
   const content = node("div"), metrics = node("div", undefined, "choice-options"), directions = node("div", undefined, "choice-options");
@@ -416,7 +416,7 @@ $("clear-compare").addEventListener("click", () => { selected = []; save(); rend
 $("info").addEventListener("click", () => {
   const content = node("div");
   if (data) {
-    content.append(node("p", [data.generated_at && `Collected ${localTime(data.generated_at)}`, data.injury_updated_at && `Injury file updated ${localTime(data.injury_updated_at)}`].filter(Boolean).join(" · ")), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. Out sorting counts listed designations when a full observed unit and a team report are available; other counts are unavailable. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
+    content.append(node("p", [data.generated_at && `Collected ${localTime(data.generated_at)}`, data.injury_updated_at && `Injury file updated ${localTime(data.injury_updated_at)}`].filter(Boolean).join(" · ")), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
     for (const source of data.sources) {
       const section = node("section"); section.append(link(source.label, source.url), node("p", [source.source_updated_at && `File updated ${localTime(source.source_updated_at)}`, source.retrieved_at && `Collected ${localTime(source.retrieved_at)}`, source.checked_on && `Checked ${source.checked_on}`].filter(Boolean).join(" · "))); content.append(section);
     }

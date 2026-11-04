@@ -36,14 +36,14 @@ test("severity prefers game designations to practice; other players stay unmarke
   assert.equal(playerStatus({}).label, "");
   assert.deepEqual(playerStatus({injury:{injury:"Ankle",game:"Not listed",practice:"Full Participation in Practice",badges:[]}}), {status:"neutral",label:""});
 });
-test("record, selected-unit rank and Out sorts honor ties and unavailable data", () => {
+test("record and selected-unit rank sorts honor ties and missing data", () => {
   const metric = (rank) => Array.from({length:4}, () => ({rank}));
   const team = (wins, losses, ties, rank, out = false) => ({record: {wins,losses,ties}, stats: {offense:metric(rank), defense:metric(4-rank)}, offense:Array.from({length:11},(_,i)=>({position:i ? "WR":"QB",players:[{injury:out && i===0 ? {badges:["OUT"]}:null}]})), defense:[], report:true});
   const week = {teams: {ARI:team(2,1,1,3), ATL:team(3,1,0,2), BAL:team(1,1,0,1,true)}};
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","record"),["ATL","ARI","BAL"]);
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","stat-0"),["BAL","ATL","ARI"]);
   assert.deepEqual(sortTeams(Object.keys(week.teams),week,"defense","stat-0"),["ARI","ATL","BAL"]);
-  assert.equal(sortTeams(Object.keys(week.teams),week,"offense","out")[0],"BAL");
+  assert.equal(sortTeams(Object.keys(week.teams),week,"offense","out")[0],"ATL");
   assert.equal(recordText({wins:2,losses:1,ties:1}),"2-1-1");
   assert.equal(recordText(null),"");
 });
@@ -113,7 +113,6 @@ test("Out counts keep known zero separate from missing reports and incomplete ch
   assert.equal(outCount(week.teams.CAR,"offense"),null);
   assert.equal(outCount(week.teams.BAL,"offense"),0);
   assert.equal(outCount(week.teams.BUF,"offense"),1);
-  assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","out"),["BUF","BAL","ARI","ATL","CAR"]);
   assert.equal(outCount({report:true,defense:unit(11)},"defense"),null);
   assert.equal(outCount({report:true,defense:unit(12,true)},"defense"),1);
 });
@@ -126,8 +125,21 @@ test("both sort directions keep missing data last and alphabetical ties stable",
   const unit = (n, out) => Array.from({length:n}, (_,i)=>({position:"WR",players:[{injury:i<out ? {badges:["OUT"]}:null}]}));
   const team = (wins, losses, rank, out) => ({record:{wins,losses,ties:0},stats:{offense:Array(4).fill({rank}),defense:Array(4).fill({rank})},offense:unit(11,out),defense:unit(12,out),report:true});
   const week={teams:{ARI:{...team(0,0,0,0),record:null,stats:null,report:false},ATL:team(0,5,3,0),BAL:team(4,0,1,2),BUF:team(2,2,2,1),CAR:team(2,2,2,1)}};
-  for(const side of ["offense","defense"]) for(const choice of ["record","stat-0","stat-1","stat-2","stat-3","out"]) {
+  for(const side of ["offense","defense"]) for(const choice of ["record","stat-0","stat-1","stat-2","stat-3"]) {
     assert.deepEqual(sortTeams(Object.keys(week.teams),week,side,choice,"best"),["BAL","BUF","CAR","ATL","ARI"],`${side} ${choice} best`);
     assert.deepEqual(sortTeams(Object.keys(week.teams),week,side,choice,"worst"),["ATL","BUF","CAR","BAL","ARI"],`${side} ${choice} worst`);
+  }
+});
+
+
+test("individual missing metrics stay last and removed Out selection uses Record", () => {
+  const team=(wins,rank)=>({record:{wins,losses:4-wins,ties:0},stats:{offense:[{rank},null,{rank},{rank}],defense:[{rank},{rank},null,{rank}]}});
+  const week={teams:{ARI:team(1,1),ATL:team(3,2),BAL:team(2,3)}};
+  week.teams.ATL.stats.offense[1]={rank:2};
+  week.teams.ARI.stats.defense[2]={rank:1};
+  for(const direction of ["best","worst"]) {
+    assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","stat-1",direction),["ATL","ARI","BAL"]);
+    assert.deepEqual(sortTeams(Object.keys(week.teams),week,"defense","stat-2",direction),["ARI","ATL","BAL"]);
+    assert.deepEqual(sortTeams(Object.keys(week.teams),week,"offense","out",direction),sortTeams(Object.keys(week.teams),week,"offense","record",direction));
   }
 });
