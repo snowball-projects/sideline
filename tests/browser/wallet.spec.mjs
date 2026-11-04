@@ -101,7 +101,7 @@ test("collapsed strips overlap, show opponents and match selected-unit Out count
   await expect(strip(page, "BUF").locator(".out-dot")).toHaveCount(0);
   const unknown = strip(page, "BAL");
   await expect(unknown.locator(".out-dot")).toHaveCount(0);
-  expect((await unknown.getAttribute("aria-label") || "") + (await unknown.getAttribute("title") || "") + await unknown.textContent()).toMatch(/unavailable|unknown/i);
+  expect((await unknown.getAttribute("aria-label") || "") + (await unknown.getAttribute("title") || "") + await unknown.textContent()).not.toMatch(/unavailable|unknown/i);
   const images = await strip(page, "ARI").locator("img").evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
   expect(images).toHaveLength(2); expect(images[1]).toBeLessThan(images[0]);
   const boxes = await page.locator("#cards .wallet-strip").evaluateAll(els => els.slice(0, 2).map(el => {const b=el.getBoundingClientRect(); return {top:b.top,bottom:b.bottom};}));
@@ -172,7 +172,7 @@ test("lifting automatically pairs units and player taps preserve the lifted team
   await expect(page.locator("#wallet-view .field-half")).toHaveCount(1);
   await expect(page.locator("#wallet-view .bye")).toHaveText("Bye");
   await page.locator("#week").selectOption("4");
-  await expect(page.locator("#wallet-view .field-empty")).toHaveCount(2);
+  await expect(page.locator("#wallet-view .field-empty")).toHaveCount(0);
   await expect(page.locator("#wallet-view .player")).toHaveCount(0);
   await page.screenshot({path:info.outputPath("wallet-matchup.png")});
   expect(errors).toEqual([]);
@@ -344,7 +344,7 @@ test("real collected teams fit the phone stack and pair observed units without p
       expect(outCount(own, side), `${code} ${side} source Out count`).toBe(expected);
       await expect(strip(page, code).locator(".wallet-name")).toHaveText(real.teams[code].name);
       await expect(strip(page, code).locator(".out-dot")).toHaveCount(expected ?? 0);
-      if (expected === null) await expect(strip(page, code)).toHaveAccessibleName(/Out count unavailable/);
+      if (expected === null) await expect(strip(page, code)).not.toHaveAccessibleName(/Out count unavailable/);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await lift(page, team);
@@ -367,4 +367,30 @@ test("real collected teams fit the phone stack and pair observed units without p
     await page.locator("#wallet-pile").tap(); await collapsed(page);
   }
   expect(errors).toEqual([]);
+});
+
+
+test("phone strips show plain opponent records and leave missing data and byes blank", async ({page}) => {
+  const data = structuredClone(feed), teams = data.weeks[1].teams;
+  teams.ARI.opponent = "ATL"; teams.ARI.bye = false;
+  teams.ARI.record = {wins:2,losses:3,ties:1};
+  teams.ATL.record = {wins:4,losses:2,ties:0};
+  teams.BAL.record = null; teams.BAL.opponent = null; teams.BAL.bye = false;
+  data.weeks[2].teams.ARI.opponent = null; data.weeks[2].teams.ARI.bye = true;
+  await open(page, {data,selections:["ARI","BAL"],week:2});
+  await expect(strip(page,"ARI").locator(".wallet-record > span").first()).toHaveText("2-3-1");
+  await expect(strip(page,"ARI").locator(".wallet-opponent-logo")).toHaveText("4-2");
+  await expect(strip(page,"ARI")).toHaveAccessibleName(/ATL, 4-2/);
+  const styles = await strip(page,"ARI").evaluate(el => [el.querySelector(".wallet-record"),el.querySelector(".wallet-opponent-logo")].map(x => {
+    const s=getComputedStyle(x); return [s.fontSize,s.lineHeight,s.color,s.fontWeight];
+  }));
+  expect(styles[0]).toEqual(styles[1]);
+  await expect(strip(page,"BAL").locator(".wallet-record")).toHaveText("");
+  await expect(strip(page,"BAL").locator(".wallet-opponent-logo")).toBeEmpty();
+  await expect(strip(page,"BAL")).not.toHaveAccessibleName(/unavailable|unknown/i);
+  await page.locator("#week").selectOption("1");
+  await page.locator("#week").selectOption("2");
+  // A known bye leaves the opponent side blank too.
+  await page.locator("#week").selectOption("3");
+  await expect(strip(page,"ARI").locator(".wallet-opponent-logo")).toBeEmpty();
 });

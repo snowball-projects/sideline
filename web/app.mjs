@@ -24,7 +24,7 @@ const link = (text, url) => {
   const el = node("a", text); el.href = url; el.target = "_blank"; el.rel = "noreferrer";
   return el;
 };
-const localTime = (value) => value ? new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Not supplied";
+const localTime = (value) => value ? new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
 document.querySelector(".skip-link").addEventListener("click", (event) => {
   event.preventDefault(); (phone.matches ? ($("wallet-scroll") || $("cards")) : $("main")).focus();
 });
@@ -93,28 +93,26 @@ function playerPopup(group, control) {
     }
     content.append(stats);
   }
-  if (["out", "doubtful", "questionable"].includes(playerStatus(player).status)) {
+  if (group.players.length > 1 && ["out", "doubtful", "questionable"].includes(playerStatus(player).status)) {
     content.append(node("h3", "Next on the depth chart"));
     const list = node("ol");
     for (const backup of group.players.slice(1)) {
       const item = node("li"); item.append(node("span", `${backup.name} · ${group.position}`));
       const summary = injurySummary(backup); if (summary.childElementCount) item.append(summary); list.append(item);
     }
-    content.append(group.players.length > 1 ? list : node("p", "None listed"));
+    content.append(list);
   }
   popup(`${player.name} · ${group.position}`, content, control);
 }
 function field(unit, unitSide, below = false) {
   const half = node("section", undefined, `field-half ${unitSide}${below ? " below" : ""}`);
   half.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} starters`);
-  if (!unit.length) half.append(node("p", "Starters unavailable", "field-empty"));
   for (const groups of rows(unit, unitSide)) {
     const row = node("div", undefined, "field-row");
     for (const group of groups) {
       if (group.unavailable) {
         const missing = node("div", undefined, "player-unavailable");
-        missing.setAttribute("aria-label", `${group.position} unavailable`);
-        missing.append(node("span", group.position, "position"), node("span", "Unavailable", "player-name"));
+        missing.setAttribute("aria-hidden", "true");
         row.append(missing);
         continue;
       }
@@ -158,7 +156,7 @@ function teamHeading(team, unitSide, navigable = false) {
     heading.append(a);
   }
   else heading.textContent = data.teams[team].name;
-  labels.append(heading, node("span", `${recordText(own.record)} · ${unitSide === "offense" ? "Offense" : "Defense"}`, "record"));
+  labels.append(heading, node("span", [recordText(own.record), unitSide === "offense" ? "Offense" : "Defense"].filter(Boolean).join(" · "), "record"));
   section.append(logo(team), labels);
   return section;
 }
@@ -167,7 +165,7 @@ function stats(record, unitSide) {
   section.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} statistics`);
   statLabels[unitSide].forEach((label, index) => {
     const metric = record?.[unitSide][index], item = node("div", undefined, "metric");
-    item.append(node("span", label, "metric-label"), node("strong", metric ? metric.value.toLocaleString(undefined, { maximumFractionDigits: index < 2 ? 1 : 0 }) : "–"), node("span", metric ? `${metric.tied ? "T" : ""}#${metric.rank}` : "Unavailable", "rank"));
+    item.append(node("span", label, "metric-label"), node("strong", metric ? metric.value.toLocaleString(undefined, { maximumFractionDigits: index < 2 ? 1 : 0 }) : ""), node("span", metric ? `${metric.tied ? "T" : ""}#${metric.rank}` : "", "rank"));
     section.append(item);
   });
   return section;
@@ -181,16 +179,15 @@ function currentTeam() {
 }
 function walletStrip(team, expanded = false) {
   const own = week.teams[team], count = outCount(own, side);
-  const opponentName = own.opponent ? data.teams[own.opponent].name : own.bye ? "Bye" : "Opponent unavailable";
+  const opponentName = own.opponent ? data.teams[own.opponent].name : own.bye ? "Bye" : "";
   const control = button(undefined, () => expanded ? closeTeam() : openTeam(team, control), "wallet-strip");
   control.dataset.team = team;
   control.setAttribute("aria-expanded", String(expanded));
   control.setAttribute("aria-controls", "wallet-view");
-  control.setAttribute("aria-label", `${data.teams[team].name}, ${recordText(own.record)}, ${opponentName}, ${count === null ? "Out count unavailable" : `${count} starters listed Out`}`);
+  control.setAttribute("aria-label", [data.teams[team].name, recordText(own.record), opponentName, own.opponent && recordText(week.teams[own.opponent].record), count !== null && `${count} starters listed Out`].filter(Boolean).join(", "));
   const labels = node("span", undefined, "wallet-labels"), detail = node("span", undefined, "wallet-record");
   detail.append(node("span", recordText(own.record)));
-  if (count === null) detail.append(node("span", "Out unavailable", "wallet-out-unknown"));
-  else if (count) {
+  if (count) {
     const dots = node("span", undefined, "out-dots");
     dots.setAttribute("aria-hidden", "true"); dots.append(node("span", "Out", "out-label"));
     for (let i = 0; i < count; i++) dots.append(node("span", undefined, "out-dot"));
@@ -198,7 +195,7 @@ function walletStrip(team, expanded = false) {
   }
   labels.append(node("span", data.teams[team].name, "wallet-name"), detail);
   const opponent = node("span", undefined, "wallet-opponent-logo");
-  if (own.opponent) opponent.append(logo(own.opponent, 22)); else opponent.textContent = own.bye ? "Bye" : "–";
+  if (own.opponent) opponent.append(node("span", recordText(week.teams[own.opponent].record)), logo(own.opponent, 22));
   opponent.setAttribute("aria-hidden", "true");
   control.append(logo(team, 36), labels, opponent);
   return control;
@@ -208,7 +205,7 @@ function renderCards() {
   $("cards").tabIndex = phone.matches ? 0 : -1;
   $("sort").textContent = `${sortOptions().find(([value]) => value === sortBy)[1]} · ${directionLabel(sortDirection)}`;
   $("cards").replaceChildren();
-  $("message").textContent = `${teams.length} teams · ${week.stats_through ? `Stats through week ${week.stats_through}` : week.week === 1 ? "No prior games" : "Stats unavailable"}`;
+  $("message").textContent = [`${teams.length} teams`, week.stats_through && `Stats through week ${week.stats_through}`].filter(Boolean).join(" · ");
   $("compare").textContent = selected.length ? `Compare (${selected.length})` : "Compare";
   $("clear-compare").hidden = !selected.length;
   for (const [index, team] of teams.entries()) {
@@ -221,7 +218,7 @@ function renderCards() {
       card.addEventListener("click", event => { if (!event.target.closest("button, a")) openTeam(team); });
       const heading = teamHeading(team, side, true), opponent = node("span", undefined, "opponent");
       if (own.opponent) { opponent.append(node("span", "vs"), logo(own.opponent, 24)); opponent.setAttribute("aria-label", `Opponent ${data.teams[own.opponent].name}`); opponent.setAttribute("role", "img"); }
-      else opponent.textContent = own.bye ? "Bye" : "Opponent unavailable";
+      else opponent.textContent = own.bye ? "Bye" : "";
       heading.append(opponent);
       card.append(heading, stats(own.stats, side), field(own[side], side), node("div", "Line of scrimmage", "scrimmage"));
     }
@@ -236,7 +233,7 @@ function matchupContent(team, unit, heading) {
   if (own.opponent) {
     const other = week.teams[own.opponent];
     opponent.append(field(other[otherUnit], otherUnit, true), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
-  } else opponent.append(node("p", own.bye ? "Bye" : "Opponent unavailable", "bye"));
+  } else opponent.append(node("p", own.bye ? "Bye" : "", "bye"));
   content.append(opponent);
   return content;
 }
@@ -418,11 +415,10 @@ $("compare").addEventListener("click", () => {
 $("clear-compare").addEventListener("click", () => { selected = []; save(); render(); $("compare").focus(); });
 $("info").addEventListener("click", () => {
   const content = node("div");
-  if (!data) content.append(node("p", "Weekly data unavailable"));
-  else {
-    content.append(node("p", `Collected ${localTime(data.generated_at)}. Injury file updated ${localTime(data.injury_updated_at)}.`), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. Out sorting counts listed designations when a full observed unit and a team report are available; other counts are unavailable. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
+  if (data) {
+    content.append(node("p", [data.generated_at && `Collected ${localTime(data.generated_at)}`, data.injury_updated_at && `Injury file updated ${localTime(data.injury_updated_at)}`].filter(Boolean).join(" · ")), node("p", "Statistics and records use complete regular-season weeks before the selected week. Ranks preserve ties. ★ marks league top 10 within an offensive position for yards or touchdowns, or among defenders for tackles, sacks or interceptions."), node("p", "Missing injury entries do not establish health. Out sorting counts listed designations when a full observed unit and a team report are available; other counts are unavailable. The source supplies no report publication dates. Starters are first in each observed depth slot; a depth chart does not confirm participation."));
     for (const source of data.sources) {
-      const section = node("section"); section.append(link(source.label, source.url), node("p", `File updated ${localTime(source.source_updated_at)} · collected ${localTime(source.retrieved_at)} · checked ${source.checked_on}`)); content.append(section);
+      const section = node("section"); section.append(link(source.label, source.url), node("p", [source.source_updated_at && `File updated ${localTime(source.source_updated_at)}`, source.retrieved_at && `Collected ${localTime(source.retrieved_at)}`, source.checked_on && `Checked ${source.checked_on}`].filter(Boolean).join(" · "))); content.append(section);
     }
     content.append(link("nflverse data · CC BY 4.0", data.sources[0].terms_url), node("p", "sideline filters and joins nflverse records and calculates pre-week statistics. Software: MIT. Original data: CC0. Team marks retain their owners’ rights."));
     const logos = node("details"); logos.append(node("summary", "Team logo sources and licenses"));
@@ -442,6 +438,6 @@ async function load() {
     $("week").value = week.week;
     for (const id of ["week", "offense", "defense", "sort", "compare"]) $(id).disabled = false;
     render(); if (currentTeam()) { focusRoute(); animateRoute(); }
-  } catch { $("message").textContent = "Weekly data unavailable"; }
+  } catch { $("message").textContent = ""; }
 }
 load();
