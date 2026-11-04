@@ -153,8 +153,8 @@ test("lifting automatically pairs units and player taps preserve the lifted team
   await expect(liftedStrip(page)).toHaveAttribute("data-team", "ARI");
   await expect(page.locator("#wallet-view .field-half")).toHaveClass(["field-half offense", "field-half defense below"]);
   await expect(page.locator("#wallet-view .scrimmage")).toHaveCount(1);
-  await expect(page.locator("#wallet-view .stats")).toHaveCount(2);
-  await expect(page.locator(".wallet-opponent")).toContainText("ATL");
+  await expect(page.locator("#wallet-view .stats")).toHaveCount(0);
+  await expect(page.locator("#wallet-view .matchup-stats thead")).toContainText("ATL");
   const player = page.locator('#wallet-view .player[data-slot="1"]').first();
   expect((await player.boundingBox()).width).toBe(40);
   await player.tap();
@@ -170,7 +170,7 @@ test("lifting automatically pairs units and player taps preserve the lifted team
   await expect(page.locator("#wallet-view .field-half")).toHaveClass(["field-half defense", "field-half offense below"]);
   await page.locator("#week").selectOption("2");
   await expect(page.locator("#wallet-view .field-half")).toHaveCount(1);
-  await expect(page.locator("#wallet-view .bye")).toHaveText("Bye");
+  await expect(page.locator("#wallet-view .opponent-half")).toBeEmpty();
   await page.locator("#week").selectOption("4");
   await expect(page.locator("#wallet-view .field-empty")).toHaveCount(0);
   await expect(page.locator("#wallet-view .player")).toHaveCount(0);
@@ -285,7 +285,7 @@ test("599px lifts the linked team, while 600px, tablet and desktop use the separ
     await page.setViewportSize({width, height:1000});
     await expect(page.locator("#wallet-view")).toBeHidden();
     await expect(page.locator("#team-view")).toBeVisible();
-    await expect(page.locator("#team-view .team-heading h2")).toHaveText(["ARI","ATL"]);
+    await expect(page.locator("#team-view .team-heading h2")).toHaveText(["ARI"]);
     await expect(page.locator("#team-view .field-half")).toHaveClass(["field-half defense", "field-half offense below"]);
     await expect(page.locator("#team-view .player-name").first()).not.toHaveCSS("display", "none");
   }
@@ -356,7 +356,7 @@ test("real collected teams fit the phone stack and pair observed units without p
     const fields = page.locator("#wallet-view .field-half");
     await expect(fields).toHaveClass([`field-half ${side}`, `field-half ${otherSide} below`]);
     await expect(page.locator("#wallet-view .scrimmage")).toHaveCount(1);
-    await expect(page.locator(".wallet-opponent .team-heading h2")).toHaveText(real.teams[opponent].name);
+    await expect(page.locator("#wallet-view .matchup-stats thead")).toContainText(real.teams[opponent].name);
     for (const [index, code, unitSide] of [[0, team, side], [1, opponent, otherSide]]) {
       const count = source.teams[code][unitSide].filter(group => unitSide !== "offense" || group.position !== "FB").length;
       await expect(fields.nth(index).locator(".player")).toHaveCount(count);

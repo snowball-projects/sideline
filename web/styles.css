@@ -74,7 +74,22 @@ h2 a:hover { text-decoration: underline; }
 .matchup { max-width: 760px; margin-inline: auto; }
 .matchup .field-half { grid-template-rows: repeat(3, 58px); }
 
-.bye { text-align: center; color: var(--muted); }
+.matchup-stats { width: 100%; table-layout: fixed; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.matchup-stats th, .matchup-stats td { padding: 6px 10px; text-align: center; border-top: 1px solid var(--border); }
+.matchup-stats thead th { width: 35%; font-size: 11px; font-weight: 600; overflow-wrap: anywhere; }
+.matchup-stats thead th:nth-child(2) { width: 30%; }
+.matchup-stats thead .rank { display: block; margin-top: 2px; font-weight: 400; }
+.matchup-stats tbody th { font-size: 11px; color: var(--muted); font-weight: 500; }
+.matchup-stats strong { font-size: 16px; font-weight: 600; }
+.matchup-stats td .rank { margin-left: 6px; white-space: nowrap; }
+.matchup-stats .rank-edge { background: #a2b9ad0b; }
+.matchup-stats .rank-edge .rank { color: var(--ink); font-weight: 650; }
+.matchup-line { height: 1px; }
+.backfield-row { position: relative; }
+.backfield-label { position: absolute; top: 50%; display: flex; align-items: center; gap: 4px; width: max-content; visibility: hidden; pointer-events: none; font-size: 8px; font-weight: 600; letter-spacing: .5px; white-space: nowrap; opacity: .7; transform: translate(-50%, -50%) scale(var(--label-scale, 1)); }
+.crowded-backfield > .backfield-label { flex-direction: column; gap: 0; letter-spacing: .2px; }
+.matchup .crowded-backfield > .player, .matchup .crowded-backfield > .player-unavailable { max-width: calc(100% / 3 - 56px); }
+.backfield-label img { object-fit: contain; flex: none; }
 dialog { color: var(--ink); max-width: 480px; width: calc(100% - 24px); max-height: 85dvh; padding: 22px; box-shadow: 0 14px 60px #0004; overflow: auto; }
 dialog::backdrop { background: #0b292655; }
 #close-popup { float: right; border: 0; font-size: 24px; width: 34px; height: 34px; margin: -10px -10px 0 8px; }
@@ -175,7 +190,6 @@ details { margin-block: 18px; } summary { cursor: pointer; }
   #wallet-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; flex: 1; border-radius: 14px; }
   #wallet-card { overflow: hidden; }
   #wallet-card .wallet-strip { border-radius: 13px 13px 0 0; }
-  #wallet-card .wallet-opponent .bye { min-height: 44px; display: grid; place-items: center; margin: 0; }
   .wallet-pile { position: relative; flex: none; height: 66px; width: 100%; padding: 0; border: 0; background: transparent; }
   .pile-layer { pointer-events: none; position: absolute; top: 10px; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); }
   .pile-layer:nth-child(1) { top: 0; left: 8px; right: 8px; }
