@@ -158,7 +158,7 @@ function placeBackfieldLabels() {
     gaps.sort((a,b) => (b.right-b.left)-(a.right-a.left) || Math.abs((a.left+a.right)/2-(box.left+box.right)/2)-Math.abs((b.left+b.right)/2-(box.left+box.right)/2));
     const gap = gaps[0];
     label.style.left = `${((gap.left+gap.right)/2-box.left)/box.width*100}%`;
-    label.style.setProperty("--label-scale", Math.min(1, Math.max(0, gap.right-gap.left-16)/label.offsetWidth));
+    label.style.setProperty("--label-scale", Math.min(1, Math.max(0, gap.right-gap.left-12)/label.offsetWidth));
     label.style.visibility = "visible";
   }
 }

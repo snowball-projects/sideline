@@ -88,7 +88,7 @@ h2 a:hover { text-decoration: underline; }
 .backfield-row { position: relative; }
 .backfield-label { position: absolute; top: 50%; display: flex; align-items: center; gap: 4px; width: max-content; visibility: hidden; pointer-events: none; font-size: 8px; font-weight: 600; letter-spacing: .5px; white-space: nowrap; opacity: .7; transform: translate(-50%, -50%) scale(var(--label-scale, 1)); }
 .crowded-backfield > .backfield-label { flex-direction: column; gap: 0; letter-spacing: .2px; }
-.matchup .crowded-backfield > .player, .matchup .crowded-backfield > .player-unavailable { max-width: calc(100% / 3 - 56px); }
+.matchup .crowded-backfield > .player, .matchup .crowded-backfield > .player-unavailable { max-width: min(160px, calc(100% / 3 - 56px)); }
 .backfield-label img { object-fit: contain; flex: none; }
 dialog { color: var(--ink); max-width: 480px; width: calc(100% - 24px); max-height: 85dvh; padding: 22px; box-shadow: 0 14px 60px #0004; overflow: auto; }
 dialog::backdrop { background: #0b292655; }
