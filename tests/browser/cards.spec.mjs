@@ -134,20 +134,22 @@ test("full participation has no field badge, keeps its body part and gaps stay u
   await expect(page.locator("#message")).not.toContainText(/unavailable/i);
   await expect(page.locator(".rank")).toHaveText(["","","",""]);
 });
-test("card opens a team matchup, independent switch retains team sides and pills", async ({page},info) => {
+test("card opens a team matchup and both switches keep the same unit", async ({page},info) => {
   const {errors}=await open(page,{selections:["ARI"]});
   await cardFor(page,"ARI").getByRole("link",{name:"ARI",exact:true}).click();
   await expect(page.locator("#cards")).toBeHidden();
-  await expect(page.locator(".matchup .team-heading h2")).toHaveText(["ARI","ATL"]);
+  await expect(page.locator(".matchup .team-heading h2")).toHaveText(["ARI"]);
+  await expect(page.locator("#cards .backfield-label")).toHaveCount(0);
+  await expect(page.locator("#cards .scrimmage")).toHaveText("Line of scrimmage");
   await expect(page.locator(".matchup .field-half")).toHaveClass(["field-half offense","field-half defense below"]);
   await page.locator("#team-view").getByRole("button",{name:"Defense",exact:true}).click();
-  await expect(page.locator(".matchup .team-heading h2")).toHaveText(["ARI","ATL"]);
+  await expect(page.locator(".matchup .team-heading h2")).toHaveText(["ARI"]);
   await expect(page.locator(".matchup .field-half")).toHaveClass(["field-half defense","field-half offense below"]);
   expect(await page.locator(".matchup .player-name").first().evaluate((el)=>getComputedStyle(el).display)).not.toBe("none");
   await page.screenshot({path:info.outputPath("team-matchup.png")});
   await page.locator("#week").selectOption("2");
   await expect(page.locator(".matchup .field-half")).toHaveCount(1);
-  await expect(page.locator(".bye")).toHaveText("Bye");
+  await expect(page.locator(".opponent-half")).toBeEmpty();
   await page.getByRole("link",{name:"All teams",exact:true}).click();
   await expect(page.locator(".card")).toHaveCount(1);
   expect(errors).toEqual([]);
@@ -331,7 +333,7 @@ test("fresh team links and browser back keep the larger-screen matchup page", as
   await page.goto("/#team=ARI");
   await expect(page.locator("#team-view")).toBeVisible();
   await expect(page.locator("#wallet-view")).toBeHidden();
-  await expect(page.locator("#team-view .team-heading h2")).toHaveText(["ARI","ATL"]);
+  await expect(page.locator("#team-view .team-heading h2")).toHaveText(["ARI"]);
   await page.reload(); await expect(page.locator("#week")).toBeEnabled();
   await expect(page.locator("#team-view")).toBeVisible();
   await page.goBack();

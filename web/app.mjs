@@ -37,7 +37,7 @@ const storageKey = "sideline.compare";
 const phone = matchMedia("(width < 600px)");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 history.scrollRestoration = "manual";
-let data, week, side = "offense", selected = [], opener, teamSide = "offense", sortBy = "record", sortDirection = "best";
+let data, week, side = "offense", selected = [], opener, sortBy = "record", sortDirection = "best";
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch {} }
 function popup(title, content, control) {
   opener = control;
@@ -104,9 +104,9 @@ function playerPopup(group, control) {
   }
   popup(`${player.name} · ${group.position}`, content, control);
 }
-function field(unit, unitSide, below = false) {
+function field(unit, unitSide, below = false, team) {
   const half = node("section", undefined, `field-half ${unitSide}${below ? " below" : ""}`);
-  half.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} starters`);
+  half.setAttribute("aria-label", `${team ? `${data.teams[team].name} ` : ""}${unitSide === "offense" ? "Offense" : "Defense"} starters`);
   for (const groups of rows(unit, unitSide)) {
     const row = node("div", undefined, "field-row");
     for (const group of groups) {
@@ -138,8 +138,31 @@ function field(unit, unitSide, below = false) {
     }
     half.append(row);
   }
+  if (team) {
+    const backfield = half.firstElementChild, label = node("span", undefined, "backfield-label");
+    backfield.classList.add("backfield-row");
+    if (backfield.childElementCount > 2) backfield.classList.add("crowded-backfield");
+    label.setAttribute("role", "img"); label.setAttribute("aria-label", `${data.teams[team].name} ${unitSide}`);
+    label.append(logo(team, 16), node("span", unitSide.toUpperCase()));
+    backfield.append(label);
+  }
   return half;
 }
+function placeBackfieldLabels() {
+  for (const label of document.querySelectorAll(".backfield-label")) {
+    const row = label.parentElement, box = row.getBoundingClientRect();
+    const players = [...row.querySelectorAll(".player, .player-unavailable")].map(el => el.getBoundingClientRect()).sort((a,b) => a.left-b.left);
+    const boundaries = [box.left, ...players.flatMap(player => [player.left, player.right]), box.right];
+    const gaps = [];
+    for (let i = 0; i < boundaries.length; i += 2) gaps.push({left:boundaries[i], right:boundaries[i+1]});
+    gaps.sort((a,b) => (b.right-b.left)-(a.right-a.left) || Math.abs((a.left+a.right)/2-(box.left+box.right)/2)-Math.abs((b.left+b.right)/2-(box.left+box.right)/2));
+    const gap = gaps[0];
+    label.style.left = `${((gap.left+gap.right)/2-box.left)/box.width*100}%`;
+    label.style.setProperty("--label-scale", Math.min(1, Math.max(0, gap.right-gap.left-12)/label.offsetWidth));
+    label.style.visibility = "visible";
+  }
+}
+window.addEventListener("resize", placeBackfieldLabels);
 function logo(team, size = 36) {
   const image = node("img"); image.src = data.teams[team].url; image.alt = ""; image.width = size; image.height = size;
   return image;
@@ -165,7 +188,7 @@ function stats(record, unitSide) {
   section.setAttribute("aria-label", `${unitSide === "offense" ? "Offense" : "Defense"} statistics`);
   statLabels[unitSide].forEach((label, index) => {
     const metric = record?.[unitSide][index], item = node("div", undefined, `metric${sortBy === `stat-${index}` ? " sorted-stat" : ""}`);
-    item.append(node("span", label, "metric-label"), node("strong", metric ? metric.value.toLocaleString(undefined, { maximumFractionDigits: index < 2 ? 1 : 0 }) : ""), node("span", metric ? `${metric.tied ? "T" : ""}#${metric.rank}` : "", "rank"));
+    item.append(node("span", label, "metric-label"), node("strong", metricValue(metric, index)), node("span", metricRank(metric), "rank"));
     section.append(item);
   });
   return section;
@@ -226,14 +249,46 @@ function renderCards() {
   }
   $("cards").scrollTop = scrollTop;
 }
+function metricValue(metric, index) {
+  return metric ? metric.value.toLocaleString(undefined, {maximumFractionDigits:index < 2 ? 1 : 0}) : "";
+}
+function metricRank(metric) { return metric ? `${metric.tied ? "T" : ""}#${metric.rank}` : ""; }
+function matchupStats(team, unit) {
+  const own = week.teams[team], other = week.teams[own.opponent], otherUnit = unit === "offense" ? "defense" : "offense";
+  const table = node("table", undefined, "matchup-stats"), head = node("thead"), headings = node("tr"), body = node("tbody");
+  table.append(node("caption", "Head-to-head statistics", "sr-only"));
+  for (const [code, role] of [[team,unit], [null,null], [own.opponent,otherUnit]]) {
+    const cell = node("th"); cell.scope = "col";
+    if (code) cell.append(node("span", data.teams[code].name), node("span", role === "offense" ? "Offense" : "Defense", "rank"));
+    else if (!role) cell.append(node("span", "Category", "sr-only"));
+    headings.append(cell);
+  }
+  head.append(headings);
+  statCategories.forEach((category,index) => {
+    const row = node("tr", undefined, sortBy === `stat-${index}` ? "sorted-stat" : undefined);
+    const ownMetric = own.stats?.[unit][index], otherMetric = other?.stats?.[otherUnit][index];
+    for (const [metric,opposing,role] of [[ownMetric,otherMetric,unit], [null,null,null], [otherMetric,ownMetric,otherUnit]]) {
+      if (!role) { const label = node("th", category); label.scope = "row"; row.append(label); continue; }
+      const cell = node("td");
+      if (metric) {
+        const value = node("strong", metricValue(metric,index));
+        cell.append(node("span", statLabels[role][index], "sr-only"), value, node("span", metricRank(metric), "rank"));
+        if (opposing && metric.rank < opposing.rank) {
+          cell.className = "rank-edge"; cell.append(node("span", "League-rank edge", "sr-only"));
+        }
+      }
+      row.append(cell);
+    }
+    body.append(row);
+  });
+  table.append(head,body);
+  return table;
+}
 function matchupContent(team, unit, heading) {
   const own = week.teams[team], otherUnit = unit === "offense" ? "defense" : "offense";
   const content = document.createDocumentFragment(), opponent = node("section", undefined, "opponent-half");
-  content.append(heading, stats(own.stats, unit), field(own[unit], unit), node("div", "Line of scrimmage", "scrimmage"));
-  if (own.opponent) {
-    const other = week.teams[own.opponent];
-    opponent.append(field(other[otherUnit], otherUnit, true), stats(other.stats, otherUnit), teamHeading(own.opponent, otherUnit));
-  } else opponent.append(node("p", own.bye ? "Bye" : "", "bye"));
+  content.append(heading, matchupStats(team, unit), field(own[unit], unit, false, team), node("div", undefined, "scrimmage matchup-line"));
+  if (own.opponent) opponent.append(field(week.teams[own.opponent][otherUnit], otherUnit, true, own.opponent));
   content.append(opponent);
   return content;
 }
@@ -264,7 +319,6 @@ function renderTeam() {
     const card = node("article", undefined, "card wallet-lift"); card.id = "wallet-card";
     card.setAttribute("aria-label", `${data.teams[team].name} ${side}`);
     card.append(matchupContent(team, side, walletStrip(team, true)));
-    card.querySelector(".opponent-half").classList.add("wallet-opponent");
     scroll.append(card);
     $("wallet-view").append(scroll, walletPile(team)); scroll.scrollTop = scrollTop;
   } else {
@@ -272,13 +326,14 @@ function renderTeam() {
     back.addEventListener("click", event => { event.preventDefault(); closeTeam(); });
     const toggle = node("div", undefined, "unit-switch"); toggle.setAttribute("role", "group"); toggle.setAttribute("aria-label", "Team matchup unit");
     for (const unit of ["offense", "defense"]) {
-      const control = button(unit === "offense" ? "Offense" : "Defense", () => { teamSide = unit; renderTeam(); $("team-view").querySelector('[aria-pressed="true"]').focus(); });
-      control.setAttribute("aria-pressed", String(unit === teamSide)); toggle.append(control);
+      const control = button(unit === "offense" ? "Offense" : "Defense", () => { setSide(unit); $("team-view").querySelector('[aria-pressed="true"]').focus(); });
+      control.setAttribute("aria-pressed", String(unit === side)); toggle.append(control);
     }
     toolbar.append(back, toggle);
-    const match = node("article", undefined, "matchup"); match.append(matchupContent(team, teamSide, teamHeading(team, teamSide)));
+    const match = node("article", undefined, "matchup"); match.append(matchupContent(team, side, teamHeading(team, side)));
     $("team-view").append(toolbar, match);
   }
+  requestAnimationFrame(placeBackfieldLabels);
 }
 function baseURL() { const url = new URL(location.href); url.hash = ""; return url; }
 function preparePhoneLink() {
@@ -356,12 +411,6 @@ function closeTeam() {
 function render() { preparePhoneLink(); renderCards(); renderTeam(); }
 phone.addEventListener("change", () => {
   if (!data) return;
-  if (currentTeam()) {
-    if (phone.matches) {
-      side = teamSide;
-      for (const unit of ["offense", "defense"]) $(unit).setAttribute("aria-pressed", String(unit === side));
-    } else teamSide = side;
-  }
   render(); focusRoute();
 });
 function sortOptions() {
@@ -393,11 +442,12 @@ $("sort").addEventListener("click", () => {
   content.append(metrics, node("h3", "Order"), directions);
   popup("Sort teams", content, $("sort"));
 });
-for (const unit of ["offense", "defense"]) $(unit).addEventListener("click", () => {
+function setSide(unit) {
   side = unit;
   for (const name of ["offense", "defense"]) $(name).setAttribute("aria-pressed", String(side === name));
   render();
-});
+}
+for (const unit of ["offense", "defense"]) $(unit).addEventListener("click", () => setSide(unit));
 $("week").addEventListener("change", () => { week = data.weeks.find((entry) => entry.week === +$("week").value); render(); });
 window.addEventListener("hashchange", () => { if (data) routeChanged(); });
 $("compare").addEventListener("click", () => {
